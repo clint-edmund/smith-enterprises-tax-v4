@@ -1,3 +1,5 @@
+import { SupabaseStatus } from "@/components/common/supabase-status"
+
 const dashboardCards = [
   {
     label: "Active Clients",
@@ -30,9 +32,12 @@ export function DashboardPage() {
         </h1>
 
         <p className="mt-2 text-slate-600">
-          Review client, return, payment, and document activity.
+          Review client, return, payment, and document
+          activity.
         </p>
       </header>
+
+      <SupabaseStatus />
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {dashboardCards.map((card) => (
@@ -57,8 +62,8 @@ export function DashboardPage() {
         </h2>
 
         <p className="mt-2 text-sm text-slate-500">
-          Client and tax-return activity will appear here after the
-          database is connected.
+          Client and tax-return activity will appear after
+          authentication and staff approval are complete.
         </p>
       </div>
     </section>
