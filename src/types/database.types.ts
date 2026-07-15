@@ -375,6 +375,18 @@ export type Database = {
         Args: never
         Returns: Database["public"]["Enums"]["app_role"]
       }
+      get_current_access_status: {
+        Args: never
+        Returns: {
+          display_name: string
+          email: string
+          first_name: string
+          id: string
+          is_active: boolean
+          last_name: string
+          role: Database["public"]["Enums"]["app_role"]
+        }[]
+      }
     }
     Enums: {
       app_role:

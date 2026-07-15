@@ -8,6 +8,8 @@ export const appConfig = {
   routes: {
     home: "/",
     login: "/login",
+    pendingApproval: "/pending-approval",
+    accountError: "/account-error",
     dashboard: "/dashboard",
     clients: "/clients",
     returns: "/returns",
