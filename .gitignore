@@ -11,9 +11,6 @@ node_modules
 dist
 dist-ssr
 *.local
-.env
-.env.local
-coverage
 
 # Editor directories and files
 .vscode/*
@@ -25,3 +22,11 @@ coverage
 *.njsproj
 *.sln
 *.sw?
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Allow the environment template
+!.env.example
