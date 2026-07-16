@@ -171,6 +171,10 @@ export interface TaxReturnDetailData {
   taxReturn: TaxReturnDetails
   activities: TaxReturnActivity[]
 }
+export interface TaxReturnUpdateResult {
+  taxReturn: TaxReturnRecord
+  message: string
+}
 
 export interface TaxReturnFormValues {
   clientId: string

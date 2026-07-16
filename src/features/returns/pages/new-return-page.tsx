@@ -22,6 +22,7 @@ import { ReturnForm } from "@/features/returns/components/return-form"
 import {
   createTaxReturn,
   getReturnClientOptions,
+  getReturnServiceErrorMessage,
   getReturnStaffOptions,
 } from "@/features/returns/services/return-service"
 import type {
@@ -178,30 +179,12 @@ export function NewReturnPage() {
         },
       )
     } catch (error) {
-      const message =
-        error instanceof Error
-          ? error.message
-          : "Unable to create the tax return."
-
-      if (
-        message
-          .toLowerCase()
-          .includes(
-            "tax_returns_client_year_type_unique",
-          ) ||
-        message
-          .toLowerCase()
-          .includes("duplicate")
-      ) {
-        setErrorMessage(
-          "A return with this client, tax year, and return category already exists.",
-        )
-      } else {
-        setErrorMessage(message)
-      }
-    } finally {
-      setIsSubmitting(false)
-    }
+  setErrorMessage(
+    getReturnServiceErrorMessage(error),
+  )
+} finally {
+  setIsSubmitting(false)
+}
   }
 
   return (
