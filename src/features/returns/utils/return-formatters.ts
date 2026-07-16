@@ -200,9 +200,9 @@ export function formatReturnActivityLabel(
     return_status_updated:
       "Changed the workflow status",
     return_preparer_assigned:
-      "Assigned the preparer",
+      "Changed the assigned preparer",
     return_reviewer_assigned:
-      "Assigned the reviewer",
+      "Changed the assigned reviewer",
     payment_created:
       "Recorded a payment",
     payment_voided:

@@ -702,6 +702,13 @@ export type Database = {
         Args: { requested_notice_version: string }
         Returns: boolean
       }
+      is_valid_return_status_transition: {
+        Args: {
+          current_status: Database["public"]["Enums"]["return_status"]
+          requested_status: Database["public"]["Enums"]["return_status"]
+        }
+        Returns: boolean
+      }
       record_security_event: {
         Args: { requested_action: string; requested_metadata?: Json }
         Returns: number
