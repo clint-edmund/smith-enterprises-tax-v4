@@ -12,7 +12,7 @@ import {
 } from "react"
 import {
   useForm,
-  useWatch
+  useWatch,
 } from "react-hook-form"
 
 import {
@@ -60,6 +60,7 @@ export function ReturnForm({
     register,
     handleSubmit,
     reset,
+    control,
     formState: {
       errors,
     },
@@ -76,13 +77,13 @@ export function ReturnForm({
     useWatch({
       control,
       name: "preparationFee",
-  }) || 0
+    }) || 0
 
   const discountAmount =
     useWatch({
       control,
       name: "discountAmount",
-  }) || 0
+    }) || 0
 
   const extensionFiled =
     useWatch({

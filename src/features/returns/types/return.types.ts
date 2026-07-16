@@ -107,6 +107,71 @@ export interface TaxReturnRecord {
   updatedAt: string
 }
 
+export interface TaxReturnDetails {
+  id: string
+
+  clientId: string
+  clientNumber: number
+  clientFirstName: string
+  clientMiddleName: string | null
+  clientLastName: string
+  clientPreferredName: string | null
+  clientEmail: string | null
+  clientPhone: string | null
+
+  taxYear: number
+  returnType: ReturnType
+  taxForm: TaxFormType
+  filingStatus: FilingStatus
+  status: ReturnStatus
+  description: string | null
+
+  assignedPreparerId: string | null
+  assignedPreparerName: string | null
+  assignedPreparerEmail: string | null
+
+  assignedReviewerId: string | null
+  assignedReviewerName: string | null
+  assignedReviewerEmail: string | null
+
+  dateReceived: string | null
+  dueDate: string | null
+  filedDate: string | null
+  acceptedDate: string | null
+
+  federalReturnRequired: boolean
+  stateReturnRequired: boolean
+  localReturnRequired: boolean
+
+  extensionFiled: boolean
+  extensionDate: string | null
+
+  preparationFee: number
+  discountAmount: number
+  netFee: number
+
+  estimatedRefund: number
+  estimatedAmountDue: number
+
+  notes: string | null
+
+  createdAt: string
+  updatedAt: string
+}
+
+export interface TaxReturnActivity {
+  id: number
+  action: string
+  actorId: string | null
+  actorName: string
+  occurredAt: string
+}
+
+export interface TaxReturnDetailData {
+  taxReturn: TaxReturnDetails
+  activities: TaxReturnActivity[]
+}
+
 export interface TaxReturnFormValues {
   clientId: string
   taxYear: number

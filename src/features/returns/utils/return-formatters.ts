@@ -16,6 +16,17 @@ const dateFormatter =
     dateStyle: "medium",
   })
 
+const dateTimeFormatter =
+  new Intl.DateTimeFormat("en-US", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  })
+
+const relativeDateFormatter =
+  new Intl.RelativeTimeFormat("en-US", {
+    numeric: "auto",
+  })
+
 export const returnTypeLabels:
   Record<ReturnType, string> = {
     individual: "Individual",
@@ -102,4 +113,110 @@ export function getReturnTitle(
   taxForm: TaxFormType,
 ): string {
   return `${taxYear} ${taxFormLabels[taxForm]}`
+}
+
+export function formatReturnDateTime(
+  value: string,
+): string {
+  const date = new Date(value)
+
+  if (Number.isNaN(date.getTime())) {
+    return "Unknown date"
+  }
+
+  return dateTimeFormatter.format(date)
+}
+
+export function formatReturnRelativeDate(
+  value: string,
+): string {
+  const date = new Date(value)
+
+  if (Number.isNaN(date.getTime())) {
+    return "Unknown date"
+  }
+
+  const differenceMilliseconds =
+    date.getTime() -
+    Date.now()
+
+  const differenceMinutes =
+    Math.round(
+      differenceMilliseconds /
+        (1000 * 60),
+    )
+
+  if (
+    Math.abs(differenceMinutes) <
+    60
+  ) {
+    return relativeDateFormatter.format(
+      differenceMinutes,
+      "minute",
+    )
+  }
+
+  const differenceHours =
+    Math.round(
+      differenceMinutes / 60,
+    )
+
+  if (
+    Math.abs(differenceHours) <
+    24
+  ) {
+    return relativeDateFormatter.format(
+      differenceHours,
+      "hour",
+    )
+  }
+
+  const differenceDays =
+    Math.round(
+      differenceHours / 24,
+    )
+
+  if (
+    Math.abs(differenceDays) <
+    30
+  ) {
+    return relativeDateFormatter.format(
+      differenceDays,
+      "day",
+    )
+  }
+
+  return formatReturnDateTime(value)
+}
+
+export function formatReturnActivityLabel(
+  action: string,
+): string {
+  const labels: Record<string, string> = {
+    tax_return_created:
+      "Created the tax return",
+    tax_return_updated:
+      "Updated the tax return",
+    return_status_updated:
+      "Changed the workflow status",
+    return_preparer_assigned:
+      "Assigned the preparer",
+    return_reviewer_assigned:
+      "Assigned the reviewer",
+    payment_created:
+      "Recorded a payment",
+    payment_voided:
+      "Voided a payment",
+  }
+
+  return (
+    labels[action] ??
+    action
+      .replaceAll("_", " ")
+      .replace(
+        /\b\w/g,
+        (character) =>
+          character.toUpperCase(),
+      )
+  )
 }

@@ -1,11 +1,12 @@
 import {
   ArrowLeft,
   CalendarDays,
-  CircleDollarSign,
+  Edit3,
   FileText,
-  UserRound,
+  RefreshCw,
 } from "lucide-react"
 import {
+  useCallback,
   useEffect,
   useState,
 } from "react"
@@ -14,179 +15,295 @@ import {
   useParams,
 } from "react-router-dom"
 
-import { appConfig } from "@/config/app-config"
+import {
+  appConfig,
+  getReturnEditRoute,
+} from "@/config/app-config"
+import { useAuth } from "@/features/auth/hooks/use-auth"
+import { ReturnActivityTimeline } from "@/features/returns/components/return-activity-timeline"
+import { ReturnAssignmentSummary } from "@/features/returns/components/return-assignment-summary"
+import { ReturnClientSummary } from "@/features/returns/components/return-client-summary"
+import { ReturnFilingRequirements } from "@/features/returns/components/return-filing-requirements"
+import { ReturnFinancialSummary } from "@/features/returns/components/return-financial-summary"
 import { ReturnStatusBadge } from "@/features/returns/components/return-status-badge"
-import { getTaxReturnById } from "@/features/returns/services/return-service"
+import { ReturnWorkflowProgress } from "@/features/returns/components/return-workflow-progress"
+import { getTaxReturnDetailData } from "@/features/returns/services/return-service"
 import type {
-  TaxReturnRecord,
+  TaxReturnDetailData,
 } from "@/features/returns/types/return.types"
 import {
   filingStatusLabels,
-  formatReturnCurrency,
   formatReturnDate,
+  formatReturnDateTime,
   returnTypeLabels,
   taxFormLabels,
 } from "@/features/returns/utils/return-formatters"
 
+const editRoles = [
+  "administrator",
+  "manager",
+  "preparer",
+  "reviewer",
+  "receptionist",
+]
+
 export function ReturnDetailsPage() {
   const { returnId } = useParams()
+  const { profile } = useAuth()
 
-  const [taxReturn, setTaxReturn] =
-    useState<TaxReturnRecord | null>(null)
+  const [
+    detailData,
+    setDetailData,
+  ] = useState<TaxReturnDetailData | null>(
+    null,
+  )
 
   const [isLoading, setIsLoading] =
     useState(true)
 
+  const [isRefreshing, setIsRefreshing] =
+    useState(false)
+
   const [errorMessage, setErrorMessage] =
     useState<string | null>(null)
 
-  useEffect(() => {
-    async function loadReturn() {
-      if (!returnId) {
-        setErrorMessage(
-          "The tax-return identifier is missing.",
-        )
-        setIsLoading(false)
-        return
-      }
-
-      try {
-        const result =
-          await getTaxReturnById(returnId)
-
-        if (!result) {
+  const loadReturn =
+    useCallback(
+      async (
+        showRefreshing = false,
+      ) => {
+        if (!returnId) {
           setErrorMessage(
-            "The tax return was not found.",
+            "The tax-return identifier is missing.",
           )
+          setIsLoading(false)
           return
         }
 
-        setTaxReturn(result)
-      } catch (error) {
-        setErrorMessage(
-          error instanceof Error
-            ? error.message
-            : "Unable to load the tax return.",
-        )
-      } finally {
-        setIsLoading(false)
-      }
-    }
+        if (showRefreshing) {
+          setIsRefreshing(true)
+        } else {
+          setIsLoading(true)
+        }
 
-    void loadReturn()
-  }, [returnId])
+        setErrorMessage(null)
+
+        try {
+          const result =
+            await getTaxReturnDetailData(
+              returnId,
+            )
+
+          if (!result) {
+            setErrorMessage(
+              "The tax return was not found.",
+            )
+            setDetailData(null)
+            return
+          }
+
+          setDetailData(result)
+        } catch (error) {
+          console.error(
+            "Unable to load tax return:",
+            error,
+          )
+
+          setErrorMessage(
+            error instanceof Error
+              ? error.message
+              : "Unable to load the tax return.",
+          )
+        } finally {
+          setIsLoading(false)
+          setIsRefreshing(false)
+        }
+      },
+      [returnId],
+    )
+
+  useEffect(() => {
+  const timeoutId =
+    window.setTimeout(() => {
+      void loadReturn()
+    }, 0)
+
+  return () => {
+    window.clearTimeout(timeoutId)
+  }
+}, [loadReturn])
 
   if (isLoading) {
     return (
-      <div className="rounded-2xl border border-slate-200 bg-white p-10 text-center">
-        Loading tax return...
+      <div className="space-y-6">
+        <div className="h-32 animate-pulse rounded-2xl bg-slate-200" />
+
+        <div className="grid gap-6 lg:grid-cols-3">
+          <div className="h-80 animate-pulse rounded-2xl bg-slate-200" />
+          <div className="h-80 animate-pulse rounded-2xl bg-slate-200" />
+          <div className="h-80 animate-pulse rounded-2xl bg-slate-200" />
+        </div>
       </div>
     )
   }
 
-  if (errorMessage || !taxReturn) {
+  if (
+    errorMessage ||
+    !detailData
+  ) {
     return (
-      <section className="rounded-2xl border border-red-200 bg-white p-8">
+      <section className="rounded-2xl border border-red-200 bg-white p-8 shadow-sm">
         <h1 className="text-2xl font-bold text-slate-950">
           Tax return unavailable
         </h1>
 
         <p className="mt-3 text-slate-600">
-          {errorMessage}
+          {errorMessage ??
+            "The return could not be loaded."}
         </p>
 
-        <Link
-          to={appConfig.routes.returns}
-          className="mt-6 inline-flex font-semibold text-blue-700"
-        >
-          Return to Tax Returns
-        </Link>
+        <div className="mt-6 flex flex-wrap gap-3">
+          <button
+            type="button"
+            onClick={() => {
+              void loadReturn()
+            }}
+            className="inline-flex items-center gap-2 rounded-lg bg-blue-700 px-4 py-2.5 font-semibold text-white hover:bg-blue-800"
+          >
+            <RefreshCw className="size-4" />
+            Try Again
+          </button>
+
+          <Link
+            to={appConfig.routes.returns}
+            className="inline-flex items-center rounded-lg border border-slate-300 px-4 py-2.5 font-semibold text-slate-700 hover:bg-slate-50"
+          >
+            Return to Tax Returns
+          </Link>
+        </div>
       </section>
     )
   }
 
-  const netFee =
-    taxReturn.preparationFee -
-    taxReturn.discountAmount
+  const {
+    taxReturn,
+    activities,
+  } = detailData
+
+  const canEdit =
+    profile !== null &&
+    editRoles.includes(profile.role)
 
   return (
     <section className="space-y-6">
-      <header>
-        <Link
-          to={appConfig.routes.returns}
-          className="inline-flex items-center gap-2 text-sm font-semibold text-blue-700 hover:underline"
-        >
-          <ArrowLeft className="size-4" />
-          Back to Tax Returns
-        </Link>
-
-        <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+      <header className="rounded-2xl bg-slate-950 p-6 text-white shadow-sm">
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-slate-950">
-              {taxReturn.taxYear}{" "}
-              {
-                taxFormLabels[
-                  taxReturn.taxForm
-                ]
-              }
-            </h1>
+            <Link
+              to={appConfig.routes.returns}
+              className="inline-flex items-center gap-2 text-sm font-semibold text-blue-300 hover:text-blue-200"
+            >
+              <ArrowLeft className="size-4" />
+              Back to Tax Returns
+            </Link>
 
-            <p className="mt-2 text-slate-600">
+            <div className="mt-5 flex flex-wrap items-center gap-3">
+              <h1 className="text-3xl font-bold tracking-tight">
+                {taxReturn.taxYear}{" "}
+                {
+                  taxFormLabels[
+                    taxReturn.taxForm
+                  ]
+                }
+              </h1>
+
+              <ReturnStatusBadge
+                status={taxReturn.status}
+              />
+            </div>
+
+            <p className="mt-3 text-slate-300">
               {
                 returnTypeLabels[
                   taxReturn.returnType
                 ]
               }
+              {" · "}
+              {
+                filingStatusLabels[
+                  taxReturn.filingStatus
+                ]
+              }
             </p>
+
+            {taxReturn.description && (
+              <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-400">
+                {taxReturn.description}
+              </p>
+            )}
           </div>
 
-          <ReturnStatusBadge
-            status={taxReturn.status}
-          />
+          <div className="flex flex-wrap gap-3">
+            <button
+              type="button"
+              disabled={isRefreshing}
+              onClick={() => {
+                void loadReturn(true)
+              }}
+              className="inline-flex items-center gap-2 rounded-lg border border-slate-700 bg-slate-900 px-4 py-2.5 font-semibold text-white hover:bg-slate-800 disabled:opacity-50"
+            >
+              <RefreshCw
+                className={`size-4 ${
+                  isRefreshing
+                    ? "animate-spin"
+                    : ""
+                }`}
+              />
+              Refresh
+            </button>
+
+            {canEdit && (
+              <Link
+                to={getReturnEditRoute(
+                  taxReturn.id,
+                )}
+                className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 font-semibold text-white hover:bg-blue-500"
+              >
+                <Edit3 className="size-4" />
+                Edit Return
+              </Link>
+            )}
+          </div>
         </div>
       </header>
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-6 xl:grid-cols-[0.8fr_1.2fr]">
+        <div className="space-y-6">
+          <ReturnClientSummary
+            taxReturn={taxReturn}
+          />
+
+          <ReturnAssignmentSummary
+            taxReturn={taxReturn}
+          />
+
+          <ReturnFilingRequirements
+            taxReturn={taxReturn}
+          />
+        </div>
+
+        <ReturnWorkflowProgress
+          status={taxReturn.status}
+        />
+      </div>
+
+      <div className="grid gap-6 xl:grid-cols-2">
         <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
           <div className="flex items-center gap-3">
-            <FileText className="size-5 text-blue-700" />
-
-            <h2 className="font-bold text-slate-950">
-              Return summary
-            </h2>
-          </div>
-
-          <dl className="mt-5 grid gap-5 sm:grid-cols-2">
-            <div>
-              <dt className="text-sm text-slate-500">
-                Filing status
-              </dt>
-
-              <dd className="mt-1 font-semibold text-slate-950">
-                {
-                  filingStatusLabels[
-                    taxReturn.filingStatus
-                  ]
-                }
-              </dd>
-            </div>
-
-            <div>
-              <dt className="text-sm text-slate-500">
-                Description
-              </dt>
-
-              <dd className="mt-1 font-semibold text-slate-950">
-                {taxReturn.description ||
-                  "Not provided"}
-              </dd>
-            </div>
-          </dl>
-        </section>
-
-        <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="flex items-center gap-3">
-            <CalendarDays className="size-5 text-blue-700" />
+            <CalendarDays
+              className="size-5 text-blue-700"
+              aria-hidden="true"
+            />
 
             <h2 className="font-bold text-slate-950">
               Important dates
@@ -196,7 +313,7 @@ export function ReturnDetailsPage() {
           <dl className="mt-5 grid gap-5 sm:grid-cols-2">
             <div>
               <dt className="text-sm text-slate-500">
-                Received
+                Date received
               </dt>
 
               <dd className="mt-1 font-semibold text-slate-950">
@@ -208,7 +325,7 @@ export function ReturnDetailsPage() {
 
             <div>
               <dt className="text-sm text-slate-500">
-                Due
+                Due date
               </dt>
 
               <dd className="mt-1 font-semibold text-slate-950">
@@ -220,7 +337,7 @@ export function ReturnDetailsPage() {
 
             <div>
               <dt className="text-sm text-slate-500">
-                Filed
+                Filed date
               </dt>
 
               <dd className="mt-1 font-semibold text-slate-950">
@@ -232,7 +349,7 @@ export function ReturnDetailsPage() {
 
             <div>
               <dt className="text-sm text-slate-500">
-                Accepted
+                Accepted date
               </dt>
 
               <dd className="mt-1 font-semibold text-slate-950">
@@ -243,72 +360,49 @@ export function ReturnDetailsPage() {
             </div>
           </dl>
         </section>
+
+        <ReturnFinancialSummary
+          taxReturn={taxReturn}
+        />
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="flex items-center gap-3">
-            <UserRound className="size-5 text-blue-700" />
+      <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div className="flex items-center gap-3">
+          <FileText
+            className="size-5 text-blue-700"
+            aria-hidden="true"
+          />
 
-            <h2 className="font-bold text-slate-950">
-              Assignments
-            </h2>
-          </div>
+          <h2 className="font-bold text-slate-950">
+            Internal notes
+          </h2>
+        </div>
 
-          <p className="mt-4 text-sm text-slate-500">
-            Assigned staff names will be added to
-            this page in Phase 8.4.
-          </p>
-        </section>
+        <p className="mt-5 whitespace-pre-wrap text-sm leading-7 text-slate-700">
+          {taxReturn.notes ||
+            "No internal notes have been recorded."}
+        </p>
+      </section>
 
-        <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="flex items-center gap-3">
-            <CircleDollarSign className="size-5 text-blue-700" />
+      <ReturnActivityTimeline
+        activities={activities}
+      />
 
-            <h2 className="font-bold text-slate-950">
-              Fees
-            </h2>
-          </div>
+      <footer className="flex flex-col gap-1 border-t border-slate-200 pt-4 text-xs text-slate-500 sm:flex-row sm:justify-between">
+        <p>
+          Created:{" "}
+          {formatReturnDateTime(
+            taxReturn.createdAt,
+          )}
+        </p>
 
-          <dl className="mt-5 space-y-3">
-            <div className="flex justify-between">
-              <dt className="text-slate-600">
-                Preparation fee
-              </dt>
-
-              <dd className="font-semibold text-slate-950">
-                {formatReturnCurrency(
-                  taxReturn.preparationFee,
-                )}
-              </dd>
-            </div>
-
-            <div className="flex justify-between">
-              <dt className="text-slate-600">
-                Discount
-              </dt>
-
-              <dd className="font-semibold text-slate-950">
-                {formatReturnCurrency(
-                  taxReturn.discountAmount,
-                )}
-              </dd>
-            </div>
-
-            <div className="flex justify-between border-t border-slate-200 pt-3">
-              <dt className="font-semibold text-slate-950">
-                Net fee
-              </dt>
-
-              <dd className="font-bold text-slate-950">
-                {formatReturnCurrency(
-                  netFee,
-                )}
-              </dd>
-            </div>
-          </dl>
-        </section>
-      </div>
+        <p>
+          Last updated:{" "}
+          {formatReturnDateTime(
+            taxReturn.updatedAt,
+          )}
+        </p>
+      </footer>
     </section>
   )
 }

@@ -26,6 +26,7 @@ import { EditClientPage } from "@/features/clients/pages/edit-client-page"
 import { NewClientPage } from "@/features/clients/pages/new-client-page"
 import { NewReturnPage } from "@/features/returns/pages/new-return-page"
 import { ReturnDetailsPage } from "@/features/returns/pages/return-details-page"
+import { EditReturnPage } from "@/features/returns/pages/edit-return-page"
 
 export const appRouter =
   createBrowserRouter([
@@ -106,6 +107,10 @@ export const appRouter =
                 {
                   path: appConfig.routes.returnNew,
                   element: <NewReturnPage />,
+                },
+                {
+                  path: appConfig.routes.returnEdit,
+                  element: <EditReturnPage />,
                 },
                 {
                   path: appConfig.routes.returnDetails,

@@ -3,6 +3,9 @@ import type {
   ReturnClientOption,
   ReturnStaffOption,
   ReturnStatus,
+  TaxReturnActivity,
+  TaxReturnDetailData,
+  TaxReturnDetails,
   TaxReturnFormValues,
   TaxReturnListItem,
   TaxReturnRecord,
@@ -296,4 +299,163 @@ export async function getTaxReturnById(
   }
 
   return mapTaxReturnRecord(data)
+}
+export async function getTaxReturnDetails(
+  returnId: string,
+): Promise<TaxReturnDetails | null> {
+  const { data, error } = await supabase.rpc(
+    "get_tax_return_details",
+    {
+      requested_return_id: returnId,
+    },
+  )
+
+  if (error) {
+    throw error
+  }
+
+  const detailRow = data?.[0]
+
+  if (!detailRow) {
+    return null
+  }
+
+  return {
+    id: detailRow.id,
+
+    clientId: detailRow.client_id,
+    clientNumber:
+      detailRow.client_number,
+    clientFirstName:
+      detailRow.client_first_name,
+    clientMiddleName:
+      detailRow.client_middle_name,
+    clientLastName:
+      detailRow.client_last_name,
+    clientPreferredName:
+      detailRow.client_preferred_name,
+    clientEmail:
+      detailRow.client_email,
+    clientPhone:
+      detailRow.client_phone,
+
+    taxYear: detailRow.tax_year,
+    returnType:
+      detailRow.return_type,
+    taxForm: detailRow.tax_form,
+    filingStatus:
+      detailRow.filing_status,
+    status: detailRow.status,
+    description:
+      detailRow.description,
+
+    assignedPreparerId:
+      detailRow.assigned_preparer_id,
+    assignedPreparerName:
+      detailRow.assigned_preparer_name,
+    assignedPreparerEmail:
+      detailRow.assigned_preparer_email,
+
+    assignedReviewerId:
+      detailRow.assigned_reviewer_id,
+    assignedReviewerName:
+      detailRow.assigned_reviewer_name,
+    assignedReviewerEmail:
+      detailRow.assigned_reviewer_email,
+
+    dateReceived:
+      detailRow.date_received,
+    dueDate: detailRow.due_date,
+    filedDate: detailRow.filed_date,
+    acceptedDate:
+      detailRow.accepted_date,
+
+    federalReturnRequired:
+      detailRow.federal_return_required,
+    stateReturnRequired:
+      detailRow.state_return_required,
+    localReturnRequired:
+      detailRow.local_return_required,
+
+    extensionFiled:
+      detailRow.extension_filed,
+    extensionDate:
+      detailRow.extension_date,
+
+    preparationFee: toNumber(
+      detailRow.preparation_fee,
+    ),
+    discountAmount: toNumber(
+      detailRow.discount_amount,
+    ),
+    netFee: toNumber(
+      detailRow.net_fee,
+    ),
+
+    estimatedRefund: toNumber(
+      detailRow.estimated_refund,
+    ),
+    estimatedAmountDue: toNumber(
+      detailRow.estimated_amount_due,
+    ),
+
+    notes: detailRow.notes,
+
+    createdAt: detailRow.created_at,
+    updatedAt: detailRow.updated_at,
+  }
+}
+
+export async function getTaxReturnActivity(
+  returnId: string,
+): Promise<TaxReturnActivity[]> {
+  const { data, error } = await supabase.rpc(
+    "get_tax_return_activity",
+    {
+      requested_return_id: returnId,
+      requested_limit: 25,
+    },
+  )
+
+  if (error) {
+    throw error
+  }
+
+  return (data ?? []).map(
+    (activity) => ({
+      id: activity.id,
+      action: activity.action,
+      actorId: activity.actor_id,
+      actorName: activity.actor_name,
+      occurredAt: activity.occurred_at,
+    }),
+  )
+}
+
+export async function getTaxReturnDetailData(
+  returnId: string,
+): Promise<TaxReturnDetailData | null> {
+  const taxReturn =
+    await getTaxReturnDetails(returnId)
+
+  if (!taxReturn) {
+    return null
+  }
+
+  let activities: TaxReturnActivity[] = []
+
+  try {
+    activities =
+      await getTaxReturnActivity(returnId)
+  } catch (error) {
+    console.error(
+      "Unable to load tax return activity:",
+      error,
+    )
+  }
+
+  return {
+    taxReturn,
+    activities,
+  }
 }

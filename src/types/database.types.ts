@@ -645,6 +645,59 @@ export type Database = {
           role: Database["public"]["Enums"]["app_role"]
         }[]
       }
+      get_tax_return_activity: {
+        Args: { requested_limit?: number; requested_return_id: string }
+        Returns: {
+          action: string
+          actor_id: string
+          actor_name: string
+          id: number
+          occurred_at: string
+        }[]
+      }
+      get_tax_return_details: {
+        Args: { requested_return_id: string }
+        Returns: {
+          accepted_date: string
+          assigned_preparer_email: string
+          assigned_preparer_id: string
+          assigned_preparer_name: string
+          assigned_reviewer_email: string
+          assigned_reviewer_id: string
+          assigned_reviewer_name: string
+          client_email: string
+          client_first_name: string
+          client_id: string
+          client_last_name: string
+          client_middle_name: string
+          client_number: number
+          client_phone: string
+          client_preferred_name: string
+          created_at: string
+          date_received: string
+          description: string
+          discount_amount: number
+          due_date: string
+          estimated_amount_due: number
+          estimated_refund: number
+          extension_date: string
+          extension_filed: boolean
+          federal_return_required: boolean
+          filed_date: string
+          filing_status: Database["public"]["Enums"]["filing_status"]
+          id: string
+          local_return_required: boolean
+          net_fee: number
+          notes: string
+          preparation_fee: number
+          return_type: Database["public"]["Enums"]["return_type"]
+          state_return_required: boolean
+          status: Database["public"]["Enums"]["return_status"]
+          tax_form: Database["public"]["Enums"]["tax_form_type"]
+          tax_year: number
+          updated_at: string
+        }[]
+      }
       has_accepted_security_notice: {
         Args: { requested_notice_version: string }
         Returns: boolean
