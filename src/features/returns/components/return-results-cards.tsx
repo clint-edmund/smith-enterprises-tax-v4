@@ -19,6 +19,14 @@ import {
   taxFormLabels,
 } from "@/features/returns/utils/return-formatters"
 
+import {
+  Link,
+} from "react-router-dom"
+
+import {
+  getReturnDetailsRoute,
+} from "@/config/app-config"
+
 interface ReturnResultsCardsProps {
   taxReturns: TaxReturnListItem[]
 }
@@ -132,20 +140,32 @@ export function ReturnResultsCards({
             </div>
 
             <div className="flex items-center gap-3 rounded-lg bg-slate-50 p-3">
-              <CircleDollarSign className="size-5 text-emerald-700" />
+              <CircleDollarSign
+                className="size-5 text-emerald-700"
+                aria-hidden="true"
+              />
 
-              <div>
-                <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
-                  Net fee
-                </p>
+            <div>
+              <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
+                Net Fee
+              </p>
 
-                <p className="font-bold text-slate-950">
-                  {formatReturnCurrency(
-                    taxReturn.netFee,
-                  )}
-                </p>
-              </div>
+              <p className="font-bold text-slate-950">
+                {formatReturnCurrency(
+                  taxReturn.netFee,
+              )}
+              </p>
             </div>
+          </div>
+
+          <Link
+            to={getReturnDetailsRoute(
+              taxReturn.id,
+            )}
+            className="inline-flex w-full items-center justify-center rounded-lg border border-blue-700 px-4 py-2.5 font-semibold text-blue-700 transition hover:bg-blue-50"
+          >
+            View Return
+          </Link>
           </article>
         ),
       )}

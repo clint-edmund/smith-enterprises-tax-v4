@@ -19,6 +19,15 @@ export interface ReturnStaffOption {
   role:
     Database["public"]["Enums"]["app_role"]
 }
+export interface ReturnClientOption {
+  id: string
+  clientNumber: number
+  firstName: string
+  lastName: string
+  email: string | null
+  status:
+    Database["public"]["Enums"]["client_status"]
+}
 
 export interface TaxReturnListItem {
   id: string

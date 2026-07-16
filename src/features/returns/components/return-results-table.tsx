@@ -15,6 +15,13 @@ import {
 import {
   formatClientNumber,
 } from "@/features/clients/utils/client-formatters"
+import {
+  Link,
+} from "react-router-dom"
+
+import {
+  getReturnDetailsRoute,
+} from "@/config/app-config"
 
 interface ReturnResultsTableProps {
   taxReturns: TaxReturnListItem[]
@@ -66,6 +73,9 @@ export function ReturnResultsTable({
 
             <th className="px-5 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-600">
               Net Fee
+            </th>
+            <th className="px-5 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-600">
+              Action
             </th>
           </tr>
         </thead>
@@ -158,7 +168,18 @@ export function ReturnResultsTable({
                   {formatReturnCurrency(
                     taxReturn.netFee,
                   )}
-                </td>
+              </td>
+
+              <td className="px-5 py-4 text-right">
+                <Link
+                  to={getReturnDetailsRoute(
+                    taxReturn.id,
+                )}
+                className="font-semibold text-blue-700 hover:underline"
+                >
+                  View
+                </Link>
+              </td>
               </tr>
             ),
           )}
