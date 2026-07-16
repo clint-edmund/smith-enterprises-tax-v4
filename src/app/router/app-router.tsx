@@ -21,6 +21,9 @@ import { PaymentsPage } from "@/features/payments/pages/payments-page"
 import { ReportsPage } from "@/features/reports/pages/reports-page"
 import { ReturnsPage } from "@/features/returns/pages/returns-page"
 import { SettingsPage } from "@/features/settings/pages/settings-page"
+import { ClientDetailsPage } from "@/features/clients/pages/client-details-page"
+import { EditClientPage } from "@/features/clients/pages/edit-client-page"
+import { NewClientPage } from "@/features/clients/pages/new-client-page"
 
 export const appRouter =
   createBrowserRouter([
@@ -77,10 +80,20 @@ export const appRouter =
                     <DashboardPage />,
                 },
                 {
-                  path:
-                    appConfig.routes.clients,
-                  element:
-                    <ClientsPage />,
+                  path: appConfig.routes.clients,
+                  element: <ClientsPage />,
+                },
+                {       
+                  path: appConfig.routes.clientNew,
+                  element: <NewClientPage />,
+                },
+                {
+                  path: appConfig.routes.clientEdit,
+                  element: <EditClientPage />,
+                },
+                {
+                  path: appConfig.routes.clientDetails,
+                  element: <ClientDetailsPage />,
                 },
                 {
                   path:

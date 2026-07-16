@@ -428,6 +428,54 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      create_client_record: {
+        Args: {
+          requested_address_line_1?: string
+          requested_address_line_2?: string
+          requested_alternate_phone?: string
+          requested_birth_date?: string
+          requested_city?: string
+          requested_email?: string
+          requested_first_name: string
+          requested_last_name?: string
+          requested_middle_name?: string
+          requested_notes?: string
+          requested_phone?: string
+          requested_postal_code?: string
+          requested_preferred_name?: string
+          requested_state?: string
+          requested_status?: Database["public"]["Enums"]["client_status"]
+        }
+        Returns: {
+          address_line_1: string | null
+          address_line_2: string | null
+          alternate_phone: string | null
+          birth_date: string | null
+          city: string | null
+          client_number: number
+          created_at: string
+          created_by: string | null
+          email: string | null
+          first_name: string
+          id: string
+          last_name: string
+          middle_name: string | null
+          notes: string | null
+          phone: string | null
+          postal_code: string | null
+          preferred_name: string | null
+          state: string | null
+          status: Database["public"]["Enums"]["client_status"]
+          updated_at: string
+          updated_by: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "clients"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       current_user_can_manage_records: { Args: never; Returns: boolean }
       current_user_is_active: { Args: never; Returns: boolean }
       current_user_is_admin: { Args: never; Returns: boolean }
@@ -477,6 +525,77 @@ export type Database = {
       record_security_event: {
         Args: { requested_action: string; requested_metadata?: Json }
         Returns: number
+      }
+      search_clients: {
+        Args: {
+          requested_limit?: number
+          requested_search?: string
+          requested_status?: Database["public"]["Enums"]["client_status"]
+        }
+        Returns: {
+          city: string
+          client_number: number
+          created_at: string
+          email: string
+          first_name: string
+          id: string
+          last_name: string
+          middle_name: string
+          phone: string
+          preferred_name: string
+          state: string
+          status: Database["public"]["Enums"]["client_status"]
+          updated_at: string
+        }[]
+      }
+      update_client_record: {
+        Args: {
+          requested_address_line_1?: string
+          requested_address_line_2?: string
+          requested_alternate_phone?: string
+          requested_birth_date?: string
+          requested_city?: string
+          requested_client_id: string
+          requested_email?: string
+          requested_first_name: string
+          requested_last_name?: string
+          requested_middle_name?: string
+          requested_notes?: string
+          requested_phone?: string
+          requested_postal_code?: string
+          requested_preferred_name?: string
+          requested_state?: string
+          requested_status?: Database["public"]["Enums"]["client_status"]
+        }
+        Returns: {
+          address_line_1: string | null
+          address_line_2: string | null
+          alternate_phone: string | null
+          birth_date: string | null
+          city: string | null
+          client_number: number
+          created_at: string
+          created_by: string | null
+          email: string | null
+          first_name: string
+          id: string
+          last_name: string
+          middle_name: string | null
+          notes: string | null
+          phone: string | null
+          postal_code: string | null
+          preferred_name: string | null
+          state: string | null
+          status: Database["public"]["Enums"]["client_status"]
+          updated_at: string
+          updated_by: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "clients"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
     }
     Enums: {

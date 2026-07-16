@@ -55,7 +55,7 @@ export function QuickActions({
       <div className="mt-5 space-y-3">
         {canManageRecords && (
           <Link
-            to={appConfig.routes.clients}
+            to={appConfig.routes.clientNew}
             className="flex items-center gap-3 rounded-xl border border-slate-200 p-4 transition hover:border-blue-300 hover:bg-blue-50"
           >
             <UserPlus
@@ -65,11 +65,11 @@ export function QuickActions({
 
             <div>
               <p className="text-sm font-semibold text-slate-900">
-                Add or find a client
+                Add a new client
               </p>
 
               <p className="text-xs text-slate-500">
-                Open client management
+                Create a taxpayer client record
               </p>
             </div>
           </Link>
