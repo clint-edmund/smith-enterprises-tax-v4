@@ -77,7 +77,7 @@ export function QuickActions({
 
         {canManageRecords && (
           <Link
-            to={appConfig.routes.returns}
+            to={appConfig.routes.returnNew}
             className="flex items-center gap-3 rounded-xl border border-slate-200 p-4 transition hover:border-blue-300 hover:bg-blue-50"
           >
             <FilePlus2
@@ -87,11 +87,11 @@ export function QuickActions({
 
             <div>
               <p className="text-sm font-semibold text-slate-900">
-                Open tax returns
+                Create a tax return
               </p>
 
               <p className="text-xs text-slate-500">
-                Manage return workflows
+                Start a client return workflow
               </p>
             </div>
           </Link>
