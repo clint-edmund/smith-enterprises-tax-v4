@@ -15,9 +15,9 @@ export const standardReturnWorkflow:
   WorkflowStep[] = [
     {
       status: "not_started",
-      label: "Not Started",
+      label: "Intake",
       description:
-        "The return record has been created.",
+        "The return has been created and entered into the intake process.",
     },
     {
       status: "documents_pending",

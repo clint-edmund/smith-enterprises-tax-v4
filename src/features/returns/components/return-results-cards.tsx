@@ -36,7 +36,7 @@ export function ReturnResultsCards({
 }: ReturnResultsCardsProps) {
   if (taxReturns.length === 0) {
     return (
-      <div className="p-10 text-center lg:hidden">
+      <div className="p-10 text-center md:hidden">
         <FileText className="mx-auto size-11 text-slate-400" />
 
         <h2 className="mt-4 font-bold text-slate-900">
@@ -51,7 +51,7 @@ export function ReturnResultsCards({
   }
 
   return (
-    <div className="divide-y divide-slate-100 lg:hidden">
+    <div className="divide-y divide-slate-100 md:hidden">
       {taxReturns.map(
         (taxReturn) => (
           <article

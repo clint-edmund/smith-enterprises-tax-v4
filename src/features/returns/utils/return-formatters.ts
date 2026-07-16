@@ -66,7 +66,7 @@ export const filingStatusLabels:
 
 export const returnStatusLabels:
   Record<ReturnStatus, string> = {
-    not_started: "Not Started",
+    not_started: "Intake",
     documents_pending: "Documents Pending",
     in_progress: "In Progress",
     ready_for_review: "Ready for Review",
