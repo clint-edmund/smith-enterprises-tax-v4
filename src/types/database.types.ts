@@ -311,14 +311,24 @@ export type Database = {
           created_at: string
           created_by: string | null
           date_received: string | null
+          description: string | null
           discount_amount: number
           due_date: string | null
+          estimated_amount_due: number
+          estimated_refund: number
+          extension_date: string | null
+          extension_filed: boolean
+          federal_return_required: boolean
           filed_date: string | null
+          filing_status: Database["public"]["Enums"]["filing_status"]
           id: string
+          local_return_required: boolean
           notes: string | null
           preparation_fee: number
           return_type: Database["public"]["Enums"]["return_type"]
+          state_return_required: boolean
           status: Database["public"]["Enums"]["return_status"]
+          tax_form: Database["public"]["Enums"]["tax_form_type"]
           tax_year: number
           updated_at: string
           updated_by: string | null
@@ -331,14 +341,24 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           date_received?: string | null
+          description?: string | null
           discount_amount?: number
           due_date?: string | null
+          estimated_amount_due?: number
+          estimated_refund?: number
+          extension_date?: string | null
+          extension_filed?: boolean
+          federal_return_required?: boolean
           filed_date?: string | null
+          filing_status?: Database["public"]["Enums"]["filing_status"]
           id?: string
+          local_return_required?: boolean
           notes?: string | null
           preparation_fee?: number
           return_type?: Database["public"]["Enums"]["return_type"]
+          state_return_required?: boolean
           status?: Database["public"]["Enums"]["return_status"]
+          tax_form?: Database["public"]["Enums"]["tax_form_type"]
           tax_year: number
           updated_at?: string
           updated_by?: string | null
@@ -351,14 +371,24 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           date_received?: string | null
+          description?: string | null
           discount_amount?: number
           due_date?: string | null
+          estimated_amount_due?: number
+          estimated_refund?: number
+          extension_date?: string | null
+          extension_filed?: boolean
+          federal_return_required?: boolean
           filed_date?: string | null
+          filing_status?: Database["public"]["Enums"]["filing_status"]
           id?: string
+          local_return_required?: boolean
           notes?: string | null
           preparation_fee?: number
           return_type?: Database["public"]["Enums"]["return_type"]
+          state_return_required?: boolean
           status?: Database["public"]["Enums"]["return_status"]
+          tax_form?: Database["public"]["Enums"]["tax_form_type"]
           tax_year?: number
           updated_at?: string
           updated_by?: string | null
@@ -476,12 +506,100 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      create_tax_return_record: {
+        Args: {
+          requested_accepted_date?: string
+          requested_assigned_preparer_id?: string
+          requested_assigned_reviewer_id?: string
+          requested_client_id: string
+          requested_date_received?: string
+          requested_description?: string
+          requested_discount_amount?: number
+          requested_due_date?: string
+          requested_estimated_amount_due?: number
+          requested_estimated_refund?: number
+          requested_extension_date?: string
+          requested_extension_filed?: boolean
+          requested_federal_return_required?: boolean
+          requested_filed_date?: string
+          requested_filing_status: Database["public"]["Enums"]["filing_status"]
+          requested_local_return_required?: boolean
+          requested_notes?: string
+          requested_preparation_fee?: number
+          requested_return_type: Database["public"]["Enums"]["return_type"]
+          requested_state_return_required?: boolean
+          requested_status: Database["public"]["Enums"]["return_status"]
+          requested_tax_form: Database["public"]["Enums"]["tax_form_type"]
+          requested_tax_year: number
+        }
+        Returns: {
+          accepted_date: string | null
+          assigned_preparer_id: string | null
+          assigned_reviewer_id: string | null
+          client_id: string
+          created_at: string
+          created_by: string | null
+          date_received: string | null
+          description: string | null
+          discount_amount: number
+          due_date: string | null
+          estimated_amount_due: number
+          estimated_refund: number
+          extension_date: string | null
+          extension_filed: boolean
+          federal_return_required: boolean
+          filed_date: string | null
+          filing_status: Database["public"]["Enums"]["filing_status"]
+          id: string
+          local_return_required: boolean
+          notes: string | null
+          preparation_fee: number
+          return_type: Database["public"]["Enums"]["return_type"]
+          state_return_required: boolean
+          status: Database["public"]["Enums"]["return_status"]
+          tax_form: Database["public"]["Enums"]["tax_form_type"]
+          tax_year: number
+          updated_at: string
+          updated_by: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "tax_returns"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       current_user_can_manage_records: { Args: never; Returns: boolean }
       current_user_is_active: { Args: never; Returns: boolean }
       current_user_is_admin: { Args: never; Returns: boolean }
       current_user_role: {
         Args: never
         Returns: Database["public"]["Enums"]["app_role"]
+      }
+      get_client_tax_returns: {
+        Args: { requested_client_id: string }
+        Returns: {
+          accepted_date: string
+          assigned_preparer_id: string
+          assigned_preparer_name: string
+          assigned_reviewer_id: string
+          assigned_reviewer_name: string
+          client_id: string
+          created_at: string
+          date_received: string
+          discount_amount: number
+          due_date: string
+          filed_date: string
+          filing_status: Database["public"]["Enums"]["filing_status"]
+          id: string
+          net_fee: number
+          preparation_fee: number
+          return_type: Database["public"]["Enums"]["return_type"]
+          status: Database["public"]["Enums"]["return_status"]
+          tax_form: Database["public"]["Enums"]["tax_form_type"]
+          tax_year: number
+          updated_at: string
+        }[]
       }
       get_current_access_status: {
         Args: never
@@ -518,6 +636,15 @@ export type Database = {
           occurred_at: string
         }[]
       }
+      get_return_staff_options: {
+        Args: never
+        Returns: {
+          display_name: string
+          email: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+        }[]
+      }
       has_accepted_security_notice: {
         Args: { requested_notice_version: string }
         Returns: boolean
@@ -545,6 +672,40 @@ export type Database = {
           preferred_name: string
           state: string
           status: Database["public"]["Enums"]["client_status"]
+          updated_at: string
+        }[]
+      }
+      search_tax_returns: {
+        Args: {
+          requested_limit?: number
+          requested_preparer_id?: string
+          requested_search?: string
+          requested_status?: Database["public"]["Enums"]["return_status"]
+          requested_tax_year?: number
+        }
+        Returns: {
+          accepted_date: string
+          assigned_preparer_id: string
+          assigned_preparer_name: string
+          assigned_reviewer_id: string
+          assigned_reviewer_name: string
+          client_first_name: string
+          client_id: string
+          client_last_name: string
+          client_number: number
+          created_at: string
+          date_received: string
+          discount_amount: number
+          due_date: string
+          filed_date: string
+          filing_status: Database["public"]["Enums"]["filing_status"]
+          id: string
+          net_fee: number
+          preparation_fee: number
+          return_type: Database["public"]["Enums"]["return_type"]
+          status: Database["public"]["Enums"]["return_status"]
+          tax_form: Database["public"]["Enums"]["tax_form_type"]
+          tax_year: number
           updated_at: string
         }[]
       }
@@ -597,6 +758,70 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      update_tax_return_record: {
+        Args: {
+          requested_accepted_date?: string
+          requested_assigned_preparer_id?: string
+          requested_assigned_reviewer_id?: string
+          requested_client_id: string
+          requested_date_received?: string
+          requested_description?: string
+          requested_discount_amount?: number
+          requested_due_date?: string
+          requested_estimated_amount_due?: number
+          requested_estimated_refund?: number
+          requested_extension_date?: string
+          requested_extension_filed?: boolean
+          requested_federal_return_required?: boolean
+          requested_filed_date?: string
+          requested_filing_status: Database["public"]["Enums"]["filing_status"]
+          requested_local_return_required?: boolean
+          requested_notes?: string
+          requested_preparation_fee?: number
+          requested_return_id: string
+          requested_return_type: Database["public"]["Enums"]["return_type"]
+          requested_state_return_required?: boolean
+          requested_status: Database["public"]["Enums"]["return_status"]
+          requested_tax_form: Database["public"]["Enums"]["tax_form_type"]
+          requested_tax_year: number
+        }
+        Returns: {
+          accepted_date: string | null
+          assigned_preparer_id: string | null
+          assigned_reviewer_id: string | null
+          client_id: string
+          created_at: string
+          created_by: string | null
+          date_received: string | null
+          description: string | null
+          discount_amount: number
+          due_date: string | null
+          estimated_amount_due: number
+          estimated_refund: number
+          extension_date: string | null
+          extension_filed: boolean
+          federal_return_required: boolean
+          filed_date: string | null
+          filing_status: Database["public"]["Enums"]["filing_status"]
+          id: string
+          local_return_required: boolean
+          notes: string | null
+          preparation_fee: number
+          return_type: Database["public"]["Enums"]["return_type"]
+          state_return_required: boolean
+          status: Database["public"]["Enums"]["return_status"]
+          tax_form: Database["public"]["Enums"]["tax_form_type"]
+          tax_year: number
+          updated_at: string
+          updated_by: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "tax_returns"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
     }
     Enums: {
       app_role:
@@ -607,6 +832,13 @@ export type Database = {
         | "receptionist"
         | "read_only"
       client_status: "active" | "inactive" | "archived"
+      filing_status:
+        | "single"
+        | "married_filing_jointly"
+        | "married_filing_separately"
+        | "head_of_household"
+        | "qualifying_surviving_spouse"
+        | "not_applicable"
       payment_method:
         | "cash"
         | "check"
@@ -628,6 +860,17 @@ export type Database = {
         | "completed"
         | "on_hold"
       return_type: "individual" | "business" | "amended" | "extension" | "other"
+      tax_form_type:
+        | "1040"
+        | "1040_nr"
+        | "1041"
+        | "1065"
+        | "1120"
+        | "1120_s"
+        | "990"
+        | "schedule_c"
+        | "state_only"
+        | "other"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -764,6 +1007,14 @@ export const Constants = {
         "read_only",
       ],
       client_status: ["active", "inactive", "archived"],
+      filing_status: [
+        "single",
+        "married_filing_jointly",
+        "married_filing_separately",
+        "head_of_household",
+        "qualifying_surviving_spouse",
+        "not_applicable",
+      ],
       payment_method: [
         "cash",
         "check",
@@ -787,6 +1038,18 @@ export const Constants = {
         "on_hold",
       ],
       return_type: ["individual", "business", "amended", "extension", "other"],
+      tax_form_type: [
+        "1040",
+        "1040_nr",
+        "1041",
+        "1065",
+        "1120",
+        "1120_s",
+        "990",
+        "schedule_c",
+        "state_only",
+        "other",
+      ],
     },
   },
 } as const

@@ -17,6 +17,9 @@ export const appConfig = {
     clientDetails: "/clients/:clientId",
     clientEdit: "/clients/:clientId/edit",
     returns: "/returns",
+    returnNew: "/returns/new",
+    returnDetails: "/returns/:returnId",
+    returnEdit: "/returns/:returnId/edit",
     payments: "/payments",
     reports: "/reports",
     settings: "/settings",
@@ -33,4 +36,24 @@ export function getClientEditRoute(
   clientId: string,
 ): string {
   return `/clients/${clientId}/edit`
+}
+
+export function getReturnDetailsRoute(
+  returnId: string,
+): string {
+  return `/returns/${returnId}`
+}
+
+export function getReturnEditRoute(
+  returnId: string,
+): string {
+  return `/returns/${returnId}/edit`
+}
+
+export function getNewClientReturnRoute(
+  clientId: string,
+): string {
+  return `/returns/new?clientId=${encodeURIComponent(
+    clientId,
+  )}`
 }
