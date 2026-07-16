@@ -83,13 +83,18 @@ export function LoginPage() {
           | LoginLocationState
           | null
 
-      const destination =
-        state?.from ??
-        appConfig.routes.dashboard
-
-      navigate(destination, {
-        replace: true,
-      })
+      navigate(
+        appConfig.routes
+          .securityAcknowledgment,
+        {
+          replace: true,
+          state: {
+            from:
+              state?.from ??
+              appConfig.routes.dashboard,
+          },
+        },
+      )
 
     } catch (error) {
       setErrorMessage(
@@ -186,6 +191,19 @@ export function LoginPage() {
               : "Sign In"}
           </button>
         </form>
+
+        <div className="mt-6 rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm leading-6 text-amber-950">
+          <p className="font-semibold">
+            Authorized use only
+          </p>
+
+          <p className="mt-1">
+            Access is restricted to authorized Smith
+            Enterprises personnel. Activity may be
+            monitored, recorded, and audited. Unauthorized
+            access is prohibited.
+          </p>
+      </div>
 
         <Link
           to={appConfig.routes.home}

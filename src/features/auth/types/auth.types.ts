@@ -22,6 +22,8 @@ export interface AuthState {
   isLoading: boolean
   isAuthenticated: boolean
   isApproved: boolean
+  hasAcceptedSecurityNotice: boolean
+  isCheckingSecurityNotice: boolean
 }
 
 export interface SignInCredentials {
@@ -37,4 +39,8 @@ export interface AuthContextValue extends AuthState {
   signOut: () => Promise<void>
 
   refreshProfile: () => Promise<void>
+
+  acceptSecurityNotice: () => Promise<void>
+
+  refreshSecurityNotice: () => Promise<void>
 }

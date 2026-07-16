@@ -10,13 +10,18 @@ import type {
   User,
 } from "@supabase/supabase-js"
 
+import { AuthContext } from "@/features/auth/context/auth-context"
 import {
   getCurrentProfile,
   getCurrentSession,
   signInWithPassword,
   signOutCurrentUser,
 } from "@/features/auth/services/auth-service"
-import { AuthContext } from "@/features/auth/context/auth-context"
+import {
+  acceptCurrentSecurityNotice,
+  hasAcceptedCurrentNotice,
+  recordSecurityEvent,
+} from "@/features/auth/services/security-service"
 import type {
   SignInCredentials,
   StaffProfile,
@@ -42,21 +47,76 @@ export function AuthProvider({
   const [isLoading, setIsLoading] =
     useState(true)
 
+  const [
+    hasAcceptedSecurityNotice,
+    setHasAcceptedSecurityNotice,
+  ] = useState(false)
+
+  const [
+    isCheckingSecurityNotice,
+    setIsCheckingSecurityNotice,
+  ] = useState(true)
+
+  const loadSecurityNoticeStatus =
+    useCallback(
+      async (
+        activeProfile:
+          | StaffProfile
+          | null,
+      ): Promise<void> => {
+        if (!activeProfile?.isActive) {
+          setHasAcceptedSecurityNotice(false)
+          setIsCheckingSecurityNotice(false)
+          return
+        }
+
+        setIsCheckingSecurityNotice(true)
+
+        try {
+          const result =
+            await hasAcceptedCurrentNotice()
+
+          setHasAcceptedSecurityNotice(
+            result.accepted,
+          )
+        } catch (error) {
+          console.error(
+            "Unable to verify security acknowledgment:",
+            error,
+          )
+
+          setHasAcceptedSecurityNotice(false)
+        } finally {
+          setIsCheckingSecurityNotice(false)
+        }
+      },
+      [],
+    )
+
   const loadProfile = useCallback(
     async (
       activeSession: Session | null,
-    ): Promise<void> => {
+    ): Promise<StaffProfile | null> => {
       if (!activeSession) {
         setProfile(null)
-        return
+        setHasAcceptedSecurityNotice(false)
+        setIsCheckingSecurityNotice(false)
+
+        return null
       }
 
       const currentProfile =
         await getCurrentProfile()
 
       setProfile(currentProfile)
+
+      await loadSecurityNoticeStatus(
+        currentProfile,
+      )
+
+      return currentProfile
     },
-    [],
+    [loadSecurityNoticeStatus],
   )
 
   const refreshProfile =
@@ -66,11 +126,23 @@ export function AuthProvider({
         return
       }
 
-      const currentProfile =
-        await getCurrentProfile()
+      await loadProfile(session)
+    }, [session, loadProfile])
 
-      setProfile(currentProfile)
-    }, [session])
+  const refreshSecurityNotice =
+    useCallback(async (): Promise<void> => {
+      await loadSecurityNoticeStatus(profile)
+    }, [
+      loadSecurityNoticeStatus,
+      profile,
+    ])
+
+  const acceptSecurityNotice =
+    useCallback(async (): Promise<void> => {
+      await acceptCurrentSecurityNotice()
+
+      setHasAcceptedSecurityNotice(true)
+    }, [])
 
   useEffect(() => {
     let isMounted = true
@@ -85,7 +157,9 @@ export function AuthProvider({
         }
 
         setSession(currentSession)
-        setUser(currentSession?.user ?? null)
+        setUser(
+          currentSession?.user ?? null,
+        )
 
         await loadProfile(currentSession)
       } catch (error) {
@@ -98,10 +172,12 @@ export function AuthProvider({
           setSession(null)
           setUser(null)
           setProfile(null)
+          setHasAcceptedSecurityNotice(false)
         }
       } finally {
         if (isMounted) {
           setIsLoading(false)
+          setIsCheckingSecurityNotice(false)
         }
       }
     }
@@ -111,13 +187,25 @@ export function AuthProvider({
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(
-      (_event, nextSession) => {
+      (event, nextSession) => {
         if (!isMounted) {
           return
         }
 
         setSession(nextSession)
         setUser(nextSession?.user ?? null)
+
+        if (event === "SIGNED_IN") {
+          window.setTimeout(() => {
+            void recordSecurityEvent(
+              "staff_signed_in",
+              {
+                user_agent:
+                  navigator.userAgent,
+              },
+            )
+          }, 0)
+        }
 
         window.setTimeout(() => {
           if (!isMounted) {
@@ -133,6 +221,9 @@ export function AuthProvider({
 
               if (isMounted) {
                 setProfile(null)
+                setHasAcceptedSecurityNotice(
+                  false,
+                )
               }
             },
           )
@@ -147,47 +238,61 @@ export function AuthProvider({
   }, [loadProfile])
 
   const signIn = useCallback(
-  async (
-    credentials: SignInCredentials,
-  ): Promise<StaffProfile> => {
-    setIsLoading(true)
+    async (
+      credentials: SignInCredentials,
+    ): Promise<StaffProfile> => {
+      setIsLoading(true)
 
-    try {
-      const nextSession =
-        await signInWithPassword(credentials)
+      try {
+        const nextSession =
+          await signInWithPassword(credentials)
 
-      setSession(nextSession)
-      setUser(nextSession.user)
+        setSession(nextSession)
+        setUser(nextSession.user)
 
-      const nextProfile =
-        await getCurrentProfile()
+        const nextProfile =
+          await getCurrentProfile()
 
-      if (!nextProfile) {
-        throw new Error(
-          "No staff profile is associated with this account.",
+        if (!nextProfile) {
+          throw new Error(
+            "No staff profile is associated with this account.",
+          )
+        }
+
+        setProfile(nextProfile)
+
+        await loadSecurityNoticeStatus(
+          nextProfile,
         )
+
+        return nextProfile
+      } finally {
+        setIsLoading(false)
       }
-
-      setProfile(nextProfile)
-
-      return nextProfile
-    } finally {
-      setIsLoading(false)
-    }
-  },
-  [],
-)
+    },
+    [loadSecurityNoticeStatus],
+  )
 
   const signOut = useCallback(
     async (): Promise<void> => {
       setIsLoading(true)
 
       try {
+        await recordSecurityEvent(
+          "staff_signed_out",
+          {
+            user_agent:
+              navigator.userAgent,
+          },
+        )
+
         await signOutCurrentUser()
 
         setSession(null)
         setUser(null)
         setProfile(null)
+        setHasAcceptedSecurityNotice(false)
+        setIsCheckingSecurityNotice(false)
       } finally {
         setIsLoading(false)
       }
@@ -201,20 +306,30 @@ export function AuthProvider({
       user,
       profile,
       isLoading,
-      isAuthenticated: session !== null,
-      isApproved: profile?.isActive === true,
+      isAuthenticated:
+        session !== null,
+      isApproved:
+        profile?.isActive === true,
+      hasAcceptedSecurityNotice,
+      isCheckingSecurityNotice,
       signIn,
       signOut,
       refreshProfile,
+      acceptSecurityNotice,
+      refreshSecurityNotice,
     }),
     [
       session,
       user,
       profile,
       isLoading,
+      hasAcceptedSecurityNotice,
+      isCheckingSecurityNotice,
       signIn,
       signOut,
       refreshProfile,
+      acceptSecurityNotice,
+      refreshSecurityNotice,
     ],
   )
 

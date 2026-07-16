@@ -264,6 +264,44 @@ export type Database = {
         }
         Relationships: []
       }
+      security_acknowledgments: {
+        Row: {
+          accepted_at: string
+          created_at: string
+          id: string
+          metadata: Json
+          notice_version: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          accepted_at?: string
+          created_at?: string
+          id?: string
+          metadata?: Json
+          notice_version: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          accepted_at?: string
+          created_at?: string
+          id?: string
+          metadata?: Json
+          notice_version?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "security_acknowledgments_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tax_returns: {
         Row: {
           accepted_date: string | null
@@ -368,6 +406,28 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      accept_security_notice: {
+        Args: {
+          requested_metadata?: Json
+          requested_notice_version: string
+          requested_user_agent?: string
+        }
+        Returns: {
+          accepted_at: string
+          created_at: string
+          id: string
+          metadata: Json
+          notice_version: string
+          user_agent: string | null
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "security_acknowledgments"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       current_user_can_manage_records: { Args: never; Returns: boolean }
       current_user_is_active: { Args: never; Returns: boolean }
       current_user_is_admin: { Args: never; Returns: boolean }
@@ -386,6 +446,14 @@ export type Database = {
           last_name: string
           role: Database["public"]["Enums"]["app_role"]
         }[]
+      }
+      has_accepted_security_notice: {
+        Args: { requested_notice_version: string }
+        Returns: boolean
+      }
+      record_security_event: {
+        Args: { requested_action: string; requested_metadata?: Json }
+        Returns: number
       }
     }
     Enums: {

@@ -10,6 +10,7 @@ export const appConfig = {
     login: "/login",
     pendingApproval: "/pending-approval",
     accountError: "/account-error",
+    securityAcknowledgment: "/security-acknowledgment",
     dashboard: "/dashboard",
     clients: "/clients",
     returns: "/returns",
