@@ -447,6 +447,29 @@ export type Database = {
           role: Database["public"]["Enums"]["app_role"]
         }[]
       }
+      get_dashboard_summary: {
+        Args: never
+        Returns: {
+          active_clients: number
+          completed_returns: number
+          documents_pending: number
+          open_returns: number
+          outstanding_balance: number
+          total_fees: number
+          total_payments: number
+        }[]
+      }
+      get_recent_dashboard_activity: {
+        Args: { requested_limit?: number }
+        Returns: {
+          action: string
+          actor_name: string
+          entity_id: string
+          entity_type: string
+          id: number
+          occurred_at: string
+        }[]
+      }
       has_accepted_security_notice: {
         Args: { requested_notice_version: string }
         Returns: boolean
