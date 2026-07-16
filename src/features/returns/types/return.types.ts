@@ -176,6 +176,14 @@ export interface TaxReturnUpdateResult {
   message: string
 }
 
+export type ReturnFormMode =
+  | "create"
+  | "edit"
+
+export interface ReturnFormSubmissionResult {
+  values: TaxReturnFormValues
+}
+
 export interface TaxReturnFormValues {
   clientId: string
   taxYear: number

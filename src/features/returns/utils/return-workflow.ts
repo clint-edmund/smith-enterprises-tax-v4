@@ -1,6 +1,9 @@
 import type {
   ReturnStatus,
 } from "@/features/returns/types/return.types"
+import {
+  returnStatusLabels,
+} from "@/features/returns/utils/return-formatters"
 
 export interface WorkflowStep {
   status: ReturnStatus
@@ -65,6 +68,127 @@ export const standardReturnWorkflow:
         "All return work is complete.",
     },
   ]
+
+const allowedTransitions: Record<
+  ReturnStatus,
+  ReturnStatus[]
+> = {
+  not_started: [
+    "not_started",
+    "documents_pending",
+    "in_progress",
+    "on_hold",
+  ],
+
+  documents_pending: [
+    "documents_pending",
+    "not_started",
+    "in_progress",
+    "on_hold",
+  ],
+
+  in_progress: [
+    "in_progress",
+    "documents_pending",
+    "ready_for_review",
+    "on_hold",
+  ],
+
+  ready_for_review: [
+    "ready_for_review",
+    "in_progress",
+    "under_review",
+    "on_hold",
+  ],
+
+  under_review: [
+    "under_review",
+    "in_progress",
+    "ready_for_review",
+    "ready_to_file",
+    "on_hold",
+  ],
+
+  ready_to_file: [
+    "ready_to_file",
+    "under_review",
+    "filed",
+    "on_hold",
+  ],
+
+  filed: [
+    "filed",
+    "accepted",
+    "rejected",
+    "ready_to_file",
+    "on_hold",
+  ],
+
+  accepted: [
+    "accepted",
+    "completed",
+    "rejected",
+  ],
+
+  rejected: [
+    "rejected",
+    "in_progress",
+    "ready_for_review",
+    "ready_to_file",
+    "filed",
+    "on_hold",
+  ],
+
+  completed: [
+    "completed",
+    "accepted",
+    "in_progress",
+  ],
+
+  on_hold: [
+    "on_hold",
+    "documents_pending",
+    "in_progress",
+    "ready_for_review",
+    "under_review",
+    "ready_to_file",
+    "filed",
+  ],
+}
+
+const createStatuses: ReturnStatus[] = [
+  "not_started",
+  "documents_pending",
+  "in_progress",
+  "on_hold",
+]
+
+export interface ReturnStatusOption {
+  value: ReturnStatus
+  label: string
+}
+
+export function getAllowedReturnStatuses(
+  currentStatus?: ReturnStatus,
+): ReturnStatusOption[] {
+  const statuses = currentStatus
+    ? allowedTransitions[currentStatus]
+    : createStatuses
+
+  return statuses.map((status) => ({
+    value: status,
+    label: returnStatusLabels[status],
+  }))
+}
+
+export function isValidReturnStatusTransition(
+  currentStatus: ReturnStatus,
+  requestedStatus: ReturnStatus,
+): boolean {
+  return allowedTransitions[
+    currentStatus
+  ].includes(requestedStatus)
+}
 
 export function getWorkflowStepIndex(
   status: ReturnStatus,

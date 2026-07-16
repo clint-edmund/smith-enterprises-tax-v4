@@ -179,12 +179,14 @@ export function NewReturnPage() {
         },
       )
     } catch (error) {
-  setErrorMessage(
-    getReturnServiceErrorMessage(error),
-  )
-} finally {
-  setIsSubmitting(false)
-}
+      setErrorMessage(
+        getReturnServiceErrorMessage(
+          error,
+        ),
+      )
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -232,6 +234,7 @@ export function NewReturnPage() {
         </section>
       ) : (
         <ReturnForm
+          mode="create"
           clients={clients}
           staffOptions={staffOptions}
           defaultValues={defaultValues}

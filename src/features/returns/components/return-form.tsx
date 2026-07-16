@@ -9,6 +9,7 @@ import {
 } from "lucide-react"
 import {
   useEffect,
+  useMemo,
 } from "react"
 import {
   useForm,
@@ -21,24 +22,32 @@ import {
 } from "@/features/returns/schemas/return-schema"
 import type {
   ReturnClientOption,
+  ReturnFormMode,
   ReturnStaffOption,
+  ReturnStatus,
   TaxReturnFormValues,
 } from "@/features/returns/types/return.types"
 import {
   filingStatusOptions,
   getTaxYearOptions,
-  returnStatusOptions,
   returnTypeOptions,
   taxFormOptions,
 } from "@/features/returns/utils/return-options"
 import {
   formatClientNumber,
 } from "@/features/clients/utils/client-formatters"
+import {
+  getAllowedReturnStatuses,
+} from "@/features/returns/utils/return-workflow"
+
 
 interface ReturnFormProps {
+  mode: ReturnFormMode
   clients: ReturnClientOption[]
   staffOptions: ReturnStaffOption[]
   defaultValues: TaxReturnFormValues
+  currentStatus?: ReturnStatus
+  submitLabel?: string
   isSubmitting: boolean
   errorMessage: string | null
   onSubmit: (
@@ -48,9 +57,12 @@ interface ReturnFormProps {
 }
 
 export function ReturnForm({
+  mode,
   clients,
   staffOptions,
   defaultValues,
+  currentStatus,
+  submitLabel,
   isSubmitting,
   errorMessage,
   onSubmit,
@@ -91,6 +103,24 @@ export function ReturnForm({
       name: "extensionFiled",
     }) || false
 
+  const selectedStatus =
+    useWatch({
+      control,
+      name: "status",
+    })
+
+  const assignedPreparerId =
+    useWatch({
+      control,
+      name: "assignedPreparerId",
+    }) || ""
+
+  const assignedReviewerId =
+    useWatch({
+      control,
+      name: "assignedReviewerId",
+    }) || ""
+
   const netFee = Math.max(
     preparationFee -
       discountAmount,
@@ -99,6 +129,20 @@ export function ReturnForm({
 
   const taxYearOptions =
     getTaxYearOptions()
+
+  const statusOptions =
+    useMemo(
+      () =>
+        getAllowedReturnStatuses(
+          mode === "edit"
+            ? currentStatus
+            : undefined,
+        ),
+      [
+        currentStatus,
+        mode,
+      ],
+    )
 
   const preparerOptions =
     staffOptions.filter(
@@ -115,6 +159,50 @@ export function ReturnForm({
         staff.role === "manager" ||
         staff.role === "reviewer",
     )
+
+  const preparerRequiredStatuses =
+    new Set<ReturnStatus>([
+      "in_progress",
+      "ready_for_review",
+      "under_review",
+      "ready_to_file",
+      "filed",
+      "accepted",
+      "completed",
+    ])
+
+  const reviewerRequiredStatuses =
+    new Set<ReturnStatus>([
+      "under_review",
+      "ready_to_file",
+    ])
+
+  const requiresPreparer =
+    preparerRequiredStatuses.has(
+      selectedStatus,
+    )
+
+  const requiresReviewer =
+    reviewerRequiredStatuses.has(
+      selectedStatus,
+    )
+
+  const hasSameStaffAssignment =
+    assignedPreparerId !== "" &&
+    assignedReviewerId !== "" &&
+    assignedPreparerId ===
+      assignedReviewerId
+
+  const buttonLabel =
+    submitLabel ??
+    (mode === "edit"
+      ? "Save Changes"
+      : "Create Return")
+
+  const submittingLabel =
+    mode === "edit"
+      ? "Saving Changes..."
+      : "Creating Return..."
 
   function fieldClasses(
     hasError: boolean,
@@ -337,7 +425,7 @@ export function ReturnForm({
                 Boolean(errors.status),
               )}
             >
-              {returnStatusOptions.map(
+              {statusOptions.map(
                 (option) => (
                   <option
                     key={option.value}
@@ -348,6 +436,78 @@ export function ReturnForm({
                 ),
               )}
             </select>
+
+            {mode === "edit" &&
+              currentStatus && (
+                <p className="mt-2 text-xs leading-5 text-slate-500">
+                  Only workflow transitions permitted
+                  from the current status are shown.
+                </p>
+              )}
+          </div>
+
+          <div className="md:col-span-2 xl:col-span-3 rounded-xl border border-blue-200 bg-blue-50 p-4">
+            <p className="text-sm font-semibold text-blue-950">
+              Workflow requirements
+            </p>
+
+            <ul className="mt-2 space-y-1 text-sm leading-6 text-blue-900">
+              {requiresPreparer && (
+                <li>
+                  An active authorized preparer is required
+                  for the selected status.
+                </li>
+              )}
+
+              {requiresReviewer && (
+                <li>
+                  An active authorized reviewer is required
+                  for the selected status.
+                </li>
+              )}
+
+              {selectedStatus === "filed" && (
+                <li>
+                  The filed date will default to today when
+                  left blank.
+                </li>
+              )}
+
+              {(selectedStatus === "accepted" ||
+                selectedStatus === "completed") && (
+                <li>
+                  Filed and accepted dates will default to
+                  today when left blank.
+                </li>
+              )}
+
+              {selectedStatus === "rejected" && (
+                <li>
+                  Saving a rejected return clears its
+                  accepted date while preserving the filed
+                  date.
+                </li>
+              )}
+
+              {!requiresPreparer &&
+                !requiresReviewer &&
+                selectedStatus !== "filed" &&
+                selectedStatus !== "accepted" &&
+                selectedStatus !== "completed" &&
+                selectedStatus !== "rejected" && (
+                  <li>
+                    No additional staff or automatic-date
+                    requirements apply to this status.
+                  </li>
+                )}
+            </ul>
+
+            {hasSameStaffAssignment && (
+              <p className="mt-3 text-sm font-semibold text-red-700">
+                The preparer and reviewer must be different
+                staff members.
+              </p>
+            )}
           </div>
 
           <div className="md:col-span-2 xl:col-span-3">
@@ -871,8 +1031,8 @@ export function ReturnForm({
           <Save className="size-4" />
 
           {isSubmitting
-            ? "Creating Return..."
-            : "Create Return"}
+            ? submittingLabel
+            : buttonLabel}
         </button>
       </div>
     </form>

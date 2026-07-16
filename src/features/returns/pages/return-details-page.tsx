@@ -27,7 +27,10 @@ import { ReturnFilingRequirements } from "@/features/returns/components/return-f
 import { ReturnFinancialSummary } from "@/features/returns/components/return-financial-summary"
 import { ReturnStatusBadge } from "@/features/returns/components/return-status-badge"
 import { ReturnWorkflowProgress } from "@/features/returns/components/return-workflow-progress"
-import { getTaxReturnDetailData } from "@/features/returns/services/return-service"
+import {
+  getReturnServiceErrorMessage,
+  getTaxReturnDetailData,
+} from "@/features/returns/services/return-service"
 import type {
   TaxReturnDetailData,
 } from "@/features/returns/types/return.types"
@@ -110,9 +113,9 @@ export function ReturnDetailsPage() {
           )
 
           setErrorMessage(
-            error instanceof Error
-              ? error.message
-              : "Unable to load the tax return.",
+            getReturnServiceErrorMessage(
+              error,
+            ),
           )
         } finally {
           setIsLoading(false)
@@ -123,15 +126,15 @@ export function ReturnDetailsPage() {
     )
 
   useEffect(() => {
-  const timeoutId =
-    window.setTimeout(() => {
-      void loadReturn()
-    }, 0)
+    const timeoutId =
+      window.setTimeout(() => {
+        void loadReturn()
+      }, 0)
 
-  return () => {
-    window.clearTimeout(timeoutId)
-  }
-}, [loadReturn])
+    return () => {
+      window.clearTimeout(timeoutId)
+    }
+  }, [loadReturn])
 
   if (isLoading) {
     return (
