@@ -18,6 +18,10 @@ import type {
 import {
   returnStatusOptions,
 } from "@/features/returns/utils/return-options"
+import {
+  workflowStatuses,
+  type WorkflowStatus,
+} from "@/features/workflow/types/workflow.types"
 
 interface ReturnFiltersProps {
   filters: ReturnFilters
@@ -42,6 +46,29 @@ function getStatusLabel(status: ReturnFilters["status"]) {
       (option) => option.value === status,
     )?.label ?? status
   )
+}
+
+const workflowLabels: Record<WorkflowStatus, string> = {
+  intake: "Intake",
+  documents_pending: "Documents Pending",
+  ready_for_preparation: "Ready for Preparation",
+  in_preparation: "In Preparation",
+  review: "Review",
+  signature_pending: "Signature Pending",
+  ready_to_file: "Ready to File",
+  filed: "Filed",
+  completed: "Completed",
+  on_hold: "On Hold",
+}
+
+function getWorkflowLabel(
+  workflow: ReturnFilters["workflow"],
+) {
+  if (workflow === "all") {
+    return "All workflow stages"
+  }
+
+  return workflowLabels[workflow]
 }
 
 function getPreparerLabel(
@@ -111,7 +138,7 @@ export function ReturnFiltersPanel({
             htmlFor="return-status-filter"
             className="mb-2 block text-sm font-medium text-slate-700"
           >
-            Workflow status
+            Return status
           </label>
 
           <select
@@ -210,7 +237,41 @@ export function ReturnFiltersPanel({
         </div>
       </div>
 
-      <div className="grid gap-3 md:grid-cols-3">
+      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+        <div>
+          <label
+            htmlFor="workflow-filter"
+            className="mb-2 block text-sm font-medium text-slate-700"
+          >
+            Workflow stage
+          </label>
+
+          <select
+            id="workflow-filter"
+            value={filters.workflow}
+            onChange={(event) => {
+              onSetFilter(
+                "workflow",
+                event.target.value as ReturnFilters["workflow"],
+              )
+            }}
+            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-100"
+          >
+            <option value="all">
+              All workflow stages
+            </option>
+
+            {workflowStatuses.map((workflowStatus) => (
+              <option
+                key={workflowStatus}
+                value={workflowStatus}
+              >
+                {workflowLabels[workflowStatus]}
+              </option>
+            ))}
+          </select>
+        </div>
+
         <div>
           <label
             htmlFor="assignment-filter"
@@ -310,6 +371,15 @@ export function ReturnFiltersPanel({
               label={`Status: ${getStatusLabel(filters.status)}`}
               onRemove={() => {
                 onRemoveFilter("status")
+              }}
+            />
+          )}
+
+          {filters.workflow !== "all" && (
+            <FilterChip
+              label={`Workflow: ${getWorkflowLabel(filters.workflow)}`}
+              onRemove={() => {
+                onRemoveFilter("workflow")
               }}
             />
           )}

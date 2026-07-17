@@ -222,7 +222,12 @@ export function ReturnsPage() {
       ) {
         return false
       }
-
+      if (
+        filters.workflow !== "all" &&
+        taxReturn.workflowStatus !== filters.workflow
+      ) {
+        return false
+      }
       if (filters.deadline === "all") {
         return true
       }
@@ -260,6 +265,7 @@ export function ReturnsPage() {
     filters.assignment,
     filters.deadline,
     filters.reviewer,
+    filters.workflow,
     profile?.id,
   ])
 

@@ -1,44 +1,33 @@
-import { workflowStatusLabels } from "../constants/workflow-statuses"
-import type { WorkflowStatus } from "../types/workflow.types"
+import type { WorkflowStatus } from "@/features/workflow/types/workflow.types"
 
 interface WorkflowStatusBadgeProps {
   status: WorkflowStatus
 }
 
-function getStatusClasses(
-  status: WorkflowStatus,
-): string {
-  switch (status) {
-    case "intake":
-      return "bg-slate-100 text-slate-700 ring-slate-200"
+const labels: Record<WorkflowStatus, string> = {
+  intake: "Intake",
+  documents_pending: "Documents Pending",
+  ready_for_preparation: "Ready for Preparation",
+  in_preparation: "In Preparation",
+  review: "Review",
+  signature_pending: "Signature Pending",
+  ready_to_file: "Ready to File",
+  filed: "Filed",
+  completed: "Completed",
+  on_hold: "On Hold",
+}
 
-    case "documents_pending":
-      return "bg-amber-50 text-amber-800 ring-amber-200"
-
-    case "ready_for_preparation":
-      return "bg-blue-50 text-blue-800 ring-blue-200"
-
-    case "in_preparation":
-      return "bg-indigo-50 text-indigo-800 ring-indigo-200"
-
-    case "review":
-      return "bg-purple-50 text-purple-800 ring-purple-200"
-
-    case "signature_pending":
-      return "bg-orange-50 text-orange-800 ring-orange-200"
-
-    case "ready_to_file":
-      return "bg-cyan-50 text-cyan-800 ring-cyan-200"
-
-    case "filed":
-      return "bg-teal-50 text-teal-800 ring-teal-200"
-
-    case "completed":
-      return "bg-green-50 text-green-800 ring-green-200"
-
-    case "on_hold":
-      return "bg-red-50 text-red-800 ring-red-200"
-  }
+const classes: Record<WorkflowStatus, string> = {
+  intake: "border-slate-200 bg-slate-50 text-slate-700",
+  documents_pending: "border-amber-200 bg-amber-50 text-amber-800",
+  ready_for_preparation: "border-blue-200 bg-blue-50 text-blue-800",
+  in_preparation: "border-indigo-200 bg-indigo-50 text-indigo-800",
+  review: "border-violet-200 bg-violet-50 text-violet-800",
+  signature_pending: "border-fuchsia-200 bg-fuchsia-50 text-fuchsia-800",
+  ready_to_file: "border-cyan-200 bg-cyan-50 text-cyan-800",
+  filed: "border-sky-200 bg-sky-50 text-sky-800",
+  completed: "border-emerald-200 bg-emerald-50 text-emerald-800",
+  on_hold: "border-red-200 bg-red-50 text-red-800",
 }
 
 export function WorkflowStatusBadge({
@@ -46,11 +35,9 @@ export function WorkflowStatusBadge({
 }: WorkflowStatusBadgeProps) {
   return (
     <span
-      className={`inline-flex w-fit items-center rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset ${getStatusClasses(
-        status,
-      )}`}
+      className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-semibold ${classes[status]}`}
     >
-      {workflowStatusLabels[status]}
+      {labels[status]}
     </span>
   )
 }
