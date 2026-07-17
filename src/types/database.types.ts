@@ -12,31 +12,6 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.5"
   }
-  graphql_public: {
-    Tables: {
-      [_ in never]: never
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      graphql: {
-        Args: {
-          extensions?: Json
-          operationName?: string
-          query?: string
-          variables?: Json
-        }
-        Returns: Json
-      }
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-  }
   public: {
     Tables: {
       audit_logs: {
@@ -607,6 +582,7 @@ export type Database = {
       tax_returns: {
         Row: {
           accepted_date: string | null
+          assigned_at: string | null
           assigned_preparer_id: string | null
           assigned_reviewer_id: string | null
           client_id: string
@@ -634,9 +610,15 @@ export type Database = {
           tax_year: number
           updated_at: string
           updated_by: string | null
+          workflow_completed_at: string | null
+          workflow_held_at: string | null
+          workflow_hold_reason: string | null
+          workflow_status: Database["public"]["Enums"]["tax_return_workflow_status"]
+          workflow_status_changed_at: string
         }
         Insert: {
           accepted_date?: string | null
+          assigned_at?: string | null
           assigned_preparer_id?: string | null
           assigned_reviewer_id?: string | null
           client_id: string
@@ -664,9 +646,15 @@ export type Database = {
           tax_year: number
           updated_at?: string
           updated_by?: string | null
+          workflow_completed_at?: string | null
+          workflow_held_at?: string | null
+          workflow_hold_reason?: string | null
+          workflow_status?: Database["public"]["Enums"]["tax_return_workflow_status"]
+          workflow_status_changed_at?: string
         }
         Update: {
           accepted_date?: string | null
+          assigned_at?: string | null
           assigned_preparer_id?: string | null
           assigned_reviewer_id?: string | null
           client_id?: string
@@ -694,6 +682,11 @@ export type Database = {
           tax_year?: number
           updated_at?: string
           updated_by?: string | null
+          workflow_completed_at?: string | null
+          workflow_held_at?: string | null
+          workflow_hold_reason?: string | null
+          workflow_status?: Database["public"]["Enums"]["tax_return_workflow_status"]
+          workflow_status_changed_at?: string
         }
         Relationships: [
           {
@@ -865,6 +858,7 @@ export type Database = {
         }
         Returns: {
           accepted_date: string | null
+          assigned_at: string | null
           assigned_preparer_id: string | null
           assigned_reviewer_id: string | null
           client_id: string
@@ -892,6 +886,11 @@ export type Database = {
           tax_year: number
           updated_at: string
           updated_by: string | null
+          workflow_completed_at: string | null
+          workflow_held_at: string | null
+          workflow_hold_reason: string | null
+          workflow_status: Database["public"]["Enums"]["tax_return_workflow_status"]
+          workflow_status_changed_at: string
         }
         SetofOptions: {
           from: "*"
@@ -1346,6 +1345,7 @@ export type Database = {
         }
         Returns: {
           accepted_date: string | null
+          assigned_at: string | null
           assigned_preparer_id: string | null
           assigned_reviewer_id: string | null
           client_id: string
@@ -1373,6 +1373,11 @@ export type Database = {
           tax_year: number
           updated_at: string
           updated_by: string | null
+          workflow_completed_at: string | null
+          workflow_held_at: string | null
+          workflow_hold_reason: string | null
+          workflow_status: Database["public"]["Enums"]["tax_return_workflow_status"]
+          workflow_status_changed_at: string
         }
         SetofOptions: {
           from: "*"
@@ -1430,6 +1435,17 @@ export type Database = {
         | "schedule_c"
         | "state_only"
         | "other"
+      tax_return_workflow_status:
+        | "intake"
+        | "documents_pending"
+        | "ready_for_preparation"
+        | "in_preparation"
+        | "review"
+        | "signature_pending"
+        | "ready_to_file"
+        | "filed"
+        | "completed"
+        | "on_hold"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1555,9 +1571,6 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
-  graphql_public: {
-    Enums: {},
-  },
   public: {
     Enums: {
       app_role: [
@@ -1611,6 +1624,18 @@ export const Constants = {
         "schedule_c",
         "state_only",
         "other",
+      ],
+      tax_return_workflow_status: [
+        "intake",
+        "documents_pending",
+        "ready_for_preparation",
+        "in_preparation",
+        "review",
+        "signature_pending",
+        "ready_to_file",
+        "filed",
+        "completed",
+        "on_hold",
       ],
     },
   },
