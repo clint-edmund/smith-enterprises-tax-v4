@@ -209,3 +209,34 @@ export interface TaxReturnFormValues {
   estimatedAmountDue: number
   notes: string
 }
+/**
+ * URL-backed filters used by the tax-return list.
+ *
+ * The string values intentionally match the values displayed by the existing
+ * Returns page so Sprint 2 can adopt this interface without changing the
+ * service contract introduced in earlier phases.
+ */
+export type ReturnStatusFilter =
+  | ReturnStatus
+  | "all"
+
+export interface ReturnFilters {
+  search: string
+  status: ReturnStatusFilter
+  taxYear: string
+  preparerId: string
+}
+
+export type ReturnFilterKey =
+  keyof ReturnFilters
+
+export type ReturnFilterUpdates =
+  Partial<ReturnFilters>
+
+export interface ReturnFilterNavigationOptions {
+  /**
+   * Replace the current browser-history entry instead of creating a new one.
+   * This is useful for rapidly changing inputs such as a search field.
+   */
+  replace?: boolean
+}
