@@ -210,6 +210,86 @@ export function ReturnFiltersPanel({
         </div>
       </div>
 
+      <div className="grid gap-3 md:grid-cols-3">
+        <div>
+          <label
+            htmlFor="assignment-filter"
+            className="mb-2 block text-sm font-medium text-slate-700"
+          >
+            Preparer workload
+          </label>
+
+          <select
+            id="assignment-filter"
+            value={filters.assignment}
+            onChange={(event) => {
+              onSetFilter(
+                "assignment",
+                event.target.value as ReturnFilters["assignment"],
+              )
+            }}
+            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-100"
+          >
+            <option value="all">All assignments</option>
+            <option value="mine">Assigned to me</option>
+            <option value="unassigned">Unassigned</option>
+          </select>
+        </div>
+
+        <div>
+          <label
+            htmlFor="reviewer-filter"
+            className="mb-2 block text-sm font-medium text-slate-700"
+          >
+            Reviewer workload
+          </label>
+
+          <select
+            id="reviewer-filter"
+            value={filters.reviewer}
+            onChange={(event) => {
+              onSetFilter(
+                "reviewer",
+                event.target.value as ReturnFilters["reviewer"],
+              )
+            }}
+            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-100"
+          >
+            <option value="all">All review assignments</option>
+            <option value="mine">Review assigned to me</option>
+            <option value="unassigned">No reviewer assigned</option>
+          </select>
+        </div>
+
+        <div>
+          <label
+            htmlFor="deadline-filter"
+            className="mb-2 block text-sm font-medium text-slate-700"
+          >
+            Deadline
+          </label>
+
+          <select
+            id="deadline-filter"
+            value={filters.deadline}
+            onChange={(event) => {
+              onSetFilter(
+                "deadline",
+                event.target.value as ReturnFilters["deadline"],
+              )
+            }}
+            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-100"
+          >
+            <option value="all">All deadlines</option>
+            <option value="overdue">Overdue</option>
+            <option value="due_today">Due today</option>
+            <option value="due_this_week">Due this week</option>
+            <option value="next_7_days">Next 7 days</option>
+            <option value="no_due_date">No due date</option>
+          </select>
+        </div>
+      </div>
+
       {activeFilterCount > 0 && (
         <div className="flex flex-wrap items-center gap-2 border-t border-slate-200 pt-4">
           <span className="text-sm font-semibold text-slate-700">
@@ -248,6 +328,43 @@ export function ReturnFiltersPanel({
               label={`Preparer: ${getPreparerLabel(filters.preparerId, staffOptions)}`}
               onRemove={() => {
                 onRemoveFilter("preparerId")
+              }}
+            />
+          )}
+
+          {filters.assignment !== "all" && (
+            <FilterChip
+              label={filters.assignment === "mine" ? "Preparer: Assigned to me" : "Preparer: Unassigned"}
+              onRemove={() => {
+                onRemoveFilter("assignment")
+              }}
+            />
+          )}
+
+          {filters.reviewer !== "all" && (
+            <FilterChip
+              label={filters.reviewer === "mine" ? "Reviewer: Assigned to me" : "Reviewer: Unassigned"}
+              onRemove={() => {
+                onRemoveFilter("reviewer")
+              }}
+            />
+          )}
+
+          {filters.deadline !== "all" && (
+            <FilterChip
+              label={`Deadline: ${
+                filters.deadline === "overdue"
+                  ? "Overdue"
+                  : filters.deadline === "due_today"
+                    ? "Due today"
+                    : filters.deadline === "due_this_week"
+                      ? "Due this week"
+                      : filters.deadline === "next_7_days"
+                        ? "Next 7 days"
+                        : "No due date"
+              }`}
+              onRemove={() => {
+                onRemoveFilter("deadline")
               }}
             />
           )}

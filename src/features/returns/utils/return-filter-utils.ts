@@ -1,7 +1,10 @@
 import type {
+  ReturnAssignmentFilter,
+  ReturnDeadlineFilter,
   ReturnFilterKey,
   ReturnFilters,
   ReturnFilterUpdates,
+  ReturnReviewerFilter,
   ReturnStatus,
 } from "@/features/returns/types/return.types"
 
@@ -10,219 +13,88 @@ export const defaultReturnFilters: ReturnFilters = {
   status: "all",
   taxYear: "all",
   preparerId: "all",
+  assignment: "all",
+  reviewer: "all",
+  deadline: "all",
 }
 
-const supportedReturnStatuses = [
-  "not_started",
-  "documents_pending",
-  "in_progress",
-  "ready_for_review",
-  "under_review",
-  "ready_to_file",
-  "filed",
-  "accepted",
-  "rejected",
-  "completed",
-  "on_hold",
-] as const satisfies readonly ReturnStatus[]
+const statuses = new Set<string>([
+  "not_started", "documents_pending", "in_progress", "ready_for_review",
+  "under_review", "ready_to_file", "filed", "accepted", "rejected",
+  "completed", "on_hold",
+])
+const assignments = new Set<ReturnAssignmentFilter>(["all", "mine", "unassigned"])
+const reviewers = new Set<ReturnReviewerFilter>(["all", "mine", "unassigned"])
+const deadlines = new Set<ReturnDeadlineFilter>([
+  "all", "overdue", "due_today", "due_this_week", "next_7_days", "no_due_date",
+])
 
-const supportedReturnStatusSet =
-  new Set<string>(supportedReturnStatuses)
-
-function normalizeSearch(
-  value: string | null | undefined,
-) {
-  return value?.trim() ?? ""
-}
-
-function normalizeStatus(
-  value: string | null | undefined,
-): ReturnFilters["status"] {
-  if (
-    value !== null &&
-    value !== undefined &&
-    supportedReturnStatusSet.has(value)
-  ) {
-    return value as ReturnStatus
-  }
-
-  return "all"
-}
-
-function normalizeTaxYear(
-  value: string | null | undefined,
-) {
-  if (
-    value === null ||
-    value === undefined ||
-    value === "" ||
-    value === "all"
-  ) {
-    return "all"
-  }
-
-  if (!/^\d{4}$/.test(value)) {
-    return "all"
-  }
-
+function normalizeTaxYear(value: string | null | undefined) {
+  if (!value || value === "all" || !/^\d{4}$/.test(value)) return "all"
   const year = Number(value)
-
-  if (
-    !Number.isInteger(year) ||
-    year < 1900 ||
-    year > 2100
-  ) {
-    return "all"
-  }
-
-  return String(year)
+  return year >= 1900 && year <= 2100 ? String(year) : "all"
+}
+function normalizeId(value: string | null | undefined) {
+  const result = value?.trim() ?? ""
+  return result === "" ? "all" : result
 }
 
-function normalizeIdentifier(
-  value: string | null | undefined,
-) {
-  const normalizedValue =
-    value?.trim() ?? ""
-
-  return normalizedValue === ""
-    ? "all"
-    : normalizedValue
-}
-
-export function normalizeReturnFilters(
-  filters: ReturnFilterUpdates,
-): ReturnFilters {
+export function normalizeReturnFilters(filters: ReturnFilterUpdates): ReturnFilters {
+  const status = filters.status
+  const assignment = filters.assignment
+  const reviewer = filters.reviewer
+  const deadline = filters.deadline
   return {
-    search: normalizeSearch(filters.search),
-    status: normalizeStatus(filters.status),
+    search: filters.search?.trim() ?? "",
+    status: status && statuses.has(status) ? status as ReturnStatus : "all",
     taxYear: normalizeTaxYear(filters.taxYear),
-    preparerId: normalizeIdentifier(
-      filters.preparerId,
-    ),
+    preparerId: normalizeId(filters.preparerId),
+    assignment: assignment && assignments.has(assignment) ? assignment : "all",
+    reviewer: reviewer && reviewers.has(reviewer) ? reviewer : "all",
+    deadline: deadline && deadlines.has(deadline) ? deadline : "all",
   }
 }
 
-export function parseReturnFilters(
-  searchParams: URLSearchParams,
-): ReturnFilters {
+export function parseReturnFilters(searchParams: URLSearchParams): ReturnFilters {
   return normalizeReturnFilters({
     search: searchParams.get("search") ?? undefined,
-    status: normalizeStatus(
-      searchParams.get("status"),
-    ),
+    status: searchParams.get("status") ?? undefined,
     taxYear: searchParams.get("taxYear") ?? undefined,
-    preparerId:
-      searchParams.get("preparer") ?? undefined,
-  })
+    preparerId: searchParams.get("preparer") ?? undefined,
+    assignment: searchParams.get("assignment") ?? undefined,
+    reviewer: searchParams.get("reviewer") ?? undefined,
+    deadline: searchParams.get("deadline") ?? undefined,
+  } as ReturnFilterUpdates)
 }
 
-export function buildReturnFilterSearchParams(
-  filters: ReturnFilterUpdates,
-) {
-  const normalizedFilters =
-    normalizeReturnFilters(filters)
-
-  const searchParams =
-    new URLSearchParams()
-
-  if (normalizedFilters.search !== "") {
-    searchParams.set(
-      "search",
-      normalizedFilters.search,
-    )
-  }
-
-  if (normalizedFilters.status !== "all") {
-    searchParams.set(
-      "status",
-      normalizedFilters.status,
-    )
-  }
-
-  if (normalizedFilters.taxYear !== "all") {
-    searchParams.set(
-      "taxYear",
-      normalizedFilters.taxYear,
-    )
-  }
-
-  if (
-    normalizedFilters.preparerId !== "all"
-  ) {
-    searchParams.set(
-      "preparer",
-      normalizedFilters.preparerId,
-    )
-  }
-
-  return searchParams
+export function buildReturnFilterSearchParams(filters: ReturnFilterUpdates) {
+  const normalized = normalizeReturnFilters(filters)
+  const params = new URLSearchParams()
+  if (normalized.search) params.set("search", normalized.search)
+  if (normalized.status !== "all") params.set("status", normalized.status)
+  if (normalized.taxYear !== "all") params.set("taxYear", normalized.taxYear)
+  if (normalized.preparerId !== "all") params.set("preparer", normalized.preparerId)
+  if (normalized.assignment !== "all") params.set("assignment", normalized.assignment)
+  if (normalized.reviewer !== "all") params.set("reviewer", normalized.reviewer)
+  if (normalized.deadline !== "all") params.set("deadline", normalized.deadline)
+  return params
 }
 
-export function buildReturnFilterQuery(
-  filters: ReturnFilterUpdates,
-) {
-  const query =
-    buildReturnFilterSearchParams(
-      filters,
-    ).toString()
-
-  return query === ""
-    ? ""
-    : `?${query}`
+export function buildReturnFilterQuery(filters: ReturnFilterUpdates) {
+  const query = buildReturnFilterSearchParams(filters).toString()
+  return query ? `?${query}` : ""
 }
-
-export function mergeReturnFilters(
-  currentFilters: ReturnFilters,
-  updates: ReturnFilterUpdates,
-): ReturnFilters {
-  return normalizeReturnFilters({
-    ...currentFilters,
-    ...updates,
-  })
+export function mergeReturnFilters(current: ReturnFilters, updates: ReturnFilterUpdates) {
+  return normalizeReturnFilters({ ...current, ...updates })
 }
-
-export function removeReturnFilter(
-  currentFilters: ReturnFilters,
-  key: ReturnFilterKey,
-): ReturnFilters {
-  return mergeReturnFilters(
-    currentFilters,
-    {
-      [key]: defaultReturnFilters[key],
-    },
-  )
+export function removeReturnFilter(current: ReturnFilters, key: ReturnFilterKey) {
+  return mergeReturnFilters(current, { [key]: defaultReturnFilters[key] })
 }
-
-export function clearReturnFilters(): ReturnFilters {
-  return {
-    ...defaultReturnFilters,
-  }
+export function clearReturnFilters(): ReturnFilters { return { ...defaultReturnFilters } }
+export function isReturnFilterActive(filters: ReturnFilters, key: ReturnFilterKey) {
+  return filters[key] !== defaultReturnFilters[key]
 }
-
-export function isReturnFilterActive(
-  filters: ReturnFilters,
-  key: ReturnFilterKey,
-) {
-  return filters[key] !==
-    defaultReturnFilters[key]
-}
-
-export function countActiveReturnFilters(
-  filters: ReturnFilters,
-) {
-  const keys = Object.keys(
-    defaultReturnFilters,
-  ) as ReturnFilterKey[]
-
-  return keys.reduce(
-    (count, key) =>
-      count +
-      (isReturnFilterActive(
-        filters,
-        key,
-      )
-        ? 1
-        : 0),
-    0,
-  )
+export function countActiveReturnFilters(filters: ReturnFilters) {
+  return (Object.keys(defaultReturnFilters) as ReturnFilterKey[])
+    .reduce((count, key) => count + (isReturnFilterActive(filters, key) ? 1 : 0), 0)
 }

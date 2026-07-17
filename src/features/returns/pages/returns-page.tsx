@@ -42,6 +42,26 @@ const createRoles = [
   "receptionist",
 ]
 
+function toLocalDateKey(date: Date) {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, "0")
+  const day = String(date.getDate()).padStart(2, "0")
+  return `${year}-${month}-${day}`
+}
+
+function addDays(date: Date, days: number) {
+  const result = new Date(date)
+  result.setDate(result.getDate() + days)
+  return result
+}
+
+function endOfCurrentWeek(date: Date) {
+  const result = new Date(date)
+  const daysUntilSunday = 7 - (result.getDay() || 7)
+  result.setDate(result.getDate() + daysUntilSunday)
+  return result
+}
+
 export function ReturnsPage() {
   const { profile } = useAuth()
   const {
@@ -53,7 +73,7 @@ export function ReturnsPage() {
     clearFilters,
   } = useReturnFilters()
 
-  const [taxReturns, setTaxReturns] =
+  const [allTaxReturns, setAllTaxReturns] =
     useState<TaxReturnListItem[]>([])
 
   const [staffOptions, setStaffOptions] =
@@ -99,7 +119,7 @@ export function ReturnsPage() {
             : filters.preparerId,
         )
 
-        setTaxReturns(results)
+        setAllTaxReturns(results)
       } catch (error) {
         console.error(
           "Unable to load tax returns:",
@@ -148,6 +168,82 @@ export function ReturnsPage() {
   useEffect(() => {
     void loadTaxReturns()
   }, [loadTaxReturns])
+
+  const taxReturns = useMemo(() => {
+    const currentUserId = profile?.id ?? null
+    const today = new Date()
+    const todayKey = toLocalDateKey(today)
+    const weekEndKey = toLocalDateKey(endOfCurrentWeek(today))
+    const nextSevenDaysKey = toLocalDateKey(addDays(today, 7))
+
+    return allTaxReturns.filter((taxReturn) => {
+      if (
+        filters.assignment === "mine" &&
+        taxReturn.assignedPreparerId !== currentUserId
+      ) {
+        return false
+      }
+
+      if (
+        filters.assignment === "unassigned" &&
+        taxReturn.assignedPreparerId !== null
+      ) {
+        return false
+      }
+
+      if (
+        filters.reviewer === "mine" &&
+        taxReturn.assignedReviewerId !== currentUserId
+      ) {
+        return false
+      }
+
+      if (
+        filters.reviewer === "unassigned" &&
+        taxReturn.assignedReviewerId !== null
+      ) {
+        return false
+      }
+
+      if (filters.deadline === "all") {
+        return true
+      }
+
+      if (filters.deadline === "no_due_date") {
+        return taxReturn.dueDate === null
+      }
+
+      if (taxReturn.dueDate === null) {
+        return false
+      }
+
+      if (filters.deadline === "overdue") {
+        return taxReturn.dueDate < todayKey
+      }
+
+      if (filters.deadline === "due_today") {
+        return taxReturn.dueDate === todayKey
+      }
+
+      if (filters.deadline === "due_this_week") {
+        return (
+          taxReturn.dueDate >= todayKey &&
+          taxReturn.dueDate <= weekEndKey
+        )
+      }
+
+      return (
+        taxReturn.dueDate >= todayKey &&
+        taxReturn.dueDate <= nextSevenDaysKey
+      )
+    })
+  }, [
+    allTaxReturns,
+    filters.assignment,
+    filters.deadline,
+    filters.reviewer,
+    profile?.id,
+  ])
 
   const resultNetFees = taxReturns.reduce(
     (total, taxReturn) =>

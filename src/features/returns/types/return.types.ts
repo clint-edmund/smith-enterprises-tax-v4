@@ -220,11 +220,32 @@ export type ReturnStatusFilter =
   | ReturnStatus
   | "all"
 
+export type ReturnAssignmentFilter =
+  | "all"
+  | "mine"
+  | "unassigned"
+
+export type ReturnReviewerFilter =
+  | "all"
+  | "mine"
+  | "unassigned"
+
+export type ReturnDeadlineFilter =
+  | "all"
+  | "overdue"
+  | "due_today"
+  | "due_this_week"
+  | "next_7_days"
+  | "no_due_date"
+
 export interface ReturnFilters {
   search: string
   status: ReturnStatusFilter
   taxYear: string
   preparerId: string
+  assignment: ReturnAssignmentFilter
+  reviewer: ReturnReviewerFilter
+  deadline: ReturnDeadlineFilter
 }
 
 export type ReturnFilterKey =
