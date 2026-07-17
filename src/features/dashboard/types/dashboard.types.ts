@@ -20,6 +20,14 @@ export type DashboardSummary = {
   outstandingBalance: number;
 };
 
+export type DashboardWorkload = {
+  assignedToMe: number;
+  reviewAssignedToMe: number;
+  dueToday: number;
+  dueThisWeek: number;
+  overdue: number;
+};
+
 export type DashboardActivity = {
   id: string;
   action: string;
@@ -57,7 +65,9 @@ export type DashboardAttentionItem = DashboardReturnItem & {
 
 export type DashboardData = {
   summary: DashboardSummary;
+  workload: DashboardWorkload;
   activities: DashboardActivity[];
   recentReturns: DashboardReturnItem[];
   attentionItems: DashboardAttentionItem[];
+  loadedAt: string;
 };

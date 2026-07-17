@@ -15,6 +15,7 @@ import { useAuth } from "@/features/auth/hooks/use-auth";
 import { DashboardAttentionList } from "@/features/dashboard/components/dashboard-attention-list";
 import { DashboardReturnList } from "@/features/dashboard/components/dashboard-return-list";
 import { DashboardSkeleton } from "@/features/dashboard/components/dashboard-skeleton";
+import { MyWorkload } from "@/features/dashboard/components/my-workload";
 import { QuickActions } from "@/features/dashboard/components/quick-actions";
 import { RecentActivity } from "@/features/dashboard/components/recent-activity";
 import { SummaryCard } from "@/features/dashboard/components/summary-card";
@@ -106,7 +107,14 @@ export function DashboardPage() {
     );
   }
 
-  const { summary, activities, recentReturns, attentionItems } = dashboardData;
+  const {
+    summary,
+    workload,
+    activities,
+    recentReturns,
+    attentionItems,
+    loadedAt,
+  } = dashboardData;
 
   const staffName = profile.firstName || profile.displayName || "Staff Member";
 
@@ -125,6 +133,13 @@ export function DashboardPage() {
           <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-300">
             Monitor clients, return workflow, deadlines, assignments, and
             financial activity from live application data.
+          </p>
+
+          <p className="mt-3 text-xs text-slate-400">
+            Last updated {new Date(loadedAt).toLocaleTimeString([], {
+              hour: "numeric",
+              minute: "2-digit",
+            })}
           </p>
         </div>
 
@@ -157,6 +172,7 @@ export function DashboardPage() {
           value={formatNumber(summary.totalReturns)}
           description={`${formatNumber(summary.openReturns)} currently open`}
           icon={Files}
+          href="/returns"
         />
 
         <SummaryCard
@@ -164,6 +180,7 @@ export function DashboardPage() {
           value={formatNumber(summary.inProgressReturns)}
           description="Returns actively being prepared"
           icon={FileClock}
+          href="/returns?status=in_progress"
         />
 
         <SummaryCard
@@ -171,6 +188,7 @@ export function DashboardPage() {
           value={formatNumber(summary.awaitingReviewReturns)}
           description="Ready-for-review and under-review returns"
           icon={ScanSearch}
+          href="/returns?status=ready_for_review"
         />
 
         <SummaryCard
@@ -180,6 +198,7 @@ export function DashboardPage() {
             summary.overdueReturns,
           )} overdue returns`}
           icon={CalendarClock}
+          href="/returns?deadline=next_7_days"
         />
 
         <SummaryCard
@@ -187,6 +206,7 @@ export function DashboardPage() {
           value={formatNumber(summary.documentsPending)}
           description="Returns awaiting client documents"
           icon={AlertTriangle}
+          href="/returns?status=documents_pending"
         />
 
         <SummaryCard
@@ -205,8 +225,11 @@ export function DashboardPage() {
             summary.unassignedReturns,
           )} open returns are unassigned`}
           icon={FileCheck2}
+          href="/returns?status=completed"
         />
       </div>
+
+      <MyWorkload workload={workload} />
 
       <div className="grid gap-6 xl:grid-cols-2">
         <DashboardReturnList returns={recentReturns} />
