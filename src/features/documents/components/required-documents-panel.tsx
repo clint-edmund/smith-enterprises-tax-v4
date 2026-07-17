@@ -9,6 +9,7 @@ import type { ClientDocument } from "../types/document.types"
 import { DocumentStatusBadge } from "./document-status-badge"
 import { getDocumentStatus } from "../utils/get-document-status"
 import { MissingDocumentsSummary } from "./missing-documents-summary"
+import { UnmatchedDocumentsQueue } from "./unmatched-documents-queue"
 
 interface RequiredDocumentsPanelProps {
   taxReturnId: string
@@ -77,6 +78,32 @@ export function RequiredDocumentsPanel({
       new Set(
         suggestedMatches.map(
           (match) => match.requiredDocumentId,
+        ),
+      ),
+    [suggestedMatches],
+  )
+
+  const matchedDocumentIds = useMemo(
+    () =>
+      new Set(
+        requiredDocuments
+          .map(
+            (document) =>
+              document.matchedDocumentId,
+          )
+          .filter(
+            (documentId): documentId is string =>
+              Boolean(documentId),
+          ),
+      ),
+    [requiredDocuments],
+  )
+
+  const suggestedUploadedDocumentIds = useMemo(
+    () =>
+      new Set(
+        suggestedMatches.map(
+          (match) => match.clientDocumentId,
         ),
       ),
     [suggestedMatches],
@@ -354,6 +381,14 @@ function getUploadedDocument(
                 suggestedRequiredDocumentIds
               }
             />
+
+            <UnmatchedDocumentsQueue
+              documents={documents}
+              matchedDocumentIds={matchedDocumentIds}
+              suggestedDocumentIds={
+                suggestedUploadedDocumentIds
+              }
+/>
 
             {groups.map((group) => {
               const completedCount = group.documents.filter(
