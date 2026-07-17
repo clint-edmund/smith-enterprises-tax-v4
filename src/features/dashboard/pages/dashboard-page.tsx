@@ -1,91 +1,83 @@
 import {
+  AlertTriangle,
+  CalendarClock,
   CircleDollarSign,
+  FileCheck2,
   FileClock,
   Files,
   RefreshCw,
+  ScanSearch,
   Users,
-} from "lucide-react"
-import {
-  useCallback,
-  useEffect,
-  useState,
-} from "react"
+} from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
 
-import { DashboardSkeleton } from "@/features/dashboard/components/dashboard-skeleton"
-import { QuickActions } from "@/features/dashboard/components/quick-actions"
-import { RecentActivity } from "@/features/dashboard/components/recent-activity"
-import { SummaryCard } from "@/features/dashboard/components/summary-card"
-import { getDashboardData } from "@/features/dashboard/services/dashboard-service"
-import type {
-  DashboardData,
-} from "@/features/dashboard/types/dashboard.types"
+import { useAuth } from "@/features/auth/hooks/use-auth";
+import { DashboardAttentionList } from "@/features/dashboard/components/dashboard-attention-list";
+import { DashboardReturnList } from "@/features/dashboard/components/dashboard-return-list";
+import { DashboardSkeleton } from "@/features/dashboard/components/dashboard-skeleton";
+import { QuickActions } from "@/features/dashboard/components/quick-actions";
+import { RecentActivity } from "@/features/dashboard/components/recent-activity";
+import { SummaryCard } from "@/features/dashboard/components/summary-card";
+import { getDashboardData } from "@/features/dashboard/services/dashboard-service";
+import type { DashboardData } from "@/features/dashboard/types/dashboard.types.ts";
 import {
   formatCurrency,
   formatNumber,
-} from "@/features/dashboard/utils/dashboard-formatters"
-import { useAuth } from "@/features/auth/hooks/use-auth"
+} from "@/features/dashboard/utils/dashboard-formatters";
 
 export function DashboardPage() {
-  const { profile } = useAuth()
+  const { profile } = useAuth();
 
-  const [dashboardData, setDashboardData] =
-    useState<DashboardData | null>(null)
+  const [dashboardData, setDashboardData] = useState<DashboardData | null>(
+    null,
+  );
 
-  const [isLoading, setIsLoading] =
-    useState(true)
+  const [isLoading, setIsLoading] = useState(true);
 
-  const [errorMessage, setErrorMessage] =
-    useState<string | null>(null)
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const loadDashboard =
-    useCallback(async () => {
-      setIsLoading(true)
-      setErrorMessage(null)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-      try {
-        const result =
-          await getDashboardData()
+  const loadDashboard = useCallback(async (showRefreshIndicator = false) => {
+    if (showRefreshIndicator) {
+      setIsRefreshing(true);
+    }
 
-        setDashboardData(result)
-      } catch (error) {
-        console.error(
-          "Unable to load dashboard:",
-          error,
-        )
+    setErrorMessage(null);
 
-        setErrorMessage(
-          error instanceof Error
-            ? error.message
-            : "Unable to load dashboard information.",
-        )
-      } finally {
-        setIsLoading(false)
-      }
-    }, [])
+    try {
+      const data = await getDashboardData();
+
+      setDashboardData(data);
+    } catch (error) {
+      console.error("Unable to load dashboard:", error);
+
+      setErrorMessage("Unable to load dashboard data.");
+    } finally {
+      setIsLoading(false);
+      setIsRefreshing(false);
+    }
+  }, []);
 
   useEffect(() => {
-    const timeoutId =
-      window.setTimeout(() => {
-        void loadDashboard()
-      }, 0)
-    
+    const timeoutId = window.setTimeout(() => {
+      void loadDashboard();
+    }, 0);
+
     return () => {
-      window.clearTimeout(timeoutId)
-    }
-  }, [loadDashboard])
+      window.clearTimeout(timeoutId);
+    };
+  }, [loadDashboard]);
 
   if (isLoading) {
-    return <DashboardSkeleton />
+    return <DashboardSkeleton />;
   }
 
   if (!profile) {
-    return null
+    return null;
   }
 
-  if (
-    errorMessage ||
-    !dashboardData
-  ) {
+  if (errorMessage || !dashboardData) {
     return (
       <section className="rounded-2xl border border-red-200 bg-white p-8 shadow-sm">
         <p className="text-sm font-semibold uppercase tracking-wide text-red-700">
@@ -97,35 +89,26 @@ export function DashboardPage() {
         </h1>
 
         <p className="mt-3 text-slate-600">
-          {errorMessage ??
-            "An unexpected error occurred."}
+          {errorMessage ?? "An unexpected error occurred."}
         </p>
 
         <button
           type="button"
           onClick={() => {
-            void loadDashboard()
+            void loadDashboard();
           }}
           className="mt-6 inline-flex items-center gap-2 rounded-lg bg-blue-700 px-4 py-2.5 font-semibold text-white hover:bg-blue-800"
         >
-          <RefreshCw
-            className="size-4"
-            aria-hidden="true"
-          />
-
+          <RefreshCw className="size-4" />
           Try Again
         </button>
       </section>
-    )
+    );
   }
 
-  const { summary, activities } =
-    dashboardData
+  const { summary, activities, recentReturns, attentionItems } = dashboardData;
 
-  const staffName =
-    profile.firstName ||
-    profile.displayName ||
-    "Staff Member"
+  const staffName = profile.firstName || profile.displayName || "Staff Member";
 
   return (
     <section className="space-y-6">
@@ -140,78 +123,102 @@ export function DashboardPage() {
           </h1>
 
           <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-300">
-            Review current client, tax-return,
-            payment, and document activity.
+            Monitor clients, return workflow, deadlines, assignments, and
+            financial activity from live application data.
           </p>
         </div>
 
         <button
           type="button"
+          disabled={isRefreshing}
           onClick={() => {
-            void loadDashboard()
+            void loadDashboard(true);
           }}
-          className="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-700 bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
+          className="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-700 bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
         >
           <RefreshCw
-            className="size-4"
-            aria-hidden="true"
+            className={`size-4 ${isRefreshing ? "animate-spin" : ""}`}
           />
 
-          Refresh
+          {isRefreshing ? "Refreshing" : "Refresh"}
         </button>
       </header>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <SummaryCard
           label="Active Clients"
-          value={formatNumber(
-            summary.activeClients,
-          )}
+          value={formatNumber(summary.activeClients)}
           description="Client records currently marked active"
           icon={Users}
         />
 
         <SummaryCard
-          label="Open Returns"
-          value={formatNumber(
-            summary.openReturns,
-          )}
-          description={`${formatNumber(
-            summary.completedReturns,
-          )} returns completed or accepted`}
+          label="Total Returns"
+          value={formatNumber(summary.totalReturns)}
+          description={`${formatNumber(summary.openReturns)} currently open`}
+          icon={Files}
+        />
+
+        <SummaryCard
+          label="In Progress"
+          value={formatNumber(summary.inProgressReturns)}
+          description="Returns actively being prepared"
           icon={FileClock}
         />
 
         <SummaryCard
-          label="Outstanding Balance"
-          value={formatCurrency(
-            summary.outstandingBalance,
-          )}
-          description={`${formatCurrency(
-            summary.totalPayments,
-          )} in non-voided payments recorded`}
-          icon={CircleDollarSign}
+          label="Awaiting Review"
+          value={formatNumber(summary.awaitingReviewReturns)}
+          description="Ready-for-review and under-review returns"
+          icon={ScanSearch}
+        />
+
+        <SummaryCard
+          label="Upcoming Deadlines"
+          value={formatNumber(summary.upcomingDeadlines)}
+          description={`${formatNumber(
+            summary.overdueReturns,
+          )} overdue returns`}
+          icon={CalendarClock}
         />
 
         <SummaryCard
           label="Documents Pending"
-          value={formatNumber(
-            summary.documentsPending,
-          )}
-          description="Returns currently awaiting client documents"
-          icon={Files}
+          value={formatNumber(summary.documentsPending)}
+          description="Returns awaiting client documents"
+          icon={AlertTriangle}
+        />
+
+        <SummaryCard
+          label="Net Preparation Fees"
+          value={formatCurrency(summary.totalFees)}
+          description={`${formatCurrency(
+            summary.totalPayments,
+          )} in recorded payments`}
+          icon={CircleDollarSign}
+        />
+
+        <SummaryCard
+          label="Completed Returns"
+          value={formatNumber(summary.completedReturns)}
+          description={`${formatNumber(
+            summary.unassignedReturns,
+          )} open returns are unassigned`}
+          icon={FileCheck2}
         />
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[1.4fr_0.6fr]">
-        <RecentActivity
-          activities={activities}
-        />
+      <div className="grid gap-6 xl:grid-cols-2">
+        <DashboardReturnList returns={recentReturns} />
 
-        <QuickActions
-          role={profile.role}
-        />
+        <DashboardAttentionList items={attentionItems} />
+      </div>
+
+      <div className="grid gap-6 xl:grid-cols-[1.35fr_0.65fr]">
+        <RecentActivity activities={activities} />
+
+        <QuickActions role={profile.role} />
       </div>
     </section>
-  )
+  );
 }

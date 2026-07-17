@@ -1,4 +1,4 @@
-export type Json =
+﻿export type Json =
   | string
   | number
   | boolean
@@ -11,6 +11,31 @@ export type Database = {
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "14.5"
+  }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
   }
   public: {
     Tables: {
@@ -302,6 +327,38 @@ export type Database = {
           },
         ]
       }
+      tax_return_activity: {
+        Row: {
+          action: string
+          actor_id: string | null
+          id: string
+          occurred_at: string
+          return_id: string
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          id?: string
+          occurred_at?: string
+          return_id: string
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          id?: string
+          occurred_at?: string
+          return_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tax_return_activity_return_id_fkey"
+            columns: ["return_id"]
+            isOneToOne: false
+            referencedRelation: "tax_returns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tax_returns: {
         Row: {
           accepted_date: string | null
@@ -576,6 +633,13 @@ export type Database = {
         Args: never
         Returns: Database["public"]["Enums"]["app_role"]
       }
+      describe_tax_return_change: {
+        Args: {
+          new_record: Database["public"]["Tables"]["tax_returns"]["Row"]
+          old_record: Database["public"]["Tables"]["tax_returns"]["Row"]
+        }
+        Returns: string
+      }
       get_client_tax_returns: {
         Args: { requested_client_id: string }
         Returns: {
@@ -613,16 +677,57 @@ export type Database = {
           role: Database["public"]["Enums"]["app_role"]
         }[]
       }
+      get_dashboard_attention_items: {
+        Args: { requested_limit?: number }
+        Returns: {
+          assigned_preparer_name: string
+          client_id: string
+          client_name: string
+          client_number: number
+          due_date: string
+          id: string
+          net_fee: number
+          reason: string
+          return_type: Database["public"]["Enums"]["return_type"]
+          status: Database["public"]["Enums"]["return_status"]
+          tax_form: Database["public"]["Enums"]["tax_form_type"]
+          tax_year: number
+          updated_at: string
+        }[]
+      }
+      get_dashboard_recent_returns: {
+        Args: { requested_limit?: number }
+        Returns: {
+          assigned_preparer_name: string
+          client_id: string
+          client_name: string
+          client_number: number
+          due_date: string
+          id: string
+          net_fee: number
+          return_type: Database["public"]["Enums"]["return_type"]
+          status: Database["public"]["Enums"]["return_status"]
+          tax_form: Database["public"]["Enums"]["tax_form_type"]
+          tax_year: number
+          updated_at: string
+        }[]
+      }
       get_dashboard_summary: {
         Args: never
         Returns: {
           active_clients: number
+          awaiting_review_returns: number
           completed_returns: number
           documents_pending: number
+          in_progress_returns: number
           open_returns: number
           outstanding_balance: number
+          overdue_returns: number
           total_fees: number
           total_payments: number
+          total_returns: number
+          unassigned_returns: number
+          upcoming_deadlines: number
         }[]
       }
       get_recent_dashboard_activity: {
@@ -651,7 +756,7 @@ export type Database = {
           action: string
           actor_id: string
           actor_name: string
-          id: number
+          id: string
           occurred_at: string
         }[]
       }
@@ -1056,6 +1161,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {
       app_role: [

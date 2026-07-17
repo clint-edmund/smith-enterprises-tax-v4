@@ -4,7 +4,7 @@ import type {
   TaxFormType,
 } from "@/features/returns/types/return.types";
 
-export type DashboardSummary = {
+export interface DashboardSummary {
   activeClients: number;
   totalReturns: number;
   openReturns: number;
@@ -18,18 +18,18 @@ export type DashboardSummary = {
   totalFees: number;
   totalPayments: number;
   outstandingBalance: number;
-};
+}
 
-export type DashboardActivity = {
-  id: string;
+export interface DashboardActivity {
+  id: number;
   action: string;
   entityType: string;
-  entityId: string;
+  entityId: string | null;
   actorName: string;
   occurredAt: string;
-};
+}
 
-export type DashboardReturnItem = {
+export interface DashboardReturnItem {
   id: string;
   clientId: string;
   clientNumber: number;
@@ -42,22 +42,21 @@ export type DashboardReturnItem = {
   dueDate: string | null;
   netFee: number;
   updatedAt: string;
-};
+}
 
 export type DashboardAttentionReason =
   | "overdue"
-  | "documents_pending"
+  | "due_soon"
   | "unassigned"
-  | "awaiting_review"
-  | string;
+  | "documents_pending";
 
-export type DashboardAttentionItem = DashboardReturnItem & {
+export interface DashboardAttentionItem extends DashboardReturnItem {
   reason: DashboardAttentionReason;
-};
+}
 
-export type DashboardData = {
+export interface DashboardData {
   summary: DashboardSummary;
   activities: DashboardActivity[];
   recentReturns: DashboardReturnItem[];
   attentionItems: DashboardAttentionItem[];
-};
+}
