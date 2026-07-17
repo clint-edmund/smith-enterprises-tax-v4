@@ -14,6 +14,7 @@ import {
 
 import { appConfig } from "@/config/app-config"
 import { useAuth } from "@/features/auth/hooks/use-auth"
+import { ReturnReportActions } from "@/features/reports/components/return-report-actions"
 import { ReturnFiltersPanel } from "@/features/returns/components/return-filters"
 import { ReturnListSkeleton } from "@/features/returns/components/return-list-skeleton"
 import { ReturnResultsCards } from "@/features/returns/components/return-results-cards"
@@ -312,7 +313,12 @@ export function ReturnsPage() {
         onClearFilters={clearFilters}
       />
 
-      <div className="flex justify-end">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+        <ReturnReportActions
+          filters={filters}
+          taxReturns={taxReturns}
+        />
+
         <button
           type="button"
           disabled={isRefreshing}
