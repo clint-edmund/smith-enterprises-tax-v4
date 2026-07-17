@@ -473,6 +473,25 @@ export async function getTaxReturnDetails(
     return null;
   }
 
+  const {
+    data: workflowRow,
+    error: workflowError,
+  } = await supabase
+    .from("tax_returns")
+    .select(`
+      workflow_status,
+      workflow_hold_reason,
+      workflow_status_changed_at
+    `)
+    .eq("id", returnId)
+    .maybeSingle();
+
+  if (workflowError) {
+    throw new Error(
+      getReturnServiceErrorMessage(workflowError),
+    );
+  }
+
   return {
     id: detailRow.id,
 
@@ -520,6 +539,13 @@ export async function getTaxReturnDetails(
     estimatedAmountDue: toNumber(detailRow.estimated_amount_due),
 
     notes: detailRow.notes,
+
+    workflowStatus:
+      workflowRow?.workflow_status ?? "intake",
+    workflowHoldReason:
+      workflowRow?.workflow_hold_reason ?? null,
+    workflowStatusChangedAt:
+      workflowRow?.workflow_status_changed_at ?? null,
 
     createdAt: detailRow.created_at,
     updatedAt: detailRow.updated_at,

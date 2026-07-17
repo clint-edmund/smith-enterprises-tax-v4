@@ -26,3 +26,6 @@ export * from "./components/workflow-status-badge"
 export * from "./components/workflow-status-select"
 
 export * from "./services/workflow-service"
+
+export * from "./components/return-workflow-panel"
+export * from "./hooks/use-update-workflow"

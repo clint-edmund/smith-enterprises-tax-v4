@@ -1,4 +1,7 @@
 import type { Database } from "@/types/database.types"
+import type {
+  WorkflowStatus,
+} from "@/features/workflow/types/workflow.types"
 
 export type ReturnType =
   Database["public"]["Enums"]["return_type"]
@@ -157,6 +160,10 @@ export interface TaxReturnDetails {
 
   createdAt: string
   updatedAt: string
+
+  workflowStatus: WorkflowStatus
+  workflowHoldReason: string | null
+  workflowStatusChangedAt: string | null
 }
 
 export interface TaxReturnActivity {

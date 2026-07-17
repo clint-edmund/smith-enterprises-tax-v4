@@ -40,6 +40,10 @@ import {
   taxFormLabels,
 } from "@/features/returns/utils/return-formatters"
 
+import {
+  ReturnWorkflowPanel,
+} from "@/features/workflow"
+
 const editRoles = [
   "administrator",
   "manager",
@@ -124,15 +128,15 @@ export function ReturnDetailsPage() {
     )
 
   useEffect(() => {
-  const timeoutId =
-    window.setTimeout(() => {
-      void loadReturn()
-    }, 0)
+    const timeoutId =
+      window.setTimeout(() => {
+        void loadReturn()
+      }, 0)
 
-  return () => {
-    window.clearTimeout(timeoutId)
-  }
-}, [loadReturn])
+    return () => {
+      window.clearTimeout(timeoutId)
+    }
+  }, [loadReturn])
 
   if (isLoading) {
     return (
@@ -277,6 +281,24 @@ export function ReturnDetailsPage() {
           </div>
         </div>
       </header>
+
+      {canEdit && (
+        <ReturnWorkflowPanel
+          returnId={taxReturn.id}
+          workflowStatus={
+            taxReturn.workflowStatus
+          }
+          holdReason={
+            taxReturn.workflowHoldReason
+          }
+          statusChangedAt={
+            taxReturn.workflowStatusChangedAt
+          }
+          onWorkflowUpdated={() => {
+            void loadReturn(true)
+          }}
+        />
+      )}
 
       <div className="grid gap-6 xl:grid-cols-[0.8fr_1.2fr]">
         <div className="space-y-6">
