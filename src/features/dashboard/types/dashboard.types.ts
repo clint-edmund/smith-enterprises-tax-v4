@@ -69,5 +69,34 @@ export type DashboardData = {
   activities: DashboardActivity[];
   recentReturns: DashboardReturnItem[];
   attentionItems: DashboardAttentionItem[];
+  analytics: DashboardAnalytics;
   loadedAt: string;
+};
+
+export type DashboardMonthlyFinancial = {
+  month: string;
+  monthLabel: string;
+  fees: number;
+  payments: number;
+  outstanding: number;
+};
+
+export type DashboardStatusMetric = {
+  status: ReturnStatus;
+  label: string;
+  count: number;
+};
+
+export type DashboardStaffWorkloadMetric = {
+  staffId: string | null;
+  staffName: string;
+  assignedReturns: number;
+  overdueReturns: number;
+  awaitingReviewReturns: number;
+};
+
+export type DashboardAnalytics = {
+  monthlyFinancials: DashboardMonthlyFinancial[];
+  statusMetrics: DashboardStatusMetric[];
+  staffWorkload: DashboardStaffWorkloadMetric[];
 };

@@ -12,6 +12,9 @@ import {
 import { useCallback, useEffect, useState } from "react";
 
 import { useAuth } from "@/features/auth/hooks/use-auth";
+import { DashboardFinancialChart } from "@/features/dashboard/components/dashboard-financial-chart";
+import { DashboardStaffWorkloadChart } from "@/features/dashboard/components/dashboard-staff-workload-chart";
+import { DashboardStatusChart } from "@/features/dashboard/components/dashboard-status-chart";
 import { DashboardAttentionList } from "@/features/dashboard/components/dashboard-attention-list";
 import { DashboardReturnList } from "@/features/dashboard/components/dashboard-return-list";
 import { DashboardSkeleton } from "@/features/dashboard/components/dashboard-skeleton";
@@ -113,6 +116,7 @@ export function DashboardPage() {
     activities,
     recentReturns,
     attentionItems,
+    analytics,
     loadedAt,
   } = dashboardData;
 
@@ -230,6 +234,14 @@ export function DashboardPage() {
       </div>
 
       <MyWorkload workload={workload} />
+
+      <div className="grid gap-6 xl:grid-cols-2">
+        <DashboardFinancialChart data={analytics.monthlyFinancials} />
+
+        <DashboardStatusChart data={analytics.statusMetrics} />
+      </div>
+
+      <DashboardStaffWorkloadChart data={analytics.staffWorkload} />
 
       <div className="grid gap-6 xl:grid-cols-2">
         <DashboardReturnList returns={recentReturns} />

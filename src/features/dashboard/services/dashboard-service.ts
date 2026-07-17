@@ -2,6 +2,7 @@ import { supabase } from "@/services/supabase";
 import type {
   DashboardActivity,
   DashboardAttentionItem,
+  DashboardAnalytics,
   DashboardData,
   DashboardReturnItem,
   DashboardSummary,
@@ -15,6 +16,45 @@ import type {
 } from "@/features/returns/types/return.types";
 
 
+
+
+
+type DashboardMonthlyFinancialRpcRow = {
+  month_start: string;
+  month_label: string;
+  fees: number | string | null;
+  payments: number | string | null;
+  outstanding: number | string | null;
+};
+
+type DashboardStatusMetricRpcRow = {
+  status: ReturnStatus;
+  status_label: string;
+  return_count: number | string | null;
+};
+
+type DashboardStaffWorkloadRpcRow = {
+  staff_id: string | null;
+  staff_name: string;
+  assigned_returns: number | string | null;
+  overdue_returns: number | string | null;
+  awaiting_review_returns: number | string | null;
+};
+
+type DashboardAnalyticsRpcResult<T> = {
+  data: T[] | null;
+  error: PostgrestError | null;
+};
+
+async function callDashboardAnalyticsRpc<T>(
+  functionName: string,
+): Promise<DashboardAnalyticsRpcResult<T>> {
+  const rpc = supabase.rpc as unknown as (
+    name: string,
+  ) => PromiseLike<DashboardAnalyticsRpcResult<T>>;
+
+  return rpc(functionName);
+}
 
 type DashboardWorkloadRpcRow = {
   assigned_to_me: number | string | null;
@@ -74,6 +114,9 @@ export async function getDashboardData(): Promise<DashboardData> {
     activityResult,
     recentReturnsResult,
     attentionResult,
+    monthlyFinancialResult,
+    statusMetricsResult,
+    staffWorkloadResult,
   ] = await Promise.all([
     supabase.rpc("get_dashboard_summary"),
     getDashboardWorkloadRpc(),
@@ -86,6 +129,15 @@ export async function getDashboardData(): Promise<DashboardData> {
     supabase.rpc("get_dashboard_attention_items", {
       requested_limit: 8,
     }),
+    callDashboardAnalyticsRpc<DashboardMonthlyFinancialRpcRow>(
+      "get_dashboard_monthly_financials",
+    ),
+    callDashboardAnalyticsRpc<DashboardStatusMetricRpcRow>(
+      "get_dashboard_status_metrics",
+    ),
+    callDashboardAnalyticsRpc<DashboardStaffWorkloadRpcRow>(
+      "get_dashboard_staff_workload",
+    ),
   ]);
 
   if (summaryResult.error) {
@@ -106,6 +158,18 @@ export async function getDashboardData(): Promise<DashboardData> {
 
   if (attentionResult.error) {
     throw attentionResult.error;
+  }
+
+  if (monthlyFinancialResult.error) {
+    throw monthlyFinancialResult.error;
+  }
+
+  if (statusMetricsResult.error) {
+    throw statusMetricsResult.error;
+  }
+
+  if (staffWorkloadResult.error) {
+    throw staffWorkloadResult.error;
   }
 
   const summaryRow = summaryResult.data?.[0];
@@ -157,12 +221,37 @@ export async function getDashboardData(): Promise<DashboardData> {
     reason: item.reason as DashboardAttentionItem["reason"],
   }));
 
+  const analytics: DashboardAnalytics = {
+    monthlyFinancials: (monthlyFinancialResult.data ?? []).map((item) => ({
+      month: item.month_start,
+      monthLabel: item.month_label,
+      fees: convertToNumber(item.fees),
+      payments: convertToNumber(item.payments),
+      outstanding: convertToNumber(item.outstanding),
+    })),
+    statusMetrics: (statusMetricsResult.data ?? []).map((item) => ({
+      status: item.status,
+      label: item.status_label,
+      count: convertToNumber(item.return_count),
+    })),
+    staffWorkload: (staffWorkloadResult.data ?? []).map((item) => ({
+      staffId: item.staff_id,
+      staffName: item.staff_name,
+      assignedReturns: convertToNumber(item.assigned_returns),
+      overdueReturns: convertToNumber(item.overdue_returns),
+      awaitingReviewReturns: convertToNumber(
+        item.awaiting_review_returns,
+      ),
+    })),
+  };
+
   return {
     summary,
     workload,
     activities,
     recentReturns,
     attentionItems,
+    analytics,
     loadedAt: new Date().toISOString(),
   };
 }
