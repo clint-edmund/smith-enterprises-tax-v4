@@ -43,6 +43,23 @@ const createRoles = [
   "receptionist",
 ]
 
+const workflowQueueLabels: Record<
+  TaxReturnListItem["workflowStatus"],
+  string
+> = {
+  intake: "Intake",
+  documents_pending: "Documents Pending",
+  ready_for_preparation:
+    "Ready for Preparation",
+  in_preparation: "In Preparation",
+  review: "Review",
+  signature_pending: "Signature Pending",
+  ready_to_file: "Ready to File",
+  filed: "Filed",
+  completed: "Completed",
+  on_hold: "On Hold",
+}
+
 function toLocalDateKey(date: Date) {
   const year = date.getFullYear()
   const month = String(date.getMonth() + 1).padStart(2, "0")
@@ -252,6 +269,34 @@ export function ReturnsPage() {
     0,
   )
 
+  const workflowQueueCounts = useMemo(() => {
+    const counts = new Map<
+      TaxReturnListItem["workflowStatus"],
+      number
+    >()
+
+    for (const taxReturn of taxReturns) {
+      counts.set(
+        taxReturn.workflowStatus,
+        (counts.get(
+          taxReturn.workflowStatus,
+        ) ?? 0) + 1,
+      )
+    }
+
+    return Object.entries(
+      workflowQueueLabels,
+    ).map(([status, label]) => ({
+      status:
+        status as TaxReturnListItem["workflowStatus"],
+      label,
+      count:
+        counts.get(
+          status as TaxReturnListItem["workflowStatus"],
+        ) ?? 0,
+    }))
+  }, [taxReturns])
+
   return (
     <section className="space-y-6">
       <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -301,6 +346,37 @@ export function ReturnsPage() {
             {formatReturnCurrency(resultNetFees)}
           </p>
         </article>
+      </section>
+
+      <section>
+        <div>
+          <p className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+            Workflow Queue
+          </p>
+
+          <h2 className="mt-1 text-xl font-bold text-slate-950">
+            Returns by workflow stage
+          </h2>
+        </div>
+
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+          {workflowQueueCounts.map(
+            ({ status, label, count }) => (
+              <article
+                key={status}
+                className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"
+              >
+                <p className="text-sm font-medium text-slate-500">
+                  {label}
+                </p>
+
+                <p className="mt-2 text-2xl font-bold text-slate-950">
+                  {count}
+                </p>
+              </article>
+            ),
+          )}
+        </div>
       </section>
 
       <ReturnFiltersPanel

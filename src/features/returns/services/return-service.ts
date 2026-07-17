@@ -296,31 +296,99 @@ export async function searchTaxReturns(
     throw new Error(getReturnServiceErrorMessage(error))
   }
 
-  return (data ?? []).map((taxReturn) => ({
-    id: taxReturn.id,
-    clientId: taxReturn.client_id,
-    clientNumber: taxReturn.client_number,
-    clientFirstName: taxReturn.client_first_name,
-    clientLastName: taxReturn.client_last_name,
-    taxYear: taxReturn.tax_year,
-    returnType: taxReturn.return_type,
-    taxForm: taxReturn.tax_form,
-    filingStatus: taxReturn.filing_status,
-    status: taxReturn.status,
-    assignedPreparerId: taxReturn.assigned_preparer_id,
-    assignedPreparerName: taxReturn.assigned_preparer_name,
-    assignedReviewerId: taxReturn.assigned_reviewer_id,
-    assignedReviewerName: taxReturn.assigned_reviewer_name,
-    dateReceived: taxReturn.date_received,
-    dueDate: taxReturn.due_date,
-    filedDate: taxReturn.filed_date,
-    acceptedDate: taxReturn.accepted_date,
-    preparationFee: toNumber(taxReturn.preparation_fee),
-    discountAmount: toNumber(taxReturn.discount_amount),
-    netFee: toNumber(taxReturn.net_fee),
-    createdAt: taxReturn.created_at,
-    updatedAt: taxReturn.updated_at,
-  }))
+  const searchRows = data ?? []
+  const returnIds = searchRows.map(
+    (taxReturn) => taxReturn.id,
+  )
+
+  const workflowByReturnId = new Map<
+    string,
+    {
+      workflow_status:
+        | TaxReturnListItem["workflowStatus"]
+        | null
+      workflow_hold_reason: string | null
+    }
+  >()
+
+  if (returnIds.length > 0) {
+    const {
+      data: workflowRows,
+      error: workflowError,
+    } = await supabase
+      .from("tax_returns")
+      .select(`
+        id,
+        workflow_status,
+        workflow_hold_reason
+      `)
+      .in("id", returnIds)
+
+    if (workflowError) {
+      throw new Error(
+        getReturnServiceErrorMessage(workflowError),
+      )
+    }
+
+    for (const workflowRow of workflowRows ?? []) {
+      workflowByReturnId.set(
+        workflowRow.id,
+        {
+          workflow_status:
+            workflowRow.workflow_status,
+          workflow_hold_reason:
+            workflowRow.workflow_hold_reason,
+        },
+      )
+    }
+  }
+
+  return searchRows.map((taxReturn) => {
+    const workflow =
+      workflowByReturnId.get(taxReturn.id)
+
+    return {
+      id: taxReturn.id,
+      clientId: taxReturn.client_id,
+      clientNumber: taxReturn.client_number,
+      clientFirstName:
+        taxReturn.client_first_name,
+      clientLastName:
+        taxReturn.client_last_name,
+      taxYear: taxReturn.tax_year,
+      returnType: taxReturn.return_type,
+      taxForm: taxReturn.tax_form,
+      filingStatus: taxReturn.filing_status,
+      status: taxReturn.status,
+      assignedPreparerId:
+        taxReturn.assigned_preparer_id,
+      assignedPreparerName:
+        taxReturn.assigned_preparer_name,
+      assignedReviewerId:
+        taxReturn.assigned_reviewer_id,
+      assignedReviewerName:
+        taxReturn.assigned_reviewer_name,
+      dateReceived: taxReturn.date_received,
+      dueDate: taxReturn.due_date,
+      filedDate: taxReturn.filed_date,
+      acceptedDate: taxReturn.accepted_date,
+      preparationFee: toNumber(
+        taxReturn.preparation_fee,
+      ),
+      discountAmount: toNumber(
+        taxReturn.discount_amount,
+      ),
+      netFee: toNumber(taxReturn.net_fee),
+      workflowStatus:
+        workflow?.workflow_status ??
+        "intake",
+      workflowHoldReason:
+        workflow?.workflow_hold_reason ??
+        null,
+      createdAt: taxReturn.created_at,
+      updatedAt: taxReturn.updated_at,
+    }
+  })
 }
 
 export async function getClientTaxReturns(

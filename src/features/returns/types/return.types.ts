@@ -56,6 +56,8 @@ export interface TaxReturnListItem {
   netFee: number
   createdAt: string
   updatedAt: string
+  workflowStatus: WorkflowStatus
+  workflowHoldReason: string | null
 }
 
 export interface ClientTaxReturnItem {
