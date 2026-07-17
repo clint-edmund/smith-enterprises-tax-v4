@@ -5,6 +5,11 @@ export type ReportCategory =
   | "workload"
   | "management"
 
+export type ReportScheduleCadence =
+  | "daily"
+  | "weekly"
+  | "monthly"
+
 export interface ReportDefinition {
   id: string
   title: string
@@ -19,4 +24,15 @@ export interface ReportCategoryDefinition {
   id: ReportCategory
   title: string
   description: string
+}
+
+export interface SavedReportPreference {
+  reportId: string
+  isFavorite: boolean
+  schedule?: {
+    cadence: ReportScheduleCadence
+    dayOfWeek?: number
+    dayOfMonth?: number
+    hour: number
+  }
 }

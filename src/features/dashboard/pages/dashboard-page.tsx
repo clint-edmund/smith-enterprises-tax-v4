@@ -20,6 +20,7 @@ import { DashboardReturnList } from "@/features/dashboard/components/dashboard-r
 import { DashboardSkeleton } from "@/features/dashboard/components/dashboard-skeleton";
 import { MyWorkload } from "@/features/dashboard/components/my-workload";
 import { QuickActions } from "@/features/dashboard/components/quick-actions";
+import { QuickReports } from "@/features/dashboard/components/quick-reports";
 import { RecentActivity } from "@/features/dashboard/components/recent-activity";
 import { SummaryCard } from "@/features/dashboard/components/summary-card";
 import { getDashboardData } from "@/features/dashboard/services/dashboard-service";
@@ -249,10 +250,15 @@ export function DashboardPage() {
         <DashboardAttentionList items={attentionItems} />
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[1.35fr_0.65fr]">
-        <RecentActivity activities={activities} />
+      <div className="grid gap-6 xl:grid-cols-3">
+        <div className="xl:col-span-2">
+          <RecentActivity activities={activities} />
+        </div>
 
-        <QuickActions role={profile.role} />
+        <div className="space-y-6">
+          <QuickActions role={profile.role} />
+          <QuickReports />
+        </div>
       </div>
     </section>
   );
