@@ -1,9 +1,14 @@
-import { useState } from "react";
+import { useMemo, useState } from "react"
 
 import { useRequiredDocuments } from "../hooks/use-required-documents";
 
+import { findDocumentMatches } from "../utils/document-matching"
+
+import type { ClientDocument } from "../types/document.types"
+
 interface RequiredDocumentsPanelProps {
-  taxReturnId: string;
+  taxReturnId: string
+  documents: ClientDocument[]
 }
 
 function formatCategoryName(category: string): string {
@@ -14,8 +19,10 @@ function formatCategoryName(category: string): string {
 
 export function RequiredDocumentsPanel({
   taxReturnId,
+  documents,
 }: RequiredDocumentsPanelProps) {
   const {
+    requiredDocuments,
     groups,
     progress,
     isLoading,
@@ -26,6 +33,34 @@ export function RequiredDocumentsPanel({
     refresh,
     updateRequiredDocument,
   } = useRequiredDocuments(taxReturnId);
+
+  const suggestedMatches = useMemo(
+  () =>
+    findDocumentMatches(
+      requiredDocuments,
+      documents,
+    ),
+  [requiredDocuments, documents],
+);
+
+function getSuggestedMatch(
+  requiredDocumentId: string,
+) {
+  return suggestedMatches.find(
+    (match) =>
+      match.requiredDocumentId ===
+      requiredDocumentId,
+  );
+}
+
+function getUploadedDocument(
+  documentId: string,
+) {
+  return documents.find(
+    (document) =>
+      document.id === documentId,
+  );
+}
 
   const [actionMessage, setActionMessage] = useState<string | null>(null);
 
@@ -72,6 +107,27 @@ export function RequiredDocumentsPanel({
       // The hook exposes the error message.
     }
   }
+
+  async function handleAcceptSuggestion(
+  requiredDocumentId: string,
+  documentId: string,
+) {
+  setActionMessage(null);
+
+  try {
+    await updateRequiredDocument({
+      requiredDocumentId,
+      documentId,
+      isComplete: true,
+    });
+
+    setActionMessage(
+      "Uploaded document linked and checklist item marked complete.",
+    );
+  } catch {
+    // The hook exposes the error message.
+  }
+}
 
   if (isLoading) {
     return (
@@ -280,97 +336,153 @@ export function RequiredDocumentsPanel({
                   </div>
 
                   <div className="divide-y divide-slate-200">
-                    {group.documents.map((document) => (
-                      <div
-                        key={document.id}
-                        className="flex flex-col gap-4 px-4 py-4 sm:flex-row sm:items-start sm:justify-between"
-                      >
-                        <div className="flex min-w-0 gap-3">
-                          <input
-                            id={`required-document-${document.id}`}
-                            type="checkbox"
-                            checked={document.isComplete}
-                            disabled={isUpdating}
-                            onChange={(event) => {
-                              void handleCompletionChange(
-                                document.id,
-                                event.target.checked,
-                              );
-                            }}
-                            className="mt-1 h-4 w-4 shrink-0 rounded border-slate-300 text-blue-700 focus:ring-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
-                          />
+                    {group.documents.map((document) => {
+  const suggestedMatch =
+    getSuggestedMatch(document.id);
 
-                          <div className="min-w-0">
-                            <label
-                              htmlFor={`required-document-${document.id}`}
-                              className={`font-medium ${
-                                document.isComplete
-                                  ? "text-slate-500 line-through"
-                                  : "text-slate-900"
-                              }`}
-                            >
-                              {document.name}
-                            </label>
+  const suggestedDocument =
+    suggestedMatch
+      ? getUploadedDocument(
+          suggestedMatch.clientDocumentId,
+        )
+      : undefined;
 
-                            {document.description ? (
-                              <p className="mt-1 text-sm text-slate-600">
-                                {document.description}
-                              </p>
-                            ) : null}
+  return (
+    <div
+      key={document.id}
+      className="flex flex-col gap-4 px-4 py-4 sm:flex-row sm:items-start sm:justify-between"
+    >
+      <div className="flex min-w-0 gap-3">
+        <input
+          id={`required-document-${document.id}`}
+          type="checkbox"
+          checked={document.isComplete}
+          disabled={isUpdating}
+          onChange={(event) => {
+            void handleCompletionChange(
+              document.id,
+              event.target.checked,
+            );
+          }}
+          className="mt-1 h-4 w-4 shrink-0 rounded border-slate-300 text-blue-700 focus:ring-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
+        />
 
-                            <div className="mt-2 flex flex-wrap items-center gap-2">
-                              <span
-                                className={`rounded-full px-2.5 py-1 text-xs font-medium ${
-                                  document.isRequired
-                                    ? "bg-red-50 text-red-700 ring-1 ring-inset ring-red-200"
-                                    : "bg-slate-100 text-slate-700 ring-1 ring-inset ring-slate-200"
-                                }`}
-                              >
-                                {document.isRequired ? "Required" : "Optional"}
-                              </span>
+        <div className="min-w-0">
+          <label
+            htmlFor={`required-document-${document.id}`}
+            className={`font-medium ${
+              document.isComplete
+                ? "text-slate-500 line-through"
+                : "text-slate-900"
+            }`}
+          >
+            {document.name}
+          </label>
 
-                              <span
-                                className={`rounded-full px-2.5 py-1 text-xs font-medium ${
-                                  document.isComplete
-                                    ? "bg-green-50 text-green-700 ring-1 ring-inset ring-green-200"
-                                    : "bg-amber-50 text-amber-700 ring-1 ring-inset ring-amber-200"
-                                }`}
-                              >
-                                {document.isComplete ? "Complete" : "Missing"}
-                              </span>
+          {document.description ? (
+            <p className="mt-1 text-sm text-slate-600">
+              {document.description}
+            </p>
+          ) : null}
 
-                              {document.matchedDocumentName ? (
-                                <span className="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-200">
-                                  {document.matchedDocumentName}
-                                </span>
-                              ) : null}
-                            </div>
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <span
+              className={`rounded-full px-2.5 py-1 text-xs font-medium ${
+                document.isRequired
+                  ? "bg-red-50 text-red-700 ring-1 ring-inset ring-red-200"
+                  : "bg-slate-100 text-slate-700 ring-1 ring-inset ring-slate-200"
+              }`}
+            >
+              {document.isRequired
+                ? "Required"
+                : "Optional"}
+            </span>
 
-                            {document.notes ? (
-                              <p className="mt-2 text-sm text-slate-500">
-                                Notes: {document.notes}
-                              </p>
-                            ) : null}
-                          </div>
-                        </div>
+            <span
+              className={`rounded-full px-2.5 py-1 text-xs font-medium ${
+                document.isComplete
+                  ? "bg-green-50 text-green-700 ring-1 ring-inset ring-green-200"
+                  : "bg-amber-50 text-amber-700 ring-1 ring-inset ring-amber-200"
+              }`}
+            >
+              {document.isComplete
+                ? "Complete"
+                : "Missing"}
+            </span>
 
-                        <button
-                          type="button"
-                          disabled={isUpdating}
-                          onClick={() => {
-                            void handleCompletionChange(
-                              document.id,
-                              !document.isComplete,
-                            );
-                          }}
-                          className="inline-flex min-h-9 shrink-0 items-center justify-center rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
-                        >
-                          {document.isComplete
-                            ? "Mark Missing"
-                            : "Mark Complete"}
-                        </button>
-                      </div>
-                    ))}
+            {document.matchedDocumentName ? (
+              <span className="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-200">
+                {document.matchedDocumentName}
+              </span>
+            ) : null}
+          </div>
+
+          {document.notes ? (
+            <p className="mt-2 text-sm text-slate-500">
+              Notes: {document.notes}
+            </p>
+          ) : null}
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-3 sm:max-w-xs">
+        {!document.isComplete &&
+        suggestedMatch &&
+        suggestedDocument ? (
+          <div className="rounded-lg border border-blue-200 bg-blue-50 p-3">
+            <p className="text-xs font-semibold uppercase tracking-wide text-blue-700">
+              Suggested Match
+            </p>
+
+            <p className="mt-1 break-words text-sm font-medium text-blue-950">
+              {suggestedDocument.originalFileName}
+            </p>
+
+            <p className="mt-1 text-xs text-blue-700">
+              Match score: {suggestedMatch.score}
+            </p>
+
+            {suggestedMatch.reasons.length > 0 ? (
+              <p className="mt-1 text-xs text-blue-700">
+                {suggestedMatch.reasons[0]}
+              </p>
+            ) : null}
+
+            <button
+              type="button"
+              disabled={isUpdating}
+              onClick={() => {
+                void handleAcceptSuggestion(
+                  document.id,
+                  suggestedDocument.id,
+                );
+              }}
+              className="mt-3 inline-flex min-h-9 items-center justify-center rounded-lg bg-blue-700 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Link Document
+            </button>
+          </div>
+        ) : null}
+
+        <button
+          type="button"
+          disabled={isUpdating}
+          onClick={() => {
+            void handleCompletionChange(
+              document.id,
+              !document.isComplete,
+            );
+          }}
+          className="inline-flex min-h-9 shrink-0 items-center justify-center rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {document.isComplete
+            ? "Mark Missing"
+            : "Mark Complete"}
+        </button>
+      </div>
+    </div>
+  );
+})}
                   </div>
                 </div>
               );
