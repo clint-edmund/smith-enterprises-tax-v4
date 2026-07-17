@@ -15,6 +15,10 @@ export type FilingStatus =
 export type ReturnStatus =
   Database["public"]["Enums"]["return_status"]
 
+export type ReturnWorkflowFilter =
+  | WorkflowStatus
+  | "all"
+
 export interface ReturnStaffOption {
   id: string
   displayName: string
@@ -249,11 +253,19 @@ export type ReturnDeadlineFilter =
 
 export interface ReturnFilters {
   search: string
+
   status: ReturnStatusFilter
+
+  workflow: ReturnWorkflowFilter
+
   taxYear: string
+
   preparerId: string
+
   assignment: ReturnAssignmentFilter
+
   reviewer: ReturnReviewerFilter
+
   deadline: ReturnDeadlineFilter
 }
 

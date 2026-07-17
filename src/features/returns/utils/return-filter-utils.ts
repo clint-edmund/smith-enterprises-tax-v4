@@ -11,6 +11,7 @@ import type {
 export const defaultReturnFilters: ReturnFilters = {
   search: "",
   status: "all",
+  workflow: "all",
   taxYear: "all",
   preparerId: "all",
   assignment: "all",
@@ -22,6 +23,18 @@ const statuses = new Set<string>([
   "not_started", "documents_pending", "in_progress", "ready_for_review",
   "under_review", "ready_to_file", "filed", "accepted", "rejected",
   "completed", "on_hold",
+])
+const workflows = new Set([
+  "intake",
+  "documents_pending",
+  "ready_for_preparation",
+  "in_preparation",
+  "review",
+  "signature_pending",
+  "ready_to_file",
+  "filed",
+  "completed",
+  "on_hold",
 ])
 const assignments = new Set<ReturnAssignmentFilter>(["all", "mine", "unassigned"])
 const reviewers = new Set<ReturnReviewerFilter>(["all", "mine", "unassigned"])
@@ -41,6 +54,8 @@ function normalizeId(value: string | null | undefined) {
 
 export function normalizeReturnFilters(filters: ReturnFilterUpdates): ReturnFilters {
   const status = filters.status
+  const workflow = filters.workflow
+  
   const assignment = filters.assignment
   const reviewer = filters.reviewer
   const deadline = filters.deadline
@@ -52,6 +67,10 @@ export function normalizeReturnFilters(filters: ReturnFilterUpdates): ReturnFilt
     assignment: assignment && assignments.has(assignment) ? assignment : "all",
     reviewer: reviewer && reviewers.has(reviewer) ? reviewer : "all",
     deadline: deadline && deadlines.has(deadline) ? deadline : "all",
+    workflow:
+  workflow && workflows.has(workflow)
+    ? workflow
+    : "all",
   }
 }
 
@@ -64,6 +83,7 @@ export function parseReturnFilters(searchParams: URLSearchParams): ReturnFilters
     assignment: searchParams.get("assignment") ?? undefined,
     reviewer: searchParams.get("reviewer") ?? undefined,
     deadline: searchParams.get("deadline") ?? undefined,
+    workflow: searchParams.get("workflow") ?? undefined,
   } as ReturnFilterUpdates)
 }
 
@@ -77,6 +97,7 @@ export function buildReturnFilterSearchParams(filters: ReturnFilterUpdates) {
   if (normalized.assignment !== "all") params.set("assignment", normalized.assignment)
   if (normalized.reviewer !== "all") params.set("reviewer", normalized.reviewer)
   if (normalized.deadline !== "all") params.set("deadline", normalized.deadline)
+  if (normalized.workflow !== "all") params.set("workflow", normalized.workflow)
   return params
 }
 
