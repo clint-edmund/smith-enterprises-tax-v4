@@ -6,6 +6,9 @@ import { findDocumentMatches } from "../utils/document-matching"
 
 import type { ClientDocument } from "../types/document.types"
 
+import { DocumentStatusBadge } from "./document-status-badge"
+import { getDocumentStatus } from "../utils/get-document-status"
+
 interface RequiredDocumentsPanelProps {
   taxReturnId: string
   documents: ClientDocument[]
@@ -362,15 +365,21 @@ function getUploadedDocument(
 
                   <div className="divide-y divide-slate-200">
                     {group.documents.map((document) => {
-  const suggestedMatch =
-    getSuggestedMatch(document.id);
+                      const suggestedMatch =
+                        getSuggestedMatch(document.id)
 
-  const suggestedDocument =
-    suggestedMatch
-      ? getUploadedDocument(
-          suggestedMatch.clientDocumentId,
-        )
-      : undefined;
+                      const suggestedDocument =
+                        suggestedMatch
+                          ? getUploadedDocument(
+                              suggestedMatch.clientDocumentId,
+                            )
+                          : undefined
+
+                      const status = getDocumentStatus(document, {
+                        hasSuggestedMatch: Boolean(
+                          suggestedMatch && suggestedDocument,
+                        ),
+                      })
 
   return (
     <div
@@ -423,17 +432,7 @@ function getUploadedDocument(
                 : "Optional"}
             </span>
 
-            <span
-              className={`rounded-full px-2.5 py-1 text-xs font-medium ${
-                document.isComplete
-                  ? "bg-green-50 text-green-700 ring-1 ring-inset ring-green-200"
-                  : "bg-amber-50 text-amber-700 ring-1 ring-inset ring-amber-200"
-              }`}
-            >
-              {document.isComplete
-                ? "Complete"
-                : "Missing"}
-            </span>
+            <DocumentStatusBadge status={status} />
 
             {document.matchedDocumentName ? (
               <span className="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-200">
