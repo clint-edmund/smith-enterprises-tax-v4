@@ -12,31 +12,6 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.5"
   }
-  graphql_public: {
-    Tables: {
-      [_ in never]: never
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      graphql: {
-        Args: {
-          extensions?: Json
-          operationName?: string
-          query?: string
-          variables?: Json
-        }
-        Returns: Json
-      }
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-  }
   public: {
     Tables: {
       audit_logs: {
@@ -77,6 +52,82 @@ export type Database = {
           {
             foreignKeyName: "audit_logs_actor_id_fkey"
             columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_documents: {
+        Row: {
+          archived_at: string | null
+          category: string
+          client_id: string
+          created_at: string
+          description: string | null
+          id: string
+          mime_type: string
+          original_file_name: string
+          size_bytes: number
+          status: string
+          storage_bucket: string
+          storage_path: string
+          tax_return_id: string | null
+          updated_at: string
+          uploaded_by: string
+        }
+        Insert: {
+          archived_at?: string | null
+          category?: string
+          client_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          mime_type: string
+          original_file_name: string
+          size_bytes: number
+          status?: string
+          storage_bucket: string
+          storage_path: string
+          tax_return_id?: string | null
+          updated_at?: string
+          uploaded_by: string
+        }
+        Update: {
+          archived_at?: string | null
+          category?: string
+          client_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          mime_type?: string
+          original_file_name?: string
+          size_bytes?: number
+          status?: string
+          storage_bucket?: string
+          storage_path?: string
+          tax_return_id?: string | null
+          updated_at?: string
+          uploaded_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_documents_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_documents_tax_return_id_fkey"
+            columns: ["tax_return_id"]
+            isOneToOne: false
+            referencedRelation: "tax_returns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_documents_uploaded_by_fkey"
+            columns: ["uploaded_by"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
@@ -288,6 +339,175 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      required_document_templates: {
+        Row: {
+          category: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_active: boolean
+          is_required: boolean
+          matching_keywords: string[]
+          name: string
+          return_type: Database["public"]["Enums"]["return_type"] | null
+          sort_order: number
+          tax_form: Database["public"]["Enums"]["tax_form_type"] | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          is_required?: boolean
+          matching_keywords?: string[]
+          name: string
+          return_type?: Database["public"]["Enums"]["return_type"] | null
+          sort_order?: number
+          tax_form?: Database["public"]["Enums"]["tax_form_type"] | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          is_required?: boolean
+          matching_keywords?: string[]
+          name?: string
+          return_type?: Database["public"]["Enums"]["return_type"] | null
+          sort_order?: number
+          tax_form?: Database["public"]["Enums"]["tax_form_type"] | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "required_document_templates_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "required_document_templates_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      return_required_documents: {
+        Row: {
+          category: string
+          completed_at: string | null
+          completed_by: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_complete: boolean
+          is_required: boolean
+          matched_document_id: string | null
+          name: string
+          notes: string | null
+          sort_order: number
+          tax_return_id: string
+          template_id: string | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          category: string
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_complete?: boolean
+          is_required?: boolean
+          matched_document_id?: string | null
+          name: string
+          notes?: string | null
+          sort_order?: number
+          tax_return_id: string
+          template_id?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          category?: string
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_complete?: boolean
+          is_required?: boolean
+          matched_document_id?: string | null
+          name?: string
+          notes?: string | null
+          sort_order?: number
+          tax_return_id?: string
+          template_id?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "return_required_documents_completed_by_fkey"
+            columns: ["completed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "return_required_documents_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "return_required_documents_matched_document_id_fkey"
+            columns: ["matched_document_id"]
+            isOneToOne: false
+            referencedRelation: "client_documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "return_required_documents_tax_return_id_fkey"
+            columns: ["tax_return_id"]
+            isOneToOne: false
+            referencedRelation: "tax_returns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "return_required_documents_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "required_document_templates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "return_required_documents_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       security_acknowledgments: {
         Row: {
@@ -515,6 +735,35 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      archive_client_document: {
+        Args: { requested_document_id: string }
+        Returns: undefined
+      }
+      complete_required_document: {
+        Args: {
+          requested_document_id?: string
+          requested_is_complete?: boolean
+          requested_notes?: string
+          requested_required_document_id: string
+        }
+        Returns: {
+          category: string
+          completed_at: string
+          completed_by: string
+          created_at: string
+          description: string
+          id: string
+          is_complete: boolean
+          is_required: boolean
+          matched_document_id: string
+          name: string
+          notes: string
+          sort_order: number
+          tax_return_id: string
+          template_id: string
+          updated_at: string
+        }[]
+      }
       create_client_record: {
         Args: {
           requested_address_line_1?: string
@@ -695,6 +944,26 @@ export type Database = {
           updated_at: string
         }[]
       }
+      get_dashboard_monthly_financials: {
+        Args: never
+        Returns: {
+          fees: number
+          month_label: string
+          month_start: string
+          outstanding: number
+          payments: number
+        }[]
+      }
+      get_dashboard_my_workload: {
+        Args: never
+        Returns: {
+          assigned_to_me: number
+          due_this_week: number
+          due_today: number
+          overdue: number
+          review_assigned_to_me: number
+        }[]
+      }
       get_dashboard_recent_returns: {
         Args: { requested_limit?: number }
         Returns: {
@@ -710,6 +979,24 @@ export type Database = {
           tax_form: Database["public"]["Enums"]["tax_form_type"]
           tax_year: number
           updated_at: string
+        }[]
+      }
+      get_dashboard_staff_workload: {
+        Args: never
+        Returns: {
+          assigned_returns: number
+          awaiting_review_returns: number
+          overdue_returns: number
+          staff_id: string
+          staff_name: string
+        }[]
+      }
+      get_dashboard_status_metrics: {
+        Args: never
+        Returns: {
+          return_count: number
+          status: Database["public"]["Enums"]["return_status"]
+          status_label: string
         }[]
       }
       get_dashboard_summary: {
@@ -807,6 +1094,10 @@ export type Database = {
         Args: { requested_notice_version: string }
         Returns: boolean
       }
+      initialize_required_documents: {
+        Args: { requested_return_id: string }
+        Returns: number
+      }
       is_valid_return_status_transition: {
         Args: {
           current_status: Database["public"]["Enums"]["return_status"]
@@ -814,9 +1105,87 @@ export type Database = {
         }
         Returns: boolean
       }
+      list_client_documents: {
+        Args: { requested_client_id: string; requested_tax_return_id?: string }
+        Returns: {
+          category: string
+          client_id: string
+          created_at: string
+          description: string
+          id: string
+          mime_type: string
+          original_file_name: string
+          size_bytes: number
+          status: string
+          storage_bucket: string
+          storage_path: string
+          tax_return_id: string
+          updated_at: string
+          uploaded_by: string
+          uploaded_by_name: string
+        }[]
+      }
+      list_required_documents: {
+        Args: { requested_return_id: string }
+        Returns: {
+          category: string
+          completed_at: string
+          completed_by: string
+          completed_by_name: string
+          created_at: string
+          description: string
+          id: string
+          is_complete: boolean
+          is_required: boolean
+          matched_document_id: string
+          matched_document_name: string
+          name: string
+          notes: string
+          sort_order: number
+          tax_return_id: string
+          template_id: string
+          updated_at: string
+        }[]
+      }
       record_security_event: {
         Args: { requested_action: string; requested_metadata?: Json }
         Returns: number
+      }
+      register_client_document: {
+        Args: {
+          requested_category: string
+          requested_client_id: string
+          requested_description?: string
+          requested_mime_type: string
+          requested_original_file_name: string
+          requested_size_bytes: number
+          requested_storage_bucket: string
+          requested_storage_path: string
+          requested_tax_return_id: string
+        }
+        Returns: {
+          archived_at: string | null
+          category: string
+          client_id: string
+          created_at: string
+          description: string | null
+          id: string
+          mime_type: string
+          original_file_name: string
+          size_bytes: number
+          status: string
+          storage_bucket: string
+          storage_path: string
+          tax_return_id: string | null
+          updated_at: string
+          uploaded_by: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "client_documents"
+          isOneToOne: false
+          isSetofReturn: true
+        }
       }
       search_clients: {
         Args: {
@@ -1161,9 +1530,6 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
-  graphql_public: {
-    Enums: {},
-  },
   public: {
     Enums: {
       app_role: [
