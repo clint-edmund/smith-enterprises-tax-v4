@@ -8,6 +8,7 @@ import type { ClientDocument } from "../types/document.types"
 
 import { DocumentStatusBadge } from "./document-status-badge"
 import { getDocumentStatus } from "../utils/get-document-status"
+import { MissingDocumentsSummary } from "./missing-documents-summary"
 
 interface RequiredDocumentsPanelProps {
   taxReturnId: string
@@ -70,6 +71,16 @@ export function RequiredDocumentsPanel({
     ),
   [requiredDocuments, documents],
 );
+
+  const suggestedRequiredDocumentIds = useMemo(
+    () =>
+      new Set(
+        suggestedMatches.map(
+          (match) => match.requiredDocumentId,
+        ),
+      ),
+    [suggestedMatches],
+  )
 
 function getSuggestedMatch(
   requiredDocumentId: string,
@@ -337,6 +348,13 @@ function getUploadedDocument(
           </div>
 
           <div className="space-y-6 p-6">
+            <MissingDocumentsSummary
+              documents={requiredDocuments}
+              suggestedDocumentIds={
+                suggestedRequiredDocumentIds
+              }
+            />
+
             {groups.map((group) => {
               const completedCount = group.documents.filter(
                 (document) => document.isComplete,
