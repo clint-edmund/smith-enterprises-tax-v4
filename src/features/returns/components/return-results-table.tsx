@@ -23,6 +23,10 @@ import {
   getReturnDetailsRoute,
 } from "@/config/app-config"
 
+import {
+  WorkflowStatusBadge,
+} from "@/features/workflow/components/workflow-status-badge"
+
 interface ReturnResultsTableProps {
   taxReturns: TaxReturnListItem[]
 }
@@ -121,9 +125,23 @@ export function ReturnResultsTable({
                 </td>
 
                 <td className="px-5 py-4">
-                  <ReturnStatusBadge
-                    status={taxReturn.status}
-                  />
+                  <div className="space-y-2">
+                    <ReturnStatusBadge
+                      status={taxReturn.status}
+                    />
+
+                    <WorkflowStatusBadge
+                      status={taxReturn.workflowStatus}
+                    />
+
+                    {taxReturn.workflowStatus ===
+                      "on_hold" &&
+                      taxReturn.workflowHoldReason && (
+                        <p className="text-xs text-red-700">
+                          {taxReturn.workflowHoldReason}
+                        </p>
+                      )}
+                  </div>
                 </td>
 
                 <td className="px-5 py-4 text-sm text-slate-700">

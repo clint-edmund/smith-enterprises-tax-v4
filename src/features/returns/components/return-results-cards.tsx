@@ -9,6 +9,9 @@ import {
   formatClientNumber,
 } from "@/features/clients/utils/client-formatters"
 import { ReturnStatusBadge } from "@/features/returns/components/return-status-badge"
+import {
+  WorkflowStatusBadge,
+} from "@/features/workflow/components/workflow-status-badge"
 import type {
   TaxReturnListItem,
 } from "@/features/returns/types/return.types"
@@ -74,9 +77,23 @@ export function ReturnResultsCards({
                 </p>
               </div>
 
-              <ReturnStatusBadge
-                status={taxReturn.status}
-              />
+              <div className="space-y-2 text-right">
+                <ReturnStatusBadge
+                  status={taxReturn.status}
+                />
+
+                <WorkflowStatusBadge
+                  status={taxReturn.workflowStatus}
+                />
+
+                {taxReturn.workflowStatus ===
+                  "on_hold" &&
+                  taxReturn.workflowHoldReason && (
+                    <p className="max-w-[180px] text-xs text-red-700">
+                      {taxReturn.workflowHoldReason}
+                    </p>
+                  )}
+              </div>
             </header>
 
             <div className="flex items-start gap-3">
