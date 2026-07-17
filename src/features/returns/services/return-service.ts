@@ -236,26 +236,64 @@ export function getReturnServiceErrorMessage(error: unknown): string {
   return message;
 }
 
+export interface SearchTaxReturnsOptions {
+  search?: string
+  status?: ReturnStatus | "all"
+  taxYear?: number | null
+  preparerId?: string | null
+  limit?: number
+}
+
+function normalizeSearchLimit(limit: number | undefined): number {
+  if (limit === undefined || !Number.isFinite(limit)) {
+    return 250
+  }
+
+  return Math.min(Math.max(Math.trunc(limit), 1), 250)
+}
+
+export async function searchTaxReturns(
+  options: SearchTaxReturnsOptions,
+): Promise<TaxReturnListItem[]>
 export async function searchTaxReturns(
   search: string,
   status: ReturnStatus | "all",
   taxYear: number | null,
   preparerId: string | null,
+): Promise<TaxReturnListItem[]>
+export async function searchTaxReturns(
+  optionsOrSearch: SearchTaxReturnsOptions | string,
+  legacyStatus: ReturnStatus | "all" = "all",
+  legacyTaxYear: number | null = null,
+  legacyPreparerId: string | null = null,
 ): Promise<TaxReturnListItem[]> {
+  const options: SearchTaxReturnsOptions =
+    typeof optionsOrSearch === "string"
+      ? {
+          search: optionsOrSearch,
+          status: legacyStatus,
+          taxYear: legacyTaxYear,
+          preparerId: legacyPreparerId,
+        }
+      : optionsOrSearch
+
+  const normalizedSearch = options.search?.trim() ?? ""
+  const normalizedStatus = options.status ?? "all"
+  const normalizedPreparerId = options.preparerId?.trim() || null
+
   const { data, error } = await supabase.rpc("search_tax_returns", {
-    requested_search: search.trim() || undefined,
-
-    requested_status: status === "all" ? undefined : status,
-
-    requested_tax_year: taxYear ?? undefined,
-
-    requested_preparer_id: preparerId ?? undefined,
-
-    requested_limit: 250,
-  });
+    requested_search: normalizedSearch || undefined,
+    requested_status:
+      normalizedStatus === "all"
+        ? undefined
+        : normalizedStatus,
+    requested_tax_year: options.taxYear ?? undefined,
+    requested_preparer_id: normalizedPreparerId ?? undefined,
+    requested_limit: normalizeSearchLimit(options.limit),
+  })
 
   if (error) {
-    throw error;
+    throw new Error(getReturnServiceErrorMessage(error))
   }
 
   return (data ?? []).map((taxReturn) => ({
@@ -282,7 +320,7 @@ export async function searchTaxReturns(
     netFee: toNumber(taxReturn.net_fee),
     createdAt: taxReturn.created_at,
     updatedAt: taxReturn.updated_at,
-  }));
+  }))
 }
 
 export async function getClientTaxReturns(
