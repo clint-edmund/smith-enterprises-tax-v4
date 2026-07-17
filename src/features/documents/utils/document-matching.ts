@@ -4,10 +4,14 @@ import type {
   RequiredReturnDocument,
 } from "../types/required-document.types";
 
+export type DocumentMatchConfidence = "high" | "medium" | "low";
+
 export interface DocumentMatchCandidate {
   requiredDocumentId: string;
   clientDocumentId: string;
   score: number;
+  confidencePercent: number;
+  confidence: DocumentMatchConfidence;
   reasons: string[];
 }
 
@@ -62,14 +66,7 @@ const CATEGORY_KEYWORDS: Record<RequiredDocumentCategory, string[]> = {
     "1099 nec",
   ],
 
-  irs_notice: [
-    "irs",
-    "notice",
-    "letter",
-    "cp2000",
-    "audit",
-    "transcript",
-  ],
+  irs_notice: ["irs", "notice", "letter", "cp2000", "audit", "transcript"],
 
   prior_return: [
     "prior return",
@@ -88,20 +85,9 @@ const CATEGORY_KEYWORDS: Record<RequiredDocumentCategory, string[]> = {
     "signature",
   ],
 
-  internal: [
-    "internal",
-    "worksheet",
-    "review",
-    "checklist",
-    "notes",
-  ],
+  internal: ["internal", "worksheet", "review", "checklist", "notes"],
 
-  miscellaneous: [
-    "miscellaneous",
-    "misc",
-    "other",
-    "supporting",
-  ],
+  miscellaneous: ["miscellaneous", "misc", "other", "supporting"],
 };
 
 const DOCUMENT_ALIAS_GROUPS: DocumentAliasGroup[] = [
@@ -222,20 +208,11 @@ const DOCUMENT_ALIAS_GROUPS: DocumentAliasGroup[] = [
   },
   {
     label: "Social Security Card",
-    aliases: [
-      "social security card",
-      "ss card",
-      "ssn card",
-      "social security",
-    ],
+    aliases: ["social security card", "ss card", "ssn card", "social security"],
   },
   {
     label: "Passport",
-    aliases: [
-      "passport",
-      "passport card",
-      "passport photo page",
-    ],
+    aliases: ["passport", "passport card", "passport photo page"],
   },
   {
     label: "Prior Tax Return",
@@ -268,6 +245,32 @@ const DOCUMENT_ALIAS_GROUPS: DocumentAliasGroup[] = [
     ],
   },
 ];
+
+function calculateConfidence(score: number): {
+  confidencePercent: number;
+  confidence: DocumentMatchConfidence;
+} {
+  const confidencePercent = Math.min(Math.max(Math.round(score), 0), 100);
+
+  if (confidencePercent >= 85) {
+    return {
+      confidencePercent,
+      confidence: "high",
+    };
+  }
+
+  if (confidencePercent >= 60) {
+    return {
+      confidencePercent,
+      confidence: "medium",
+    };
+  }
+
+  return {
+    confidencePercent,
+    confidence: "low",
+  };
+}
 
 function normalizeText(value: string): string {
   return value
@@ -329,9 +332,7 @@ function buildRequiredDocumentSearchText(
   ].join(" ");
 }
 
-function buildClientDocumentSearchText(
-  document: ClientDocument,
-): string {
+function buildClientDocumentSearchText(document: ClientDocument): string {
   return [
     document.originalFileName,
     document.description ?? "",
@@ -343,9 +344,7 @@ function findApplicableAliasGroups(
   requiredSearchText: string,
 ): DocumentAliasGroup[] {
   return DOCUMENT_ALIAS_GROUPS.filter((group) =>
-    group.aliases.some((alias) =>
-      includesPhrase(requiredSearchText, alias),
-    ),
+    group.aliases.some((alias) => includesPhrase(requiredSearchText, alias)),
   );
 }
 
@@ -355,37 +354,25 @@ export function calculateDocumentMatchScore(
 ): DocumentMatchCandidate {
   const reasons: string[] = [];
 
-  const requiredSearchText =
-    buildRequiredDocumentSearchText(requiredDocument);
+  const requiredSearchText = buildRequiredDocumentSearchText(requiredDocument);
 
-  const documentSearchText =
-    buildClientDocumentSearchText(document);
+  const documentSearchText = buildClientDocumentSearchText(document);
 
   let score = 0;
 
   if (requiredDocument.category === document.category) {
     score += 40;
 
-    reasons.push(
-      "Document category matches the checklist category.",
-    );
+    reasons.push("Document category matches the checklist category.");
   }
 
-  if (
-    includesPhrase(
-      document.originalFileName,
-      requiredDocument.name,
-    )
-  ) {
+  if (includesPhrase(document.originalFileName, requiredDocument.name)) {
     score += 40;
 
-    reasons.push(
-      "File name contains the required document name.",
-    );
+    reasons.push("File name contains the required document name.");
   }
 
-  const applicableAliasGroups =
-    findApplicableAliasGroups(requiredSearchText);
+  const applicableAliasGroups = findApplicableAliasGroups(requiredSearchText);
 
   for (const aliasGroup of applicableAliasGroups) {
     const matchedAlias = aliasGroup.aliases.find((alias) =>
@@ -395,9 +382,7 @@ export function calculateDocumentMatchScore(
     if (matchedAlias) {
       score += 55;
 
-      reasons.push(
-        `Recognized ${aliasGroup.label} from "${matchedAlias}".`,
-      );
+      reasons.push(`Recognized ${aliasGroup.label} from "${matchedAlias}".`);
 
       break;
     }
@@ -414,25 +399,18 @@ export function calculateDocumentMatchScore(
     score += tokenScore;
 
     reasons.push(
-      `${sharedTokens} matching search term${
-        sharedTokens === 1 ? "" : "s"
-      }.`,
+      `${sharedTokens} matching search term${sharedTokens === 1 ? "" : "s"}.`,
     );
   }
 
-  const categoryKeywords =
-    CATEGORY_KEYWORDS[requiredDocument.category] ?? [];
+  const categoryKeywords = CATEGORY_KEYWORDS[requiredDocument.category] ?? [];
 
-  const matchingCategoryKeywords =
-    categoryKeywords.filter((keyword) =>
-      includesPhrase(documentSearchText, keyword),
-    );
+  const matchingCategoryKeywords = categoryKeywords.filter((keyword) =>
+    includesPhrase(documentSearchText, keyword),
+  );
 
   if (matchingCategoryKeywords.length > 0) {
-    const keywordScore = Math.min(
-      matchingCategoryKeywords.length * 6,
-      24,
-    );
+    const keywordScore = Math.min(matchingCategoryKeywords.length * 6, 24);
 
     score += keywordScore;
 
@@ -449,15 +427,17 @@ export function calculateDocumentMatchScore(
   ) {
     score += 100;
 
-    reasons.push(
-      "This document is already linked to the checklist item.",
-    );
+    reasons.push("This document is already linked to the checklist item.");
   }
+
+  const { confidencePercent, confidence } = calculateConfidence(score);
 
   return {
     requiredDocumentId: requiredDocument.id,
     clientDocumentId: document.id,
     score,
+    confidencePercent,
+    confidence,
     reasons,
   };
 }
@@ -468,12 +448,7 @@ export function findBestDocumentMatch(
 ): DocumentMatchCandidate | null {
   const candidates = documents
     .filter((document) => document.status !== "archived")
-    .map((document) =>
-      calculateDocumentMatchScore(
-        requiredDocument,
-        document,
-      ),
-    )
+    .map((document) => calculateDocumentMatchScore(requiredDocument, document))
     .sort((left, right) => right.score - left.score);
 
   const bestCandidate = candidates[0];
@@ -494,21 +469,12 @@ export function findDocumentMatches(
   documents: ClientDocument[],
 ): DocumentMatchCandidate[] {
   return requiredDocuments
-    .filter(
-      (requiredDocument) =>
-        !requiredDocument.isComplete,
-    )
+    .filter((requiredDocument) => !requiredDocument.isComplete)
     .map((requiredDocument) =>
-      findBestDocumentMatch(
-        requiredDocument,
-        documents,
-      ),
+      findBestDocumentMatch(requiredDocument, documents),
     )
     .filter(
-      (
-        candidate,
-      ): candidate is DocumentMatchCandidate =>
-        candidate !== null,
+      (candidate): candidate is DocumentMatchCandidate => candidate !== null,
     )
     .sort((left, right) => right.score - left.score);
 }

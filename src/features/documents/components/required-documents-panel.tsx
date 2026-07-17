@@ -17,6 +17,31 @@ function formatCategoryName(category: string): string {
     .replace(/\b\w/g, (character) => character.toUpperCase());
 }
 
+
+function getConfidenceLabel(confidencePercent: number): string {
+  if (confidencePercent >= 85) {
+    return "High Confidence";
+  }
+
+  if (confidencePercent >= 60) {
+    return "Medium Confidence";
+  }
+
+  return "Low Confidence";
+}
+
+function getConfidenceClasses(confidencePercent: number): string {
+  if (confidencePercent >= 85) {
+    return "border-green-200 bg-green-50 text-green-800";
+  }
+
+  if (confidencePercent >= 60) {
+    return "border-amber-200 bg-amber-50 text-amber-800";
+  }
+
+  return "border-slate-200 bg-slate-50 text-slate-700";
+}
+
 export function RequiredDocumentsPanel({
   taxReturnId,
   documents,
@@ -438,12 +463,24 @@ function getUploadedDocument(
               {suggestedDocument.originalFileName}
             </p>
 
-            <p className="mt-1 text-xs text-blue-700">
-              Match score: {suggestedMatch.score}
-            </p>
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <span
+                className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-semibold ${getConfidenceClasses(
+                  suggestedMatch.confidencePercent,
+                )}`}
+              >
+                {getConfidenceLabel(
+                  suggestedMatch.confidencePercent,
+                )}
+              </span>
+
+              <span className="text-xs font-medium text-blue-700">
+                {suggestedMatch.confidencePercent}% match
+              </span>
+            </div>
 
             {suggestedMatch.reasons.length > 0 ? (
-              <p className="mt-1 text-xs text-blue-700">
+              <p className="mt-2 text-xs text-blue-700">
                 {suggestedMatch.reasons[0]}
               </p>
             ) : null}
