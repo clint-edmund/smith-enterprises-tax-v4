@@ -89,3 +89,35 @@ export function formatDocumentSize(sizeBytes: number): string {
 
   return `${(sizeBytes / (1024 * 1024)).toFixed(1)} MB`
 }
+
+export function isPdfDocument(document: {
+  mimeType: string
+  originalFileName: string
+}): boolean {
+  return (
+    document.mimeType === "application/pdf" ||
+    document.originalFileName.toLowerCase().endsWith(".pdf")
+  )
+}
+
+export function isImageDocument(document: {
+  mimeType: string
+  originalFileName: string
+}): boolean {
+  const fileName = document.originalFileName.toLowerCase()
+
+  return (
+    document.mimeType === "image/jpeg" ||
+    document.mimeType === "image/png" ||
+    fileName.endsWith(".jpg") ||
+    fileName.endsWith(".jpeg") ||
+    fileName.endsWith(".png")
+  )
+}
+
+export function canPreviewDocument(document: {
+  mimeType: string
+  originalFileName: string
+}): boolean {
+  return isPdfDocument(document) || isImageDocument(document)
+}
