@@ -11,6 +11,8 @@ import { getDocumentStatus } from "../utils/get-document-status"
 import { MissingDocumentsSummary } from "./missing-documents-summary"
 import { UnmatchedDocumentsQueue } from "./unmatched-documents-queue"
 
+const AUTO_LINK_CONFIDENCE_THRESHOLD = 85
+
 interface RequiredDocumentsPanelProps {
   taxReturnId: string
   documents: ClientDocument[]
@@ -109,6 +111,39 @@ export function RequiredDocumentsPanel({
     [suggestedMatches],
   )
 
+  const highConfidenceMatches = useMemo(() => {
+    const usedUploadedDocumentIds =
+      new Set<string>()
+
+    return suggestedMatches.filter((match) => {
+      const requiredDocument =
+        requiredDocuments.find(
+          (document) =>
+            document.id ===
+            match.requiredDocumentId,
+        )
+
+      if (
+        match.confidencePercent <
+          AUTO_LINK_CONFIDENCE_THRESHOLD ||
+        !requiredDocument ||
+        requiredDocument.isComplete ||
+        requiredDocument.matchedDocumentId ||
+        usedUploadedDocumentIds.has(
+          match.clientDocumentId,
+        )
+      ) {
+        return false
+      }
+
+      usedUploadedDocumentIds.add(
+        match.clientDocumentId,
+      )
+
+      return true
+    })
+  }, [suggestedMatches, requiredDocuments])
+
 function getSuggestedMatch(
   requiredDocumentId: string,
 ) {
@@ -195,6 +230,44 @@ function getUploadedDocument(
   }
 }
 
+  async function handleAutoLinkHighConfidence() {
+  if (highConfidenceMatches.length === 0) {
+    setActionMessage(
+      "No high-confidence document matches are available.",
+    )
+
+    return
+  }
+
+  setActionMessage(null)
+
+  try {
+    let linkedCount = 0
+
+    for (const match of highConfidenceMatches) {
+      await updateRequiredDocument({
+        requiredDocumentId:
+          match.requiredDocumentId,
+        documentId:
+          match.clientDocumentId,
+        isComplete: true,
+      })
+
+      linkedCount += 1
+    }
+
+    setActionMessage(
+      `${linkedCount} high-confidence ${
+        linkedCount === 1
+          ? "document was"
+          : "documents were"
+      } linked successfully.`,
+    )
+  } catch {
+    // The hook exposes the error message.
+  }
+}
+
   if (isLoading) {
     return (
       <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -233,6 +306,22 @@ function getUploadedDocument(
           </div>
 
           <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                void handleAutoLinkHighConfidence()
+              }}
+              disabled={
+                isUpdating ||
+                highConfidenceMatches.length === 0
+              }
+              className="inline-flex min-h-10 items-center justify-center rounded-lg border border-green-300 bg-green-50 px-4 py-2 text-sm font-medium text-green-800 transition hover:bg-green-100 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {isUpdating
+                ? "Linking..."
+                : `Link High Confidence (${highConfidenceMatches.length})`}
+            </button>
+
             <button
               type="button"
               onClick={() => {
