@@ -4,6 +4,10 @@ import type {
   TaxFormType,
 } from "@/features/returns/types/return.types";
 
+import type {
+  DashboardActivity,
+} from "@/features/dashboard/types/activity.types"
+
 export type DashboardWorkflowSummary = {
   intake: number
   documentsPending: number
@@ -89,15 +93,6 @@ export type DashboardExecutiveMetrics = {
 
   reviewQueue: number
 }
-
-export type DashboardActivity = {
-  id: string;
-  action: string;
-  entityType: string;
-  entityId: string;
-  actorName: string;
-  occurredAt: string;
-};
 
 export type DashboardReturnItem = {
   id: string;

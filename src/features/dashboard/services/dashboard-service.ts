@@ -1,6 +1,5 @@
 import { supabase } from "@/services/supabase";
 import type {
-  DashboardActivity,
   DashboardAttentionItem,
   DashboardAnalytics,
   DashboardData,
@@ -8,7 +7,9 @@ import type {
   DashboardReturnItem,
   DashboardSummary,
   DashboardWorkload,
-} from "@/features/dashboard/types/dashboard.types.ts";
+  DashboardStaffWorkload,
+  DashboardStaffWorkloadItem,
+} from "@/features/dashboard/types/dashboard.types";
 import type { PostgrestError } from "@supabase/supabase-js";
 import type {
   ReturnStatus,
@@ -16,13 +17,10 @@ import type {
   TaxFormType,
 } from "@/features/returns/types/return.types";
 
+
 import type {
-  DashboardStaffWorkload,
-  DashboardStaffWorkloadItem,
-} from "@/features/dashboard/types/dashboard.types"
-
-
-
+  DashboardActivity,
+} from "@/features/dashboard/types/activity.types";
 
 
 type DashboardMonthlyFinancialRpcRow = {
@@ -52,6 +50,16 @@ type DashboardAnalyticsRpcResult<T> = {
   error: PostgrestError | null;
 };
 
+interface ActivityRow {
+  id: string | number
+  action: string
+  entity_type: string | null
+  entity_id: string | null
+  actor_name: string | null
+  occurred_at: string
+  description?: string | null
+}
+
 async function callDashboardAnalyticsRpc<T>(
   functionName: string,
 ): Promise<DashboardAnalyticsRpcResult<T>> {
@@ -60,6 +68,24 @@ async function callDashboardAnalyticsRpc<T>(
   ) => PromiseLike<DashboardAnalyticsRpcResult<T>>;
 
   return rpc(functionName);
+}
+
+function mapActivityRow(
+  row: ActivityRow,
+): DashboardActivity {
+  return {
+    id: String(row.id),
+    action: row.action,
+    entityType:
+      row.entity_type ?? "system",
+    entityId:
+      row.entity_id ?? null,
+    actorName:
+      row.actor_name?.trim() || "System",
+    occurredAt: row.occurred_at,
+    description:
+      row.description?.trim() || undefined,
+  };
 }
 
 type DashboardWorkloadRpcRow = {
@@ -218,6 +244,27 @@ function mapStaffWorkloadItem(
   }
 }
 
+export async function getRecentDashboardActivity(
+  limit = 8,
+): Promise<DashboardActivity[]> {
+  const { data, error } = await supabase.rpc(
+    "get_recent_dashboard_activity",
+    {
+      requested_limit: limit,
+    },
+  )
+
+  if (error) {
+    throw new Error(
+      `Unable to load recent dashboard activity: ${error.message}`,
+    )
+  }
+
+  return (
+    (data ?? []) as ActivityRow[]
+  ).map(mapActivityRow)
+}
+
 export async function getDashboardData(): Promise<DashboardData> {
   const [
     summaryResult,
@@ -267,7 +314,10 @@ export async function getDashboardData(): Promise<DashboardData> {
   }
 
   if (activityResult.error) {
-    throw activityResult.error;
+    console.error(
+      "Unable to load recent dashboard activity:",
+      activityResult.error,
+    )
   }
 
   if (recentReturnsResult.error) {
@@ -424,16 +474,12 @@ export async function getDashboardData(): Promise<DashboardData> {
     overdue: convertToNumber(workloadRow?.overdue),
   };
 
-  const activities: DashboardActivity[] = (activityResult.data ?? []).map(
-    (activity) => ({
-      id: String(activity.id),
-      action: activity.action,
-      entityType: activity.entity_type,
-      entityId: activity.entity_id,
-      actorName: activity.actor_name,
-      occurredAt: activity.occurred_at,
-    }),
-  );
+  const activities: DashboardActivity[] =
+  activityResult.error
+    ? []
+    : (
+        (activityResult.data ?? []) as ActivityRow[]
+      ).map(mapActivityRow)
 
   const recentReturns = (recentReturnsResult.data ?? []).map((item) =>
     mapReturnItem(item),

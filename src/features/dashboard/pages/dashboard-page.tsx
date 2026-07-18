@@ -12,22 +12,28 @@ import {
 import { useCallback, useEffect, useState } from "react";
 
 import { useAuth } from "@/features/auth/hooks/use-auth";
-import { DashboardFinancialChart } from "@/features/dashboard/components/dashboard-financial-chart";
-import { DashboardStaffWorkloadChart } from "@/features/dashboard/components/dashboard-staff-workload-chart";
-import { DashboardStatusChart } from "@/features/dashboard/components/dashboard-status-chart";
 import { DashboardAttentionList } from "@/features/dashboard/components/dashboard-attention-list";
+import { DashboardFinancialChart } from "@/features/dashboard/components/dashboard-financial-chart";
 import { DashboardReturnList } from "@/features/dashboard/components/dashboard-return-list";
 import { DashboardSkeleton } from "@/features/dashboard/components/dashboard-skeleton";
+import { DashboardStaffWorkloadChart } from "@/features/dashboard/components/dashboard-staff-workload-chart";
+import { DashboardStatusChart } from "@/features/dashboard/components/dashboard-status-chart";
+import { ExecutiveKpis } from "@/features/dashboard/components/executive-kpis";
 import { MyWorkload } from "@/features/dashboard/components/my-workload";
 import { QuickActions } from "@/features/dashboard/components/quick-actions";
 import { QuickReports } from "@/features/dashboard/components/quick-reports";
 import { RecentActivity } from "@/features/dashboard/components/recent-activity";
+import { StaffWorkload } from "@/features/dashboard/components/staff-workload";
 import { SummaryCard } from "@/features/dashboard/components/summary-card";
-import { ExecutiveKpis } from "@/features/dashboard/components/executive-kpis"
+import { WorkflowOperations } from "@/features/dashboard/components/workflow-operations";
 import {
   getDashboardData,
+  getRecentDashboardActivity,
   getStaffWorkloadSummary,
 } from "@/features/dashboard/services/dashboard-service";
+import type {
+  DashboardActivity,
+} from "@/features/dashboard/types/activity.types";
 import type {
   DashboardData,
   DashboardStaffWorkload,
@@ -36,9 +42,6 @@ import {
   formatCurrency,
   formatNumber,
 } from "@/features/dashboard/utils/dashboard-formatters";
-import { WorkflowOperations } from "@/features/dashboard/components/workflow-operations";
-
-import { StaffWorkload } from "@/features/dashboard/components/staff-workload"
 
 export function DashboardPage() {
   const { profile } = useAuth();
@@ -52,6 +55,9 @@ export function DashboardPage() {
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [activities, setActivities] = useState<DashboardActivity[]>([]);
+  const [isRefreshingActivity, setIsRefreshingActivity] = useState(false);
+  const [activityError, setActivityError] = useState<string | null>(null);
 
   const loadDashboard = useCallback(async (showRefreshIndicator = false) => {
     if (showRefreshIndicator) {
@@ -68,6 +74,7 @@ export function DashboardPage() {
 
       setDashboardData(data);
       setStaffWorkload(workloadData);
+      setActivities(data.activities);
     } catch (error) {
       console.error("Unable to load dashboard:", error);
 
@@ -75,6 +82,28 @@ export function DashboardPage() {
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
+    }
+  }, []);
+
+  const refreshActivity = useCallback(async () => {
+    setIsRefreshingActivity(true);
+    setActivityError(null);
+
+    try {
+      const refreshedActivities = await getRecentDashboardActivity(8);
+
+      setActivities(refreshedActivities);
+    } catch (error) {
+      console.error("Unable to refresh recent activity:", error);
+
+      const message =
+        error instanceof Error
+          ? error.message
+          : "An unexpected error occurred.";
+
+      setActivityError(message);
+    } finally {
+      setIsRefreshingActivity(false);
     }
   }, []);
 
@@ -133,7 +162,6 @@ export function DashboardPage() {
     summary,
     executive,
     workload,
-    activities,
     recentReturns,
     attentionItems,
     analytics,
@@ -277,7 +305,14 @@ export function DashboardPage() {
 
       <div className="grid gap-6 xl:grid-cols-3">
         <div className="xl:col-span-2">
-          <RecentActivity activities={activities} />
+          <RecentActivity
+            activities={activities}
+            errorMessage={activityError}
+            isRefreshing={isRefreshingActivity}
+            onRefresh={() => {
+              void refreshActivity();
+            }}
+          />
         </div>
 
         <div className="space-y-6">
