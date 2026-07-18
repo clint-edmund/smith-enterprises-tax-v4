@@ -23,6 +23,7 @@ import { QuickActions } from "@/features/dashboard/components/quick-actions";
 import { QuickReports } from "@/features/dashboard/components/quick-reports";
 import { RecentActivity } from "@/features/dashboard/components/recent-activity";
 import { SummaryCard } from "@/features/dashboard/components/summary-card";
+import { ExecutiveKpis } from "@/features/dashboard/components/executive-kpis"
 import {
   getDashboardData,
   getStaffWorkloadSummary,
@@ -130,6 +131,7 @@ export function DashboardPage() {
 
   const {
     summary,
+    executive,
     workload,
     activities,
     recentReturns,
@@ -188,7 +190,7 @@ export function DashboardPage() {
           description="Client records currently marked active"
           icon={Users}
         />
-
+      
         <SummaryCard
           label="Total Returns"
           value={formatNumber(summary.totalReturns)}
@@ -250,6 +252,8 @@ export function DashboardPage() {
           href="/returns?status=completed"
         />
       </div>
+      
+      <ExecutiveKpis metrics={executive} />
 
       <WorkflowOperations workflow={summary.workflow} />
 
