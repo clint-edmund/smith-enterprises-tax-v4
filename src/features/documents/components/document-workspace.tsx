@@ -40,26 +40,8 @@ export function DocumentWorkspace({
   }, [clientId, taxReturnId]);
 
   useEffect(() => {
-    async function load() {
-      try {
-        const documents = await listClientDocuments(clientId, taxReturnId);
-
-        setDocuments(documents);
-        setErrorMessage(null);
-      } catch (error) {
-        setErrorMessage(
-          error instanceof Error
-            ? error.message
-            : "Documents could not be loaded.",
-        );
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    setIsLoading(true);
-    void load();
-  }, [clientId, taxReturnId]);
+    void loadDocuments()
+  }, [loadDocuments])
 
   function handleUploaded(document: ClientDocument) {
     setDocuments((current) => [

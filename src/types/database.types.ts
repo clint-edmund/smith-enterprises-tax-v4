@@ -12,6 +12,31 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.5"
   }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   public: {
     Tables: {
       audit_logs: {
@@ -1039,6 +1064,16 @@ export type Database = {
           total_returns: number
           unassigned_returns: number
           upcoming_deadlines: number
+          workflow_completed: number
+          workflow_documents_pending: number
+          workflow_filed: number
+          workflow_in_preparation: number
+          workflow_intake: number
+          workflow_on_hold: number
+          workflow_ready_for_preparation: number
+          workflow_ready_to_file: number
+          workflow_review: number
+          workflow_signature_pending: number
         }[]
       }
       get_recent_dashboard_activity: {
@@ -1571,6 +1606,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {
       app_role: [

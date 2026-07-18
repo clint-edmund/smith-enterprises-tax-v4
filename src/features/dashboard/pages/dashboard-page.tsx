@@ -29,6 +29,7 @@ import {
   formatCurrency,
   formatNumber,
 } from "@/features/dashboard/utils/dashboard-formatters";
+import { WorkflowOperations } from "@/features/dashboard/components/workflow-operations";
 
 export function DashboardPage() {
   const { profile } = useAuth();
@@ -233,6 +234,8 @@ export function DashboardPage() {
           href="/returns?status=completed"
         />
       </div>
+
+      <WorkflowOperations workflow={summary.workflow} />
 
       <MyWorkload workload={workload} />
 

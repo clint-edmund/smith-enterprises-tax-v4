@@ -4,21 +4,39 @@ import type {
   TaxFormType,
 } from "@/features/returns/types/return.types";
 
+export type DashboardWorkflowSummary = {
+  intake: number
+  documentsPending: number
+  readyForPreparation: number
+  inPreparation: number
+  review: number
+  signaturePending: number
+  readyToFile: number
+  filed: number
+  completed: number
+  onHold: number
+}
+
 export type DashboardSummary = {
-  activeClients: number;
-  totalReturns: number;
-  openReturns: number;
-  completedReturns: number;
-  inProgressReturns: number;
-  awaitingReviewReturns: number;
-  documentsPending: number;
-  upcomingDeadlines: number;
-  overdueReturns: number;
-  unassignedReturns: number;
-  totalFees: number;
-  totalPayments: number;
-  outstandingBalance: number;
-};
+  activeClients: number
+  totalReturns: number
+  openReturns: number
+  completedReturns: number
+
+  inProgressReturns: number
+  awaitingReviewReturns: number
+  documentsPending: number
+
+  upcomingDeadlines: number
+  overdueReturns: number
+  unassignedReturns: number
+
+  totalFees: number
+  totalPayments: number
+  outstandingBalance: number
+
+  workflow: DashboardWorkflowSummary
+}
 
 export type DashboardWorkload = {
   assignedToMe: number;

@@ -1,16 +1,14 @@
 import { BarChart3, Star } from "lucide-react"
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { Link } from "react-router-dom"
 
 import { reports } from "@/features/reports/data/report-catalog"
 import { getFavoriteReportIds } from "@/features/reports/services/report-preferences-service"
 
 export function QuickReports() {
-  const [favoriteIds, setFavoriteIds] = useState<string[]>([])
 
-  useEffect(() => {
-    setFavoriteIds(getFavoriteReportIds())
-  }, [])
+  const [favoriteIds] =
+  useState<string[]>(() => getFavoriteReportIds())
 
   const favoriteReports = reports
     .filter((report) => favoriteIds.includes(report.id))

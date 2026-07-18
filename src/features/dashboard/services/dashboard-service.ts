@@ -176,20 +176,100 @@ export async function getDashboardData(): Promise<DashboardData> {
   const workloadRow = workloadResult.data?.[0];
 
   const summary: DashboardSummary = {
-    activeClients: convertToNumber(summaryRow?.active_clients),
-    totalReturns: convertToNumber(summaryRow?.total_returns),
-    openReturns: convertToNumber(summaryRow?.open_returns),
-    completedReturns: convertToNumber(summaryRow?.completed_returns),
-    inProgressReturns: convertToNumber(summaryRow?.in_progress_returns),
-    awaitingReviewReturns: convertToNumber(summaryRow?.awaiting_review_returns),
-    documentsPending: convertToNumber(summaryRow?.documents_pending),
-    upcomingDeadlines: convertToNumber(summaryRow?.upcoming_deadlines),
-    overdueReturns: convertToNumber(summaryRow?.overdue_returns),
-    unassignedReturns: convertToNumber(summaryRow?.unassigned_returns),
-    totalFees: convertToNumber(summaryRow?.total_fees),
-    totalPayments: convertToNumber(summaryRow?.total_payments),
-    outstandingBalance: convertToNumber(summaryRow?.outstanding_balance),
-  };
+  activeClients: convertToNumber(
+    summaryRow?.active_clients,
+  ),
+
+  totalReturns: convertToNumber(
+    summaryRow?.total_returns,
+  ),
+
+  openReturns: convertToNumber(
+    summaryRow?.open_returns,
+  ),
+
+  completedReturns: convertToNumber(
+    summaryRow?.completed_returns,
+  ),
+
+  inProgressReturns: convertToNumber(
+    summaryRow?.in_progress_returns,
+  ),
+
+  awaitingReviewReturns: convertToNumber(
+    summaryRow?.awaiting_review_returns,
+  ),
+
+  documentsPending: convertToNumber(
+    summaryRow?.documents_pending,
+  ),
+
+  upcomingDeadlines: convertToNumber(
+    summaryRow?.upcoming_deadlines,
+  ),
+
+  overdueReturns: convertToNumber(
+    summaryRow?.overdue_returns,
+  ),
+
+  unassignedReturns: convertToNumber(
+    summaryRow?.unassigned_returns,
+  ),
+
+  totalFees: convertToNumber(
+    summaryRow?.total_fees,
+  ),
+
+  totalPayments: convertToNumber(
+    summaryRow?.total_payments,
+  ),
+
+  outstandingBalance: convertToNumber(
+    summaryRow?.outstanding_balance,
+  ),
+
+  workflow: {
+    intake: convertToNumber(
+      summaryRow?.workflow_intake,
+    ),
+
+    documentsPending: convertToNumber(
+      summaryRow?.workflow_documents_pending,
+    ),
+
+    readyForPreparation: convertToNumber(
+      summaryRow?.workflow_ready_for_preparation,
+    ),
+
+    inPreparation: convertToNumber(
+      summaryRow?.workflow_in_preparation,
+    ),
+
+    review: convertToNumber(
+      summaryRow?.workflow_review,
+    ),
+
+    signaturePending: convertToNumber(
+      summaryRow?.workflow_signature_pending,
+    ),
+
+    readyToFile: convertToNumber(
+      summaryRow?.workflow_ready_to_file,
+    ),
+
+    filed: convertToNumber(
+      summaryRow?.workflow_filed,
+    ),
+
+    completed: convertToNumber(
+      summaryRow?.workflow_completed,
+    ),
+
+    onHold: convertToNumber(
+      summaryRow?.workflow_on_hold,
+    ),
+  },
+};
 
   const workload: DashboardWorkload = {
     assignedToMe: convertToNumber(workloadRow?.assigned_to_me),

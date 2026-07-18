@@ -21,11 +21,8 @@ function readFavoriteIds(): string[] {
 }
 
 export function useDocumentFavorites() {
-  const [favoriteIds, setFavoriteIds] = useState<string[]>([])
-
-  useEffect(() => {
-    setFavoriteIds(readFavoriteIds())
-  }, [])
+  const [favoriteIds, setFavoriteIds] =
+  useState<string[]>(() => readFavoriteIds())
 
   useEffect(() => {
     window.localStorage.setItem(
