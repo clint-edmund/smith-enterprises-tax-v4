@@ -993,6 +993,17 @@ export type Database = {
           updated_at: string
         }[]
       }
+      get_dashboard_executive_metrics: {
+        Args: never
+        Returns: {
+          completed_this_month: number
+          completed_this_week: number
+          due_next_30_days: number
+          due_next_7_days: number
+          projected_revenue: number
+          review_queue: number
+        }[]
+      }
       get_dashboard_monthly_financials: {
         Args: never
         Returns: {

@@ -4,6 +4,7 @@ import type {
   DashboardAttentionItem,
   DashboardAnalytics,
   DashboardData,
+  DashboardExecutiveMetrics,
   DashboardReturnItem,
   DashboardSummary,
   DashboardWorkload,
@@ -220,6 +221,7 @@ function mapStaffWorkloadItem(
 export async function getDashboardData(): Promise<DashboardData> {
   const [
     summaryResult,
+    executiveResult,
     workloadResult,
     activityResult,
     recentReturnsResult,
@@ -229,7 +231,9 @@ export async function getDashboardData(): Promise<DashboardData> {
     staffWorkloadResult,
   ] = await Promise.all([
     supabase.rpc("get_dashboard_summary"),
+    supabase.rpc("get_dashboard_executive_metrics"),
     getDashboardWorkloadRpc(),
+    
     supabase.rpc("get_recent_dashboard_activity", {
       requested_limit: 8,
     }),
@@ -251,7 +255,11 @@ export async function getDashboardData(): Promise<DashboardData> {
   ]);
 
   if (summaryResult.error) {
-    throw summaryResult.error;
+  throw summaryResult.error
+  }
+
+  if (executiveResult.error) {
+  throw executiveResult.error
   }
 
   if (workloadResult.error) {
@@ -282,8 +290,9 @@ export async function getDashboardData(): Promise<DashboardData> {
     throw staffWorkloadResult.error;
   }
 
-  const summaryRow = summaryResult.data?.[0];
-  const workloadRow = workloadResult.data?.[0];
+  const summaryRow = summaryResult.data?.[0]
+  const executiveRow = executiveResult.data?.[0]
+  const workloadRow = workloadResult.data?.[0]
 
   const summary: DashboardSummary = {
   activeClients: convertToNumber(
@@ -381,6 +390,32 @@ export async function getDashboardData(): Promise<DashboardData> {
   },
 };
 
+  const executive: DashboardExecutiveMetrics = {
+    projectedRevenue: convertToNumber(
+      executiveRow?.projected_revenue,
+    ),
+
+    returnsDueNext7Days: convertToNumber(
+      executiveRow?.due_next_7_days,
+    ),
+
+    returnsDueNext30Days: convertToNumber(
+      executiveRow?.due_next_30_days,
+    ),
+
+    completedThisWeek: convertToNumber(
+      executiveRow?.completed_this_week,
+    ),
+
+    completedThisMonth: convertToNumber(
+      executiveRow?.completed_this_month,
+    ),
+
+    reviewQueue: convertToNumber(
+      executiveRow?.review_queue,
+    ),
+  }
+
   const workload: DashboardWorkload = {
     assignedToMe: convertToNumber(workloadRow?.assigned_to_me),
     reviewAssignedToMe: convertToNumber(workloadRow?.review_assigned_to_me),
@@ -437,6 +472,7 @@ export async function getDashboardData(): Promise<DashboardData> {
 
   return {
     summary,
+    executive,
     workload,
     activities,
     recentReturns,

@@ -87,13 +87,7 @@ export type DashboardExecutiveMetrics = {
 
   completedThisMonth: number
 
-  averagePreparationDays: number
-
-  averageReviewDays: number
-
   reviewQueue: number
-
-  averageStaffUtilization: number
 }
 
 export type DashboardActivity = {
