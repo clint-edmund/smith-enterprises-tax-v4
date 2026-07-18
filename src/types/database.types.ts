@@ -1096,6 +1096,21 @@ export type Database = {
           role: Database["public"]["Enums"]["app_role"]
         }[]
       }
+      get_staff_workload_summary: {
+        Args: never
+        Returns: {
+          assigned_preparation: number
+          assigned_review: number
+          awaiting_review: number
+          display_name: string
+          due_next_seven_days: number
+          in_preparation: number
+          on_hold: number
+          overdue: number
+          role: string
+          staff_id: string
+        }[]
+      }
       get_tax_return_activity: {
         Args: { requested_limit?: number; requested_return_id: string }
         Returns: {

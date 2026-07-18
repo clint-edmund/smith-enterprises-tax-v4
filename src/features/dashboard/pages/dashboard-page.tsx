@@ -23,13 +23,21 @@ import { QuickActions } from "@/features/dashboard/components/quick-actions";
 import { QuickReports } from "@/features/dashboard/components/quick-reports";
 import { RecentActivity } from "@/features/dashboard/components/recent-activity";
 import { SummaryCard } from "@/features/dashboard/components/summary-card";
-import { getDashboardData } from "@/features/dashboard/services/dashboard-service";
-import type { DashboardData } from "@/features/dashboard/types/dashboard.types.ts";
+import {
+  getDashboardData,
+  getStaffWorkloadSummary,
+} from "@/features/dashboard/services/dashboard-service";
+import type {
+  DashboardData,
+  DashboardStaffWorkload,
+} from "@/features/dashboard/types/dashboard.types";
 import {
   formatCurrency,
   formatNumber,
 } from "@/features/dashboard/utils/dashboard-formatters";
 import { WorkflowOperations } from "@/features/dashboard/components/workflow-operations";
+
+import { StaffWorkload } from "@/features/dashboard/components/staff-workload"
 
 export function DashboardPage() {
   const { profile } = useAuth();
@@ -37,7 +45,7 @@ export function DashboardPage() {
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(
     null,
   );
-
+  const [staffWorkload, setStaffWorkload] = useState<DashboardStaffWorkload | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -52,9 +60,13 @@ export function DashboardPage() {
     setErrorMessage(null);
 
     try {
-      const data = await getDashboardData();
+      const [data, workloadData] = await Promise.all([
+        getDashboardData(),
+        getStaffWorkloadSummary(),
+      ]);
 
       setDashboardData(data);
+      setStaffWorkload(workloadData);
     } catch (error) {
       console.error("Unable to load dashboard:", error);
 
@@ -83,7 +95,11 @@ export function DashboardPage() {
     return null;
   }
 
-  if (errorMessage || !dashboardData) {
+  if (
+  errorMessage ||
+  !dashboardData ||
+  !staffWorkload
+) {
     return (
       <section className="rounded-2xl border border-red-200 bg-white p-8 shadow-sm">
         <p className="text-sm font-semibold uppercase tracking-wide text-red-700">
@@ -236,6 +252,8 @@ export function DashboardPage() {
       </div>
 
       <WorkflowOperations workflow={summary.workflow} />
+
+      <StaffWorkload workload={staffWorkload} />
 
       <MyWorkload workload={workload} />
 

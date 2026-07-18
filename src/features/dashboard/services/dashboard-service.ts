@@ -15,6 +15,11 @@ import type {
   TaxFormType,
 } from "@/features/returns/types/return.types";
 
+import type {
+  DashboardStaffWorkload,
+  DashboardStaffWorkloadItem,
+} from "@/features/dashboard/types/dashboard.types"
+
 
 
 
@@ -77,6 +82,42 @@ async function getDashboardWorkloadRpc(): Promise<DashboardWorkloadRpcResult> {
   return rpc("get_dashboard_my_workload");
 }
 
+export async function getStaffWorkloadSummary(): Promise<DashboardStaffWorkload> {
+  const { data, error } = await supabase.rpc(
+    "get_staff_workload_summary"
+  )
+
+  if (error) {
+    throw new Error(
+      `Unable to load staff workload: ${error.message}`
+    )
+  }
+
+  const staff = (data ?? []).map(mapStaffWorkloadItem)
+
+  return {
+    staff,
+    totalAssignedPreparation: staff.reduce(
+      (total, item) =>
+        total + item.assignedPreparation,
+      0
+    ),
+    totalAssignedReview: staff.reduce(
+      (total, item) =>
+        total + item.assignedReview,
+      0
+    ),
+    totalOverdue: staff.reduce(
+      (total, item) => total + item.overdue,
+      0
+    ),
+    totalOnHold: staff.reduce(
+      (total, item) => total + item.onHold,
+      0
+    ),
+  }
+}
+
 function convertToNumber(value: number | string | null | undefined): number {
   if (value === null || value === undefined) {
     return 0;
@@ -105,6 +146,34 @@ function mapReturnItem(item: Record<string, unknown>): DashboardReturnItem {
     netFee: convertToNumber(item.net_fee as number | string | null),
     updatedAt: String(item.updated_at),
   };
+}
+
+function mapStaffWorkloadItem(
+  row: {
+    staff_id: string
+    display_name: string
+    role: string
+    assigned_preparation: number
+    assigned_review: number
+    in_preparation: number
+    awaiting_review: number
+    overdue: number
+    due_next_seven_days: number
+    on_hold: number
+  }
+): DashboardStaffWorkloadItem {
+  return {
+    staffId: row.staff_id,
+    displayName: row.display_name,
+    role: row.role,
+    assignedPreparation: row.assigned_preparation,
+    assignedReview: row.assigned_review,
+    inPreparation: row.in_preparation,
+    awaitingReview: row.awaiting_review,
+    overdue: row.overdue,
+    dueNextSevenDays: row.due_next_seven_days,
+    onHold: row.on_hold,
+  }
 }
 
 export async function getDashboardData(): Promise<DashboardData> {

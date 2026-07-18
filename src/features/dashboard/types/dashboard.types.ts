@@ -46,6 +46,27 @@ export type DashboardWorkload = {
   overdue: number;
 };
 
+export type DashboardStaffWorkloadItem = {
+  staffId: string
+  displayName: string
+  role: string
+  assignedPreparation: number
+  assignedReview: number
+  inPreparation: number
+  awaitingReview: number
+  overdue: number
+  dueNextSevenDays: number
+  onHold: number
+}
+
+export type DashboardStaffWorkload = {
+  staff: DashboardStaffWorkloadItem[]
+  totalAssignedPreparation: number
+  totalAssignedReview: number
+  totalOverdue: number
+  totalOnHold: number
+}
+
 export type DashboardActivity = {
   id: string;
   action: string;
