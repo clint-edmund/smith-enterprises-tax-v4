@@ -12,6 +12,7 @@ import {
   formatCurrency,
   formatNumber,
 } from "@/features/dashboard/utils/dashboard-formatters"
+import { Link } from "react-router-dom"
 
 type ExecutiveKpisProps = {
   metrics: DashboardExecutiveMetrics
@@ -22,6 +23,7 @@ type ExecutiveKpiItem = {
   value: string
   description: string
   icon: typeof CircleDollarSign
+  href?: string
 }
 
 export function ExecutiveKpis({
@@ -45,6 +47,7 @@ export function ExecutiveKpis({
       description:
         "Open returns with deadlines during the next seven days.",
       icon: CalendarDays,
+      href: "/returns?deadline=next7",
     },
     {
       label: "Due Next 30 Days",
@@ -54,6 +57,7 @@ export function ExecutiveKpis({
       description:
         "Open returns with deadlines during the next thirty days.",
       icon: CalendarRange,
+      href: "/returns?deadline=next30",
     },
     {
       label: "Completed This Week",
@@ -63,6 +67,7 @@ export function ExecutiveKpis({
       description:
         "Returns completed since the beginning of the current week.",
       icon: FileCheck2,
+      href: "/returns?workflow=completed&completedPeriod=week",
     },
     {
       label: "Completed This Month",
@@ -72,6 +77,7 @@ export function ExecutiveKpis({
       description:
         "Returns completed since the beginning of the current month.",
       icon: TrendingUp,
+      href: "/returns?workflow=completed&completedPeriod=month",
     },
     {
       label: "Review Queue",
@@ -81,6 +87,7 @@ export function ExecutiveKpis({
       description:
         "Returns that are currently in the review stage.",
       icon: ClipboardCheck,
+      href: "/returns?workflow=review",
     },
   ]
 
@@ -105,11 +112,8 @@ export function ExecutiveKpis({
         {items.map((item) => {
           const Icon = item.icon
 
-          return (
-            <article
-              key={item.label}
-              className="rounded-xl border border-slate-200 bg-slate-50 p-5"
-            >
+          const content = (
+            <>
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <p className="text-sm font-semibold text-slate-600">
@@ -129,6 +133,33 @@ export function ExecutiveKpis({
               <p className="mt-4 text-sm leading-5 text-slate-500">
                 {item.description}
               </p>
+
+              {item.href ? (
+                <p className="mt-4 text-sm font-semibold text-blue-700">
+                  View matching returns →
+                </p>
+              ) : null}
+            </>
+          )
+
+          if (item.href) {
+            return (
+              <Link
+                key={item.label}
+                to={item.href}
+                className="block rounded-xl border border-slate-200 bg-slate-50 p-5 transition hover:-translate-y-0.5 hover:border-blue-300 hover:bg-blue-50 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2"
+              >
+                {content}
+              </Link>
+            )
+          }
+
+          return (
+            <article
+              key={item.label}
+              className="rounded-xl border border-slate-200 bg-slate-50 p-5"
+            >
+              {content}
             </article>
           )
         })}
