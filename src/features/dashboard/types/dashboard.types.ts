@@ -57,6 +57,15 @@ export type DashboardStaffWorkloadItem = {
   overdue: number
   dueNextSevenDays: number
   onHold: number
+  capacityPercentage: number
+
+  capacityStatus:
+    | "available"
+    | "moderate"
+    | "heavy"
+    | "overloaded"
+
+  recommendedMaximum: number
 }
 
 export type DashboardStaffWorkload = {

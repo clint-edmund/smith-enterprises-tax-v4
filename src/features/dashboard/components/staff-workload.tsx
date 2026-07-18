@@ -3,6 +3,8 @@ import type {
   DashboardStaffWorkloadItem,
 } from "@/features/dashboard/types/dashboard.types"
 
+import { Link } from "react-router-dom"
+
 type StaffWorkloadProps = {
   workload: DashboardStaffWorkload
 }
@@ -44,9 +46,12 @@ function StaffWorkloadRow({
     <tr className="border-b border-slate-100 last:border-b-0">
       <td className="px-4 py-4">
         <div>
-          <p className="font-semibold text-slate-900">
+          <Link
+            to={`/returns?preparer=${item.staffId}`}
+            className="font-semibold text-blue-700 hover:text-blue-900 hover:underline"
+          >
             {item.displayName}
-          </p>
+          </Link>
 
           <p className="mt-1 text-xs text-slate-500">
             {formatRole(item.role)}
@@ -54,20 +59,35 @@ function StaffWorkloadRow({
         </div>
       </td>
 
-      <td className="px-4 py-4 text-center text-sm text-slate-700">
-        {item.assignedPreparation}
+      <td className="px-4 py-4 text-center">
+        <Link
+          to={`/returns?preparer=${item.staffId}`}
+          className="font-semibold text-blue-700 hover:underline"
+        >
+          {item.assignedPreparation}
+        </Link>
       </td>
 
       <td className="px-4 py-4 text-center text-sm text-slate-700">
         {item.assignedReview}
       </td>
 
-      <td className="px-4 py-4 text-center text-sm text-slate-700">
-        {item.inPreparation}
+      <td className="px-4 py-4 text-center">
+        <Link
+          to={`/returns?preparer=${item.staffId}&workflow=in_preparation`}
+          className="font-semibold text-blue-700 hover:underline"
+        >
+          {item.inPreparation}
+        </Link>
       </td>
 
-      <td className="px-4 py-4 text-center text-sm text-slate-700">
-        {item.awaitingReview}
+      <td className="px-4 py-4 text-center">
+        <Link
+          to={`/returns?preparer=${item.staffId}&workflow=review`}
+          className="font-semibold text-blue-700 hover:underline"
+        >
+          {item.awaitingReview}
+        </Link>
       </td>
 
       <td className="px-4 py-4 text-center">

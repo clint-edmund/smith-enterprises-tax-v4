@@ -84,36 +84,44 @@ async function getDashboardWorkloadRpc(): Promise<DashboardWorkloadRpcResult> {
 
 export async function getStaffWorkloadSummary(): Promise<DashboardStaffWorkload> {
   const { data, error } = await supabase.rpc(
-    "get_staff_workload_summary"
+    "get_staff_workload_summary",
   )
 
   if (error) {
     throw new Error(
-      `Unable to load staff workload: ${error.message}`
+      `Unable to load staff workload: ${error.message}`,
     )
   }
 
-  const staff = (data ?? []).map(mapStaffWorkloadItem)
+  const staff = (data ?? []).map(
+    mapStaffWorkloadItem,
+  )
 
   return {
     staff,
+
     totalAssignedPreparation: staff.reduce(
       (total, item) =>
         total + item.assignedPreparation,
-      0
+      0,
     ),
+
     totalAssignedReview: staff.reduce(
       (total, item) =>
         total + item.assignedReview,
-      0
+      0,
     ),
+
     totalOverdue: staff.reduce(
-      (total, item) => total + item.overdue,
-      0
+      (total, item) =>
+        total + item.overdue,
+      0,
     ),
+
     totalOnHold: staff.reduce(
-      (total, item) => total + item.onHold,
-      0
+      (total, item) =>
+        total + item.onHold,
+      0,
     ),
   }
 }
@@ -160,19 +168,52 @@ function mapStaffWorkloadItem(
     overdue: number
     due_next_seven_days: number
     on_hold: number
-  }
+  },
 ): DashboardStaffWorkloadItem {
+  const recommendedMaximum = 25
+
+  const totalAssigned =
+    row.assigned_preparation +
+    row.assigned_review
+
+  const capacityPercentage = Math.round(
+    (totalAssigned / recommendedMaximum) * 100,
+  )
+
+  let capacityStatus:
+    DashboardStaffWorkloadItem["capacityStatus"]
+
+  if (capacityPercentage >= 100) {
+    capacityStatus = "overloaded"
+  } else if (capacityPercentage >= 75) {
+    capacityStatus = "heavy"
+  } else if (capacityPercentage >= 50) {
+    capacityStatus = "moderate"
+  } else {
+    capacityStatus = "available"
+  }
+
   return {
     staffId: row.staff_id,
     displayName: row.display_name,
     role: row.role,
-    assignedPreparation: row.assigned_preparation,
-    assignedReview: row.assigned_review,
-    inPreparation: row.in_preparation,
-    awaitingReview: row.awaiting_review,
-    overdue: row.overdue,
-    dueNextSevenDays: row.due_next_seven_days,
-    onHold: row.on_hold,
+    assignedPreparation:
+      row.assigned_preparation,
+    assignedReview:
+      row.assigned_review,
+    inPreparation:
+      row.in_preparation,
+    awaitingReview:
+      row.awaiting_review,
+    overdue:
+      row.overdue,
+    dueNextSevenDays:
+      row.due_next_seven_days,
+    onHold:
+      row.on_hold,
+    capacityPercentage,
+    capacityStatus,
+    recommendedMaximum,
   }
 }
 
