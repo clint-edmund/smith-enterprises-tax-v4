@@ -43,6 +43,10 @@ import {
   formatNumber,
 } from "@/features/dashboard/utils/dashboard-formatters";
 
+import {
+  useRecentActivityRealtime,
+} from "@/features/dashboard/hooks/use-recent-activity-realtime"
+
 export function DashboardPage() {
   const { profile } = useAuth();
 
@@ -107,6 +111,25 @@ export function DashboardPage() {
     }
   }, []);
 
+  const refreshActivitySilently =
+  useCallback(async () => {
+    try {
+      const refreshedActivities =
+        await getRecentDashboardActivity(8)
+
+      setActivities(
+        refreshedActivities,
+      )
+
+      setActivityError(null)
+    } catch (error) {
+      console.error(
+        "Unable to refresh recent activity from Realtime:",
+        error,
+      )
+    }
+  }, [])
+
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
       void loadDashboard();
@@ -116,6 +139,14 @@ export function DashboardPage() {
       window.clearTimeout(timeoutId);
     };
   }, [loadDashboard]);
+
+  const {
+    realtimeStatus,
+  } = useRecentActivityRealtime({
+    enabled: Boolean(profile),
+    onActivityInserted:
+      refreshActivitySilently,
+  })
 
   if (isLoading) {
     return <DashboardSkeleton />;
@@ -310,8 +341,9 @@ export function DashboardPage() {
             errorMessage={activityError}
             isRefreshing={isRefreshingActivity}
             onRefresh={() => {
-              void refreshActivity();
+              void refreshActivity()
             }}
+            realtimeStatus={realtimeStatus}
           />
         </div>
 

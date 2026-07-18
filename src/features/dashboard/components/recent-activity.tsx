@@ -7,11 +7,16 @@ import type {
   DashboardActivity,
 } from "@/features/dashboard/types/activity.types"
 
+import type {
+  ActivityRealtimeStatus,
+} from "@/features/dashboard/hooks/use-recent-activity-realtime"
+
 interface RecentActivityProps {
   activities: DashboardActivity[]
   isRefreshing?: boolean
   errorMessage?: string | null
   onRefresh?: () => void
+  realtimeStatus?: ActivityRealtimeStatus
 }
 
 export function RecentActivity({
@@ -19,6 +24,7 @@ export function RecentActivity({
   isRefreshing = false,
   errorMessage = null,
   onRefresh,
+  realtimeStatus = "disconnected",
 }: RecentActivityProps) {
   return (
     <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">
@@ -32,9 +38,15 @@ export function RecentActivity({
           </div>
 
           <div>
-            <h2 className="text-lg font-semibold text-slate-950">
-              Recent Activity
-            </h2>
+            <div className="flex flex-wrap items-center gap-2">
+              <h2 className="text-lg font-semibold text-slate-950">
+                Recent Activity
+              </h2>
+
+              <RealtimeStatusBadge
+                status={realtimeStatus}
+              />
+            </div>
 
             <p className="text-sm text-slate-500">
               Latest activity across the tax office
@@ -183,4 +195,58 @@ function formatActivityDate(
   }
 
   return date.toLocaleString()
+}
+
+function RealtimeStatusBadge({
+  status,
+}: {
+  status: ActivityRealtimeStatus
+}) {
+  const statusDetails: Record<
+    ActivityRealtimeStatus,
+    {
+      label: string
+      className: string
+    }
+  > = {
+    connected: {
+      label: "Live",
+      className:
+        "border-emerald-200 bg-emerald-50 text-emerald-700",
+    },
+
+    connecting: {
+      label: "Connecting",
+      className:
+        "border-amber-200 bg-amber-50 text-amber-700",
+    },
+
+    disconnected: {
+      label: "Offline",
+      className:
+        "border-slate-200 bg-slate-50 text-slate-600",
+    },
+
+    error: {
+      label: "Connection issue",
+      className:
+        "border-red-200 bg-red-50 text-red-700",
+    },
+  }
+
+  const details =
+    statusDetails[status]
+
+  return (
+    <span
+      className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-semibold ${details.className}`}
+    >
+      <span
+        aria-hidden="true"
+        className="mr-1.5 h-1.5 w-1.5 rounded-full bg-current"
+      />
+
+      {details.label}
+    </span>
+  )
 }
