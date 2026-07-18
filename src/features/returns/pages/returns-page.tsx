@@ -187,7 +187,7 @@ export function ReturnsPage() {
     void loadTaxReturns()
   }, [loadTaxReturns])
 
-  const taxReturns = useMemo(() => {
+  const queueTaxReturns = useMemo(() => {
     const currentUserId = profile?.id ?? null
     const today = new Date()
     const todayKey = toLocalDateKey(today)
@@ -222,12 +222,7 @@ export function ReturnsPage() {
       ) {
         return false
       }
-      if (
-        filters.workflow !== "all" &&
-        taxReturn.workflowStatus !== filters.workflow
-      ) {
-        return false
-      }
+
       if (filters.deadline === "all") {
         return true
       }
@@ -265,9 +260,20 @@ export function ReturnsPage() {
     filters.assignment,
     filters.deadline,
     filters.reviewer,
-    filters.workflow,
     profile?.id,
   ])
+
+  const taxReturns = useMemo(
+    () =>
+      filters.workflow === "all"
+        ? queueTaxReturns
+        : queueTaxReturns.filter(
+            (taxReturn) =>
+              taxReturn.workflowStatus ===
+              filters.workflow,
+          ),
+    [queueTaxReturns, filters.workflow],
+  )
 
   const resultNetFees = taxReturns.reduce(
     (total, taxReturn) =>
@@ -281,7 +287,7 @@ export function ReturnsPage() {
       number
     >()
 
-    for (const taxReturn of taxReturns) {
+    for (const taxReturn of queueTaxReturns) {
       counts.set(
         taxReturn.workflowStatus,
         (counts.get(
@@ -301,7 +307,7 @@ export function ReturnsPage() {
           status as TaxReturnListItem["workflowStatus"],
         ) ?? 0,
     }))
-  }, [taxReturns])
+  }, [queueTaxReturns])
 
   return (
     <section className="space-y-6">
@@ -382,7 +388,7 @@ export function ReturnsPage() {
             </p>
 
             <p className="mt-2 text-2xl font-bold text-slate-950">
-              {allTaxReturns.length}
+              {queueTaxReturns.length}
             </p>
             <p className="mt-2 text-xs text-slate-500">
               Click to filter
