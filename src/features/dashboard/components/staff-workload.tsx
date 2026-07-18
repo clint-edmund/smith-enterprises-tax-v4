@@ -37,6 +37,22 @@ function WorkloadSummaryCard({
   )
 }
 
+function getCapacityBadge(status: DashboardStaffWorkloadItem["capacityStatus"]) {
+  switch (status) {
+    case "available":
+      return "bg-green-100 text-green-800"
+
+    case "moderate":
+      return "bg-yellow-100 text-yellow-800"
+
+    case "heavy":
+      return "bg-orange-100 text-orange-800"
+
+    case "overloaded":
+      return "bg-red-100 text-red-800"
+  }
+}
+
 function StaffWorkloadRow({
   item,
 }: {
@@ -71,6 +87,28 @@ function StaffWorkloadRow({
       <td className="px-4 py-4 text-center text-sm text-slate-700">
         {item.assignedReview}
       </td>
+
+      <td className="px-4 py-4 text-center font-semibold">
+        {item.capacityPercentage}%
+      </td>
+
+      <td className="px-4 py-4 text-center">
+        <span
+          className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${getCapacityBadge(
+            item.capacityStatus,
+          )}`}
+        >
+          {item.capacityStatus}
+        </span>
+      </td>
+
+      <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-slate-500">
+        Capacity
+      </th>
+
+      <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-slate-500">
+        Status
+      </th>
 
       <td className="px-4 py-4 text-center">
         <Link
