@@ -366,11 +366,44 @@ export function ReturnsPage() {
         </div>
 
         <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+          <button
+            type="button"
+            onClick={() => {
+              setFilter("workflow", "all")
+            }}
+            className={`rounded-xl border p-4 text-left shadow-sm transition ${
+              filters.workflow === "all"
+                ? "border-blue-700 bg-blue-50"
+                : "border-slate-200 bg-white hover:border-blue-300 hover:bg-blue-50"
+            }`}
+          >
+            <p className="text-sm font-medium text-slate-500">
+              All Workflows
+            </p>
+
+            <p className="mt-2 text-2xl font-bold text-slate-950">
+              {allTaxReturns.length}
+            </p>
+            <p className="mt-2 text-xs text-slate-500">
+              Click to filter
+            </p>
+          </button>
           {workflowQueueCounts.map(
             ({ status, label, count }) => (
-              <article
+              <button
+                type="button"
                 key={status}
-                className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"
+                onClick={() => {
+                  setFilter(
+                    "workflow",
+                    status,
+                  )
+                }}
+                className={`rounded-xl border p-4 text-left shadow-sm transition ${
+                  filters.workflow === status
+                    ? "border-blue-700 bg-blue-50"
+                    : "border-slate-200 bg-white hover:border-blue-300 hover:bg-blue-50"
+                }`}
               >
                 <p className="text-sm font-medium text-slate-500">
                   {label}
@@ -379,7 +412,10 @@ export function ReturnsPage() {
                 <p className="mt-2 text-2xl font-bold text-slate-950">
                   {count}
                 </p>
-              </article>
+                <p className="mt-2 text-xs text-slate-500">
+                  Click to filter
+                </p>
+              </button>
             ),
           )}
         </div>
