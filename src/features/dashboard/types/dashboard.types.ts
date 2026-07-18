@@ -76,6 +76,26 @@ export type DashboardStaffWorkload = {
   totalOnHold: number
 }
 
+export type DashboardExecutiveMetrics = {
+  projectedRevenue: number
+
+  returnsDueNext7Days: number
+
+  returnsDueNext30Days: number
+
+  completedThisWeek: number
+
+  completedThisMonth: number
+
+  averagePreparationDays: number
+
+  averageReviewDays: number
+
+  reviewQueue: number
+
+  averageStaffUtilization: number
+}
+
 export type DashboardActivity = {
   id: string;
   action: string;
@@ -113,6 +133,7 @@ export type DashboardAttentionItem = DashboardReturnItem & {
 
 export type DashboardData = {
   summary: DashboardSummary;
+  executive: DashboardExecutiveMetrics;
   workload: DashboardWorkload;
   activities: DashboardActivity[];
   recentReturns: DashboardReturnItem[];
