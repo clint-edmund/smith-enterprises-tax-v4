@@ -11,6 +11,8 @@ import type {
   DashboardStaffWorkloadItem,
   DashboardSummary,
   DashboardWorkload,
+  DashboardPriorityItem,
+  DashboardRiskMetrics,
 } from "@/features/dashboard/types/dashboard.types"
 import type { PostgrestError } from "@supabase/supabase-js";
 import type {
@@ -661,12 +663,29 @@ export async function getDashboardData(): Promise<DashboardData> {
     })),
   };
 
+  const risk: DashboardRiskMetrics = {
+    evaluatedReturns: 0,
+    criticalRiskReturns: 0,
+    highRiskReturns: 0,
+    mediumRiskReturns: 0,
+    lowRiskReturns: 0,
+    overdueReturns: 0,
+    dueWithinThreeDays: 0,
+    dueWithinSevenDays: 0,
+    inactiveReturns: 0,
+    averageRiskScore: 0,
+  }
+
+const priorityQueue: DashboardPriorityItem[] = []
+
   return {
   summary,
   executive,
   workload,
   readiness,
   recommendations,
+  risk,
+  priorityQueue,
   activities,
   recentReturns,
   attentionItems,

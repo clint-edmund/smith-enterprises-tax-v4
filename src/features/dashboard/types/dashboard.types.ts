@@ -148,33 +148,79 @@ export type DashboardRecommendationType =
   | "resolve_blocker"
   | "due_date"
 
-export interface DashboardRecommendation {
+export type DashboardRecommendation = {
   id: string
-
   returnId: string
   clientId: string
-
   clientName: string
-
   taxYear: number
-
-  returnType: ReturnType
-
+  returnType: string
+  recommendationType: DashboardRecommendationType
   title: string
-
   explanation: string
-
-  recommendationType:
-    DashboardRecommendationType
-
-  priority:
-    DashboardRecommendationPriority
-
+  priority: DashboardRecommendationPriority
   readinessScore: number
-
   dueDate: string | null
-
   actionRoute: string
+}
+
+export type DashboardRiskLevel =
+  | "critical"
+  | "high"
+  | "medium"
+  | "low"
+
+export type DashboardRiskFactorType =
+  | "overdue"
+  | "due_soon"
+  | "missing_documents"
+  | "missing_preparer"
+  | "missing_reviewer"
+  | "blocked"
+  | "inactive"
+  | "unpaid_balance"
+  | "workflow_delay"
+
+export type DashboardRiskFactor = {
+  type: DashboardRiskFactorType
+  label: string
+  description: string
+  points: number
+}
+
+export type DashboardPriorityItem = {
+  id: string
+  returnId: string
+  clientId: string
+  clientName: string
+  taxYear: number
+  returnType: string
+  status: string
+  riskScore: number
+  riskLevel: DashboardRiskLevel
+  readinessScore: number
+  dueDate: string | null
+  daysUntilDue: number | null
+  daysSinceActivity: number | null
+  assignedPreparerName: string | null
+  assignedReviewerName: string | null
+  outstandingBalance: number
+  recommendedAction: string
+  actionRoute: string
+  riskFactors: DashboardRiskFactor[]
+}
+
+export type DashboardRiskMetrics = {
+  evaluatedReturns: number
+  criticalRiskReturns: number
+  highRiskReturns: number
+  mediumRiskReturns: number
+  lowRiskReturns: number
+  overdueReturns: number
+  dueWithinThreeDays: number
+  dueWithinSevenDays: number
+  inactiveReturns: number
+  averageRiskScore: number
 }
 
 export type DashboardData = {
@@ -183,6 +229,8 @@ export type DashboardData = {
   workload: DashboardWorkload
   readiness: DashboardReadinessMetrics
   recommendations: DashboardRecommendation[]
+  risk: DashboardRiskMetrics
+  priorityQueue: DashboardPriorityItem[]
   activities: DashboardActivity[]
   recentReturns: DashboardReturnItem[]
   attentionItems: DashboardAttentionItem[]
