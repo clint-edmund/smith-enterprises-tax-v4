@@ -51,6 +51,10 @@ import {
   ReturnReadinessCenter,
 } from "@/features/dashboard/components/return-readiness-center"
 
+import {
+  SmartRecommendationsPanel,
+} from "@/features/dashboard/components/smart-recommendations-panel"
+
 export function DashboardPage() {
   const { profile } = useAuth();
 
@@ -324,6 +328,11 @@ export function DashboardPage() {
             <ExecutiveKpis
               metrics={executive}
             />
+
+            <SmartRecommendationsPanel
+              recommendations={dashboardData.recommendations}
+            />
+
 
       <WorkflowOperations workflow={summary.workflow} />
 
