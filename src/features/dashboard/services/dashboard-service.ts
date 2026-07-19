@@ -5,6 +5,7 @@ import type {
   DashboardData,
   DashboardExecutiveMetrics,
   DashboardReadinessMetrics,
+  DashboardRecommendation,
   DashboardReturnItem,
   DashboardStaffWorkload,
   DashboardStaffWorkloadItem,
@@ -34,6 +35,22 @@ type DashboardReadinessRpcRow = {
   overdue_returns: number | string | null
   average_readiness_score: number | string | null
   office_health_score: number | string | null
+}
+
+type DashboardRecommendationRpcRow = {
+  id: string
+  return_id: string
+  client_id: string
+  client_name: string
+  tax_year: number | string | null
+  return_type: ReturnType
+  recommendation_type: DashboardRecommendation["recommendationType"]
+  title: string
+  explanation: string
+  priority: DashboardRecommendation["priority"]
+  readiness_score: number | string | null
+  due_date: string | null
+  action_route: string
 }
 
 type DashboardMonthlyFinancialRpcRow = {
@@ -196,6 +213,29 @@ function mapReturnItem(item: Record<string, unknown>): DashboardReturnItem {
   };
 }
 
+function mapDashboardRecommendation(
+  row: DashboardRecommendationRpcRow,
+): DashboardRecommendation {
+  return {
+    id: row.id,
+    returnId: row.return_id,
+    clientId: row.client_id,
+    clientName: row.client_name,
+    taxYear: convertToNumber(row.tax_year),
+    returnType: row.return_type,
+    recommendationType:
+      row.recommendation_type,
+    title: row.title,
+    explanation: row.explanation,
+    priority: row.priority,
+    readinessScore: convertToNumber(
+      row.readiness_score,
+    ),
+    dueDate: row.due_date,
+    actionRoute: row.action_route,
+  }
+}
+
 function mapStaffWorkloadItem(
   row: {
     staff_id: string
@@ -280,17 +320,18 @@ export async function getRecentDashboardActivity(
 
 export async function getDashboardData(): Promise<DashboardData> {
   const [
-    summaryResult,
-    executiveResult,
-    workloadResult,
-    readinessResult,
-    activityResult,
-    recentReturnsResult,
-    attentionResult,
-    monthlyFinancialResult,
-    statusMetricsResult,
-    staffWorkloadResult,
-  ] = await Promise.all([
+  summaryResult,
+  executiveResult,
+  workloadResult,
+  readinessResult,
+  recommendationsResult,
+  activityResult,
+  recentReturnsResult,
+  attentionResult,
+  monthlyFinancialResult,
+  statusMetricsResult,
+  staffWorkloadResult,
+] = await Promise.all([
     supabase.rpc("get_dashboard_summary"),
 
     supabase.rpc(
@@ -301,6 +342,10 @@ export async function getDashboardData(): Promise<DashboardData> {
 
     callDashboardAnalyticsRpc<DashboardReadinessRpcRow>(
       "get_dashboard_readiness_metrics",
+    ),
+
+    callDashboardAnalyticsRpc<DashboardRecommendationRpcRow>(
+      "get_dashboard_smart_recommendations",
     ),
 
     supabase.rpc(
@@ -350,8 +395,12 @@ export async function getDashboardData(): Promise<DashboardData> {
   }
 
   if (readinessResult.error) {
-  throw readinessResult.error
-}
+    throw readinessResult.error
+  }
+
+  if (recommendationsResult.error) {
+    throw recommendationsResult.error
+  }
 
   if (activityResult.error) {
     console.error(
@@ -556,6 +605,12 @@ export async function getDashboardData(): Promise<DashboardData> {
     ),
   }
 
+  const recommendations:
+    DashboardRecommendation[] =
+    (
+      recommendationsResult.data ?? []
+    ).map(mapDashboardRecommendation)
+  
   const workload: DashboardWorkload = {
     assignedToMe: convertToNumber(workloadRow?.assigned_to_me),
     reviewAssignedToMe: convertToNumber(workloadRow?.review_assigned_to_me),
@@ -611,7 +666,7 @@ export async function getDashboardData(): Promise<DashboardData> {
   executive,
   workload,
   readiness,
-  recommendations: [],
+  recommendations,
   activities,
   recentReturns,
   attentionItems,
