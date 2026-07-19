@@ -12,7 +12,9 @@ import {
   archiveClientDocument,
   createDocumentDownloadUrl,
 } from "@/features/documents/services/document-service"
-import type { ClientDocument } from "@/features/documents/types/document.types"
+import type {
+  ClientDocument,
+} from "@/features/documents/types/document.types"
 import {
   canPreviewDocument,
   documentCategoryLabels,
@@ -22,28 +24,60 @@ import {
 interface DocumentCardProps {
   document: ClientDocument
   isFavorite: boolean
-  onArchived: (documentId: string) => void
-  onPreview: (document: ClientDocument) => void
-  onToggleFavorite: (documentId: string) => void
+  isSelected: boolean
+  selectionDisabled?: boolean
+  onArchived: (
+    documentId: string,
+  ) => void
+  onPreview: (
+    document: ClientDocument,
+  ) => void
+  onSelectionChange: (
+    documentId: string,
+    selected: boolean,
+  ) => void
+  onToggleFavorite: (
+    documentId: string,
+  ) => void
 }
 
 export function DocumentCard({
   document,
   isFavorite,
+  isSelected,
+  selectionDisabled = false,
   onArchived,
   onPreview,
+  onSelectionChange,
   onToggleFavorite,
 }: DocumentCardProps) {
-  const [action, setAction] = useState<"download" | "archive" | null>(null)
-  const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [
+    action,
+    setAction,
+  ] = useState<
+    "download" | "archive" | null
+  >(null)
+
+  const [
+    errorMessage,
+    setErrorMessage,
+  ] = useState<string | null>(null)
 
   async function handleDownload() {
     setAction("download")
     setErrorMessage(null)
 
     try {
-      const url = await createDocumentDownloadUrl(document)
-      window.open(url, "_blank", "noopener,noreferrer")
+      const url =
+        await createDocumentDownloadUrl(
+          document,
+        )
+
+      window.open(
+        url,
+        "_blank",
+        "noopener,noreferrer",
+      )
     } catch (error) {
       setErrorMessage(
         error instanceof Error
@@ -56,7 +90,12 @@ export function DocumentCard({
   }
 
   async function handleArchive() {
-    if (!window.confirm(`Archive ${document.originalFileName}?`)) {
+    const confirmed =
+      window.confirm(
+        `Archive ${document.originalFileName}?`,
+      )
+
+    if (!confirmed) {
       return
     }
 
@@ -64,7 +103,10 @@ export function DocumentCard({
     setErrorMessage(null)
 
     try {
-      await archiveClientDocument(document.id)
+      await archiveClientDocument(
+        document.id,
+      )
+
       onArchived(document.id)
     } catch (error) {
       setErrorMessage(
@@ -78,41 +120,98 @@ export function DocumentCard({
   }
 
   return (
-    <article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-slate-300 hover:shadow-md">
+    <article
+      className={`rounded-xl border bg-white p-4 shadow-sm transition ${
+        isSelected
+          ? "border-blue-500 ring-2 ring-blue-100"
+          : "border-slate-200 hover:border-slate-300 hover:shadow-md"
+      }`}
+    >
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 items-start gap-3">
+          <label className="mt-1 flex shrink-0 items-center">
+            <input
+              aria-label={`Select ${document.originalFileName}`}
+              checked={isSelected}
+              className="size-4 rounded border-slate-300 text-blue-700 focus:ring-blue-600"
+              disabled={
+                selectionDisabled
+              }
+              onChange={(event) =>
+                onSelectionChange(
+                  document.id,
+                  event.target.checked,
+                )
+              }
+              type="checkbox"
+            />
+          </label>
+
           <div className="rounded-lg bg-emerald-50 p-2 text-emerald-700">
             <FileCheck2 className="size-5" />
           </div>
+
           <div className="min-w-0">
             <p className="truncate font-semibold text-slate-950">
-              {document.originalFileName}
+              {
+                document.originalFileName
+              }
             </p>
+
             <p className="mt-1 text-xs text-slate-500">
-              {documentCategoryLabels[document.category]} · {formatDocumentSize(document.sizeBytes)}
+              {
+                documentCategoryLabels[
+                  document.category
+                ]
+              }
+              {" · "}
+              {formatDocumentSize(
+                document.sizeBytes,
+              )}
             </p>
           </div>
         </div>
 
         <button
-          aria-label={isFavorite ? "Remove document from favorites" : "Add document to favorites"}
+          aria-label={
+            isFavorite
+              ? "Remove document from favorites"
+              : "Add document to favorites"
+          }
           className={`rounded-lg p-2 transition ${
             isFavorite
               ? "bg-amber-50 text-amber-600"
               : "text-slate-400 hover:bg-slate-100 hover:text-amber-600"
           }`}
-          onClick={() => onToggleFavorite(document.id)}
+          disabled={action !== null}
+          onClick={() =>
+            onToggleFavorite(
+              document.id,
+            )
+          }
           type="button"
         >
-          <Star className={`size-4 ${isFavorite ? "fill-current" : ""}`} />
+          <Star
+            className={`size-4 ${
+              isFavorite
+                ? "fill-current"
+                : ""
+            }`}
+          />
         </button>
       </div>
 
       <div className="mt-3 flex flex-wrap items-center gap-2">
         <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold capitalize text-slate-700">
-          {document.status}
+          {document.status.replace(
+            /_/g,
+            " ",
+          )}
         </span>
-        {canPreviewDocument(document) ? (
+
+        {canPreviewDocument(
+          document,
+        ) ? (
           <span className="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700">
             Preview available
           </span>
@@ -126,7 +225,13 @@ export function DocumentCard({
       ) : null}
 
       <p className="mt-3 text-xs text-slate-500">
-        Uploaded by {document.uploadedByName} · {new Date(document.createdAt).toLocaleString()}
+        Uploaded by{" "}
+        {document.uploadedByName ??
+          "Unknown user"}
+        {" · "}
+        {new Date(
+          document.createdAt,
+        ).toLocaleString()}
       </p>
 
       {errorMessage ? (
@@ -137,17 +242,23 @@ export function DocumentCard({
 
       <div className="mt-4 flex flex-wrap gap-2">
         <button
-          className="inline-flex items-center gap-2 rounded-lg bg-blue-700 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-800"
-          onClick={() => onPreview(document)}
+          className="inline-flex items-center gap-2 rounded-lg bg-blue-700 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-800 disabled:opacity-50"
+          disabled={action !== null}
+          onClick={() =>
+            onPreview(document)
+          }
           type="button"
         >
           <Eye className="size-4" />
           Preview
         </button>
+
         <button
           className="inline-flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-50"
           disabled={action !== null}
-          onClick={() => void handleDownload()}
+          onClick={() =>
+            void handleDownload()
+          }
           type="button"
         >
           {action === "download" ? (
@@ -155,12 +266,16 @@ export function DocumentCard({
           ) : (
             <Download className="size-4" />
           )}
+
           Download
         </button>
+
         <button
           className="inline-flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-red-700 disabled:opacity-50"
           disabled={action !== null}
-          onClick={() => void handleArchive()}
+          onClick={() =>
+            void handleArchive()
+          }
           type="button"
         >
           {action === "archive" ? (
@@ -168,6 +283,7 @@ export function DocumentCard({
           ) : (
             <Archive className="size-4" />
           )}
+
           Archive
         </button>
       </div>

@@ -1,5 +1,4 @@
 import type {
-  DocumentCategory,
   DocumentUploadValidation,
 } from "@/features/documents/types/document.types"
 
@@ -21,7 +20,7 @@ const allowedMimeTypes = new Set([
 ])
 
 export const documentCategoryLabels: Record<
-  DocumentCategory,
+  string,
   string
 > = {
   identity: "Identity",

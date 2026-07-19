@@ -27,6 +27,7 @@ interface DocumentDatabaseRow {
   uploaded_by_name: string
   created_at: string
   updated_at: string
+  archived_at: string | null
 }
 
 type DocumentRpcName =
@@ -63,7 +64,8 @@ function mapDocumentRow(
     uploadedByName: document.uploaded_by_name,
     createdAt: document.created_at,
     updatedAt: document.updated_at,
-  }
+    archivedAt: document.archived_at ?? null,
+      }
 }
 
 function createStoragePath(
