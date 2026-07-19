@@ -44,6 +44,10 @@ import {
   ReturnWorkflowPanel,
 } from "@/features/workflow"
 
+import {
+  ReturnReadinessPanel,
+} from "@/features/returns/readiness/return-readiness-panel"
+
 const editRoles = [
   "administrator",
   "manager",
@@ -299,6 +303,10 @@ export function ReturnDetailsPage() {
           }}
         />
       )}
+
+      <ReturnReadinessPanel
+        taxReturn={taxReturn}
+      />
 
       <div className="grid gap-6 xl:grid-cols-[0.8fr_1.2fr]">
         <div className="space-y-6">
