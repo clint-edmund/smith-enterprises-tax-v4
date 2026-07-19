@@ -4,12 +4,13 @@ import type {
   DashboardAnalytics,
   DashboardData,
   DashboardExecutiveMetrics,
+  DashboardReadinessMetrics,
   DashboardReturnItem,
-  DashboardSummary,
-  DashboardWorkload,
   DashboardStaffWorkload,
   DashboardStaffWorkloadItem,
-} from "@/features/dashboard/types/dashboard.types";
+  DashboardSummary,
+  DashboardWorkload,
+} from "@/features/dashboard/types/dashboard.types"
 import type { PostgrestError } from "@supabase/supabase-js";
 import type {
   ReturnStatus,
@@ -22,6 +23,18 @@ import type {
   DashboardActivity,
 } from "@/features/dashboard/types/activity.types";
 
+type DashboardReadinessRpcRow = {
+  active_returns: number | string | null
+  readiness_eligible_returns: number | string | null
+  ready_for_preparation: number | string | null
+  needs_documents: number | string | null
+  missing_preparer: number | string | null
+  ready_for_review: number | string | null
+  blocked_returns: number | string | null
+  overdue_returns: number | string | null
+  average_readiness_score: number | string | null
+  office_health_score: number | string | null
+}
 
 type DashboardMonthlyFinancialRpcRow = {
   month_start: string;
@@ -270,6 +283,7 @@ export async function getDashboardData(): Promise<DashboardData> {
     summaryResult,
     executiveResult,
     workloadResult,
+    readinessResult,
     activityResult,
     recentReturnsResult,
     attentionResult,
@@ -278,28 +292,50 @@ export async function getDashboardData(): Promise<DashboardData> {
     staffWorkloadResult,
   ] = await Promise.all([
     supabase.rpc("get_dashboard_summary"),
-    supabase.rpc("get_dashboard_executive_metrics"),
+
+    supabase.rpc(
+      "get_dashboard_executive_metrics",
+    ),
+
     getDashboardWorkloadRpc(),
-    
-    supabase.rpc("get_recent_dashboard_activity", {
-      requested_limit: 8,
-    }),
-    supabase.rpc("get_dashboard_recent_returns", {
-      requested_limit: 8,
-    }),
-    supabase.rpc("get_dashboard_attention_items", {
-      requested_limit: 8,
-    }),
+
+    callDashboardAnalyticsRpc<DashboardReadinessRpcRow>(
+      "get_dashboard_readiness_metrics",
+    ),
+
+    supabase.rpc(
+      "get_recent_dashboard_activity",
+      {
+        requested_limit: 8,
+      },
+    ),
+
+    supabase.rpc(
+      "get_dashboard_recent_returns",
+      {
+        requested_limit: 8,
+      },
+    ),
+
+    supabase.rpc(
+      "get_dashboard_attention_items",
+      {
+        requested_limit: 8,
+      },
+    ),
+
     callDashboardAnalyticsRpc<DashboardMonthlyFinancialRpcRow>(
       "get_dashboard_monthly_financials",
     ),
+
     callDashboardAnalyticsRpc<DashboardStatusMetricRpcRow>(
       "get_dashboard_status_metrics",
     ),
+
     callDashboardAnalyticsRpc<DashboardStaffWorkloadRpcRow>(
       "get_dashboard_staff_workload",
     ),
-  ]);
+  ])
 
   if (summaryResult.error) {
   throw summaryResult.error
@@ -312,6 +348,10 @@ export async function getDashboardData(): Promise<DashboardData> {
   if (workloadResult.error) {
     throw workloadResult.error;
   }
+
+  if (readinessResult.error) {
+  throw readinessResult.error
+}
 
   if (activityResult.error) {
     console.error(
@@ -340,9 +380,17 @@ export async function getDashboardData(): Promise<DashboardData> {
     throw staffWorkloadResult.error;
   }
 
-  const summaryRow = summaryResult.data?.[0]
-  const executiveRow = executiveResult.data?.[0]
-  const workloadRow = workloadResult.data?.[0]
+  const summaryRow =
+  summaryResult.data?.[0]
+
+  const executiveRow =
+    executiveResult.data?.[0]
+
+  const workloadRow =
+    workloadResult.data?.[0]
+
+  const readinessRow =
+    readinessResult.data?.[0]
 
   const summary: DashboardSummary = {
   activeClients: convertToNumber(
@@ -466,6 +514,48 @@ export async function getDashboardData(): Promise<DashboardData> {
     ),
   }
 
+  const readiness: DashboardReadinessMetrics = {
+    activeReturns: convertToNumber(
+      readinessRow?.active_returns,
+    ),
+
+    readinessEligibleReturns: convertToNumber(
+      readinessRow?.readiness_eligible_returns,
+    ),
+
+    readyForPreparation: convertToNumber(
+      readinessRow?.ready_for_preparation,
+    ),
+
+    needsDocuments: convertToNumber(
+      readinessRow?.needs_documents,
+    ),
+
+    missingPreparer: convertToNumber(
+      readinessRow?.missing_preparer,
+    ),
+
+    readyForReview: convertToNumber(
+      readinessRow?.ready_for_review,
+    ),
+
+    blockedReturns: convertToNumber(
+      readinessRow?.blocked_returns,
+    ),
+
+    overdueReturns: convertToNumber(
+      readinessRow?.overdue_returns,
+    ),
+
+    averageReadinessScore: convertToNumber(
+      readinessRow?.average_readiness_score,
+    ),
+
+    officeHealthScore: convertToNumber(
+      readinessRow?.office_health_score,
+    ),
+  }
+
   const workload: DashboardWorkload = {
     assignedToMe: convertToNumber(workloadRow?.assigned_to_me),
     reviewAssignedToMe: convertToNumber(workloadRow?.review_assigned_to_me),
@@ -517,13 +607,15 @@ export async function getDashboardData(): Promise<DashboardData> {
   };
 
   return {
-    summary,
-    executive,
-    workload,
-    activities,
-    recentReturns,
-    attentionItems,
-    analytics,
-    loadedAt: new Date().toISOString(),
-  };
+  summary,
+  executive,
+  workload,
+  readiness,
+  recommendations: [],
+  activities,
+  recentReturns,
+  attentionItems,
+  analytics,
+  loadedAt: new Date().toISOString(),
+}
 }

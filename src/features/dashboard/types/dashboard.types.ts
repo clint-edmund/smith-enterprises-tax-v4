@@ -120,16 +120,75 @@ export type DashboardAttentionItem = DashboardReturnItem & {
   reason: DashboardAttentionReason;
 };
 
+export type DashboardReadinessMetrics = {
+  activeReturns: number
+  readinessEligibleReturns: number
+  readyForPreparation: number
+  needsDocuments: number
+  missingPreparer: number
+  readyForReview: number
+  blockedReturns: number
+  overdueReturns: number
+  averageReadinessScore: number
+  officeHealthScore: number
+}
+
+export type DashboardRecommendationPriority =
+  | "critical"
+  | "high"
+  | "medium"
+  | "low"
+
+export type DashboardRecommendationType =
+  | "collect_documents"
+  | "assign_preparer"
+  | "begin_preparation"
+  | "assign_reviewer"
+  | "review_return"
+  | "resolve_blocker"
+  | "due_date"
+
+export interface DashboardRecommendation {
+  id: string
+
+  returnId: string
+  clientId: string
+
+  clientName: string
+
+  taxYear: number
+
+  returnType: ReturnType
+
+  title: string
+
+  explanation: string
+
+  recommendationType:
+    DashboardRecommendationType
+
+  priority:
+    DashboardRecommendationPriority
+
+  readinessScore: number
+
+  dueDate: string | null
+
+  actionRoute: string
+}
+
 export type DashboardData = {
-  summary: DashboardSummary;
-  executive: DashboardExecutiveMetrics;
-  workload: DashboardWorkload;
-  activities: DashboardActivity[];
-  recentReturns: DashboardReturnItem[];
-  attentionItems: DashboardAttentionItem[];
-  analytics: DashboardAnalytics;
-  loadedAt: string;
-};
+  summary: DashboardSummary
+  executive: DashboardExecutiveMetrics
+  workload: DashboardWorkload
+  readiness: DashboardReadinessMetrics
+  recommendations: DashboardRecommendation[]
+  activities: DashboardActivity[]
+  recentReturns: DashboardReturnItem[]
+  attentionItems: DashboardAttentionItem[]
+  analytics: DashboardAnalytics
+  loadedAt: string
+}
 
 export type DashboardMonthlyFinancial = {
   month: string;

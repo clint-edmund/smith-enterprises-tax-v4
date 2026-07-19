@@ -306,6 +306,10 @@ export function ReturnDetailsPage() {
 
       <ReturnReadinessPanel
         taxReturn={taxReturn}
+        canManageWorkflow={canEdit}
+        onWorkflowAdvanced={() => {
+          void loadReturn(true)
+        }}
       />
 
       <div className="grid gap-6 xl:grid-cols-[0.8fr_1.2fr]">

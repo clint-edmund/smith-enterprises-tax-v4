@@ -47,6 +47,10 @@ import {
   useRecentActivityRealtime,
 } from "@/features/dashboard/hooks/use-recent-activity-realtime"
 
+import {
+  ReturnReadinessCenter,
+} from "@/features/dashboard/components/return-readiness-center"
+
 export function DashboardPage() {
   const { profile } = useAuth();
 
@@ -190,14 +194,15 @@ export function DashboardPage() {
   }
 
   const {
-    summary,
-    executive,
-    workload,
-    recentReturns,
-    attentionItems,
-    analytics,
-    loadedAt,
-  } = dashboardData;
+  summary,
+  executive,
+  workload,
+  readiness,
+  recentReturns,
+  attentionItems,
+  analytics,
+  loadedAt,
+} = dashboardData
 
   const staffName = profile.firstName || profile.displayName || "Staff Member";
 
@@ -310,9 +315,15 @@ export function DashboardPage() {
           icon={FileCheck2}
           href="/returns?status=completed"
         />
-      </div>
-      
-      <ExecutiveKpis metrics={executive} />
+            </div>
+
+            <ReturnReadinessCenter
+              metrics={readiness}
+            />
+
+            <ExecutiveKpis
+              metrics={executive}
+            />
 
       <WorkflowOperations workflow={summary.workflow} />
 

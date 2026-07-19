@@ -1,11 +1,16 @@
 import {
   AlertTriangle,
+  ArrowRight,
   Ban,
   CheckCircle2,
   CircleAlert,
   RefreshCw,
   ShieldCheck,
 } from "lucide-react"
+
+import {
+  useAdvanceReadyWorkflow,
+} from "./use-advance-ready-workflow"
 
 import type {
   TaxReturnDetails,
@@ -22,6 +27,8 @@ import {
 
 interface ReturnReadinessPanelProps {
   taxReturn: TaxReturnDetails
+  canManageWorkflow?: boolean
+  onWorkflowAdvanced?: () => void
 }
 
 const checkStatusStyles: Record<
@@ -162,6 +169,8 @@ function ReadinessIssueList({
 
 export function ReturnReadinessPanel({
   taxReturn,
+  canManageWorkflow = false,
+  onWorkflowAdvanced,
 }: ReturnReadinessPanelProps) {
   const {
     readiness,
@@ -171,6 +180,38 @@ export function ReturnReadinessPanel({
   } = useReturnReadiness(
     taxReturn,
   )
+
+   const {
+    isAdvancing,
+    error: advancementError,
+    successMessage,
+    advance,
+    clearMessages,
+  } = useAdvanceReadyWorkflow() 
+
+    const canAdvanceWorkflow =
+    canManageWorkflow &&
+    readiness.isReadyToPrepare &&
+    (
+      taxReturn.workflowStatus ===
+        "intake" ||
+      taxReturn.workflowStatus ===
+        "documents_pending"
+    )
+
+      async function handleAdvanceWorkflow() {
+    clearMessages()
+
+    try {
+      await advance(
+        taxReturn.id,
+      )
+
+      onWorkflowAdvanced?.()
+    } catch {
+      // The advancement hook exposes the error.
+    }
+  }
 
   const statusConfiguration = {
     ready: {
@@ -268,6 +309,27 @@ export function ReturnReadinessPanel({
             <p>{error}</p>
           </div>
         ) : null}
+        {advancementError ? (
+  <div
+    role="alert"
+    className="mt-4 flex gap-3 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800"
+  >
+    <AlertTriangle className="mt-0.5 size-5 shrink-0" />
+
+    <p>{advancementError}</p>
+      </div>
+    ) : null}
+
+    {successMessage ? (
+      <div
+        role="status"
+        className="mt-4 flex gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800"
+      >
+        <CheckCircle2 className="mt-0.5 size-5 shrink-0" />
+
+        <p>{successMessage}</p>
+      </div>
+    ) : null}
       </div>
 
       <div className="p-6">
@@ -295,6 +357,24 @@ export function ReturnReadinessPanel({
                     {readiness.nextAction}
                   </span>
                 </p>
+                {canAdvanceWorkflow ? (
+                    <button
+                      type="button"
+                      disabled={isAdvancing}
+                      onClick={() => {
+                        void handleAdvanceWorkflow()
+                      }}
+                      className="mt-4 inline-flex min-h-10 items-center justify-center gap-2 rounded-lg bg-emerald-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      {isAdvancing
+                        ? "Advancing Workflow..."
+                        : "Move to Ready for Preparation"}
+
+                      {!isAdvancing ? (
+                        <ArrowRight className="size-4" />
+                      ) : null}
+                    </button>
+                  ) : null}
               </div>
             </div>
 

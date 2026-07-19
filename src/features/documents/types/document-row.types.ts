@@ -22,6 +22,7 @@ export interface ClientDocumentRow {
   size_bytes: number
   description: string | null
   uploaded_by: string
+  uploaded_by_name: string | null
   created_at: string
   updated_at: string
   archived_at: string | null

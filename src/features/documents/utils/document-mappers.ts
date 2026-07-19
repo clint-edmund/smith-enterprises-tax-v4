@@ -1,9 +1,3 @@
-import {
-  documentCategories,
-  documentStatuses,
-  documentAccessActions,
-} from "@/features/documents/types/document.types"
-
 import type {
   ClientDocument,
   DocumentAccessAction,
@@ -19,42 +13,39 @@ import type {
   DocumentCategoryRow,
 } from "@/features/documents/types/document-row.types"
 
-function isDocumentCategory(
-  value: string,
-): value is DocumentCategory {
-  return documentCategories.some(
-    category => category === value,
-  )
-}
-
 function isDocumentStatus(
   value: string,
 ): value is DocumentStatus {
-  return documentStatuses.some(
-    status => status === value,
-  )
+  return [
+    "uploaded",
+    "under_review",
+    "accepted",
+    "rejected",
+    "archived",
+  ].includes(value)
 }
 
 function isDocumentAccessAction(
   value: string,
 ): value is DocumentAccessAction {
-  return documentAccessActions.some(
-    action => action === value,
-  )
+  return [
+    "uploaded",
+    "viewed",
+    "downloaded",
+    "renamed",
+    "categorized",
+    "status_changed",
+    "deleted",
+    "restored",
+  ].includes(value)
 }
 
-export function mapDocumentCategoryRow(
+export function mapDocumentCategory(
   row: DocumentCategoryRow,
 ): DocumentCategoryRecord {
-  if (!isDocumentCategory(row.code)) {
-    throw new Error(
-      `Unsupported document category: ${row.code}`,
-    )
-  }
-
   return {
     id: row.id,
-    code: row.code,
+    code: row.code as DocumentCategory,
     name: row.name,
     description: row.description,
     displayOrder: row.display_order,
@@ -64,15 +55,9 @@ export function mapDocumentCategoryRow(
   }
 }
 
-export function mapClientDocumentRow(
+export function mapClientDocument(
   row: ClientDocumentRow,
 ): ClientDocument {
-  if (!isDocumentCategory(row.category)) {
-    throw new Error(
-      `Unsupported document category: ${row.category}`,
-    )
-  }
-
   if (!isDocumentStatus(row.status)) {
     throw new Error(
       `Unsupported document status: ${row.status}`,
@@ -83,7 +68,8 @@ export function mapClientDocumentRow(
     id: row.id,
     clientId: row.client_id,
     taxReturnId: row.tax_return_id,
-    category: row.category,
+    category:
+      row.category as DocumentCategory,
     status: row.status,
     originalFileName:
       row.original_file_name,
@@ -94,18 +80,19 @@ export function mapClientDocumentRow(
     mimeType:
       row.mime_type,
     sizeBytes:
-      row.size_bytes,
+      Number(row.size_bytes),
     description:
       row.description,
     uploadedBy:
       row.uploaded_by,
-    uploadedByName: null,
+    uploadedByName:
+      row.uploaded_by_name ?? null,
     createdAt:
       row.created_at,
     updatedAt:
       row.updated_at,
     archivedAt:
-      row.archived_at,
+      row.archived_at ?? null,
   }
 }
 

@@ -14,12 +14,24 @@ export async function updateWorkflowStatus(
   returnId: string,
   update: WorkflowUpdate,
 ) {
-  const payload = {
-    workflow_status: update.workflowStatus,
+  const payload: {
+    workflow_status: WorkflowStatus
+    workflow_hold_reason: string | null
+    assigned_preparer_id?: string | null
+  } = {
+    workflow_status:
+      update.workflowStatus,
+
     workflow_hold_reason:
       update.holdReason ?? null,
-    assigned_preparer_id:
-      update.assignedPreparerId ?? null,
+  }
+
+  if (
+    update.assignedPreparerId !==
+    undefined
+  ) {
+    payload.assigned_preparer_id =
+      update.assignedPreparerId
   }
 
   const { data, error } =
@@ -53,6 +65,20 @@ export async function assignPreparer(
   )
 }
 
+export async function advanceReturnToPreparation(
+  returnId: string,
+) {
+  return updateWorkflowStatus(
+    returnId,
+    {
+      workflowStatus:
+        "ready_for_preparation",
+
+      holdReason: null,
+    },
+  )
+}
+
 export async function holdReturn(
   returnId: string,
   reason: string,
@@ -78,8 +104,7 @@ export async function resumeReturn(
       workflowStatus:
         "documents_pending",
 
-      holdReason:
-        null,
+      holdReason: null,
     },
   )
 }
@@ -95,4 +120,3 @@ export async function completeReturn(
     },
   )
 }
-
