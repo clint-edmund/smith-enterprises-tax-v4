@@ -17,6 +17,7 @@ import type {
 
 type PriorityQueueCardProps = {
   items: DashboardPriorityItem[]
+  onPriorityItemUpdated: () => void
 }
 
 type RiskFilter =
@@ -35,6 +36,7 @@ type SortOption =
 
 export function PriorityQueueCard({
   items,
+  onPriorityItemUpdated,
 }: PriorityQueueCardProps) {
   const [
   searchTerm,
@@ -356,9 +358,12 @@ const visibleItems =
         <div className="mt-6 space-y-4">
           {visibleItems.map((item) => (
             <PriorityQueueItem
-              key={item.id}
-              item={item}
-            />
+            key={item.id}
+            item={item}
+            onPriorityItemUpdated={
+              onPriorityItemUpdated
+            }
+          />
           ))}
         </div>
       ) : (

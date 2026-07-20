@@ -37,6 +37,7 @@ import {
 
 type PriorityQueueItemProps = {
   item: DashboardPriorityItem
+  onPriorityItemUpdated: () => void
 }
 
 function formatDate(
@@ -122,6 +123,7 @@ function getActivityLabel(
 
 export function PriorityQueueItem({
   item,
+  onPriorityItemUpdated,
 }: PriorityQueueItemProps) {
   const [
     isExpanded,
@@ -213,6 +215,8 @@ export function PriorityQueueItem({
     )
 
     setIsAssignPreparerOpen(false)
+
+    onPriorityItemUpdated()
   }
 
   const dueDateLabel =

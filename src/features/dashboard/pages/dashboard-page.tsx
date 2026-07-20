@@ -339,6 +339,9 @@ export function DashboardPage() {
 
       <PriorityQueueCard
         items={dashboardData.priorityQueue}
+        onPriorityItemUpdated={() => {
+          void loadDashboard(true)
+        }}
       />
 
 
