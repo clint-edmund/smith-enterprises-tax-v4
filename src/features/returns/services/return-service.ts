@@ -441,6 +441,53 @@ export async function getReturnStaffOptions(): Promise<ReturnStaffOption[]> {
   }));
 }
 
+export async function assignTaxReturnPreparer(
+  returnId: string,
+  preparerId: string | null,
+): Promise<void> {
+  const normalizedReturnId =
+    returnId.trim()
+
+  if (!normalizedReturnId) {
+    throw new Error(
+      "A tax-return identifier is required.",
+    )
+  }
+
+  const normalizedPreparerId =
+    preparerId?.trim() || null
+
+  const {
+    data,
+    error,
+  } = await supabase
+    .from("tax_returns")
+    .update({
+      assigned_preparer_id:
+        normalizedPreparerId,
+    })
+    .eq(
+      "id",
+      normalizedReturnId,
+    )
+    .select("id")
+    .maybeSingle()
+
+  if (error) {
+    throw new Error(
+      getReturnServiceErrorMessage(
+        error,
+      ),
+    )
+  }
+
+  if (!data) {
+    throw new Error(
+      "The tax return was not found or could not be updated.",
+    )
+  }
+}
+
 export async function getReturnClientOptions(): Promise<ReturnClientOption[]> {
   const clients = await searchClients("", "active");
 
