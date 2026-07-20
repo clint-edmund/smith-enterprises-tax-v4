@@ -133,6 +133,40 @@ export function PriorityQueueCard({
   sortOption,
 ])
 
+const riskSummary = useMemo(() => {
+  const normalizedSearch =
+    searchTerm.trim().toLowerCase()
+
+  const searchResults = items.filter((item) =>
+    normalizedSearch.length === 0
+      ? true
+      : item.clientName
+          .toLowerCase()
+          .includes(normalizedSearch),
+  )
+
+  return {
+    critical: searchResults.filter(
+      (item) => item.riskLevel === "critical",
+    ).length,
+
+    high: searchResults.filter(
+      (item) => item.riskLevel === "high",
+    ).length,
+
+    medium: searchResults.filter(
+      (item) => item.riskLevel === "medium",
+    ).length,
+
+    low: searchResults.filter(
+      (item) => item.riskLevel === "low",
+    ).length,
+  }
+}, [
+  items,
+  searchTerm,
+])
+
 const visibleItems =
   sortedItems.slice(0, 10)
 
@@ -275,6 +309,48 @@ const visibleItems =
           )
         })}
       </div>
+      
+      <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2">
+          <p className="text-xs font-semibold uppercase text-red-700">
+            Critical
+          </p>
+
+          <p className="mt-1 text-xl font-bold text-red-900">
+            {riskSummary.critical}
+          </p>
+        </div>
+
+        <div className="rounded-lg border border-orange-200 bg-orange-50 px-3 py-2">
+          <p className="text-xs font-semibold uppercase text-orange-700">
+            High
+          </p>
+
+          <p className="mt-1 text-xl font-bold text-orange-900">
+            {riskSummary.high}
+          </p>
+        </div>
+
+        <div className="rounded-lg border border-yellow-200 bg-yellow-50 px-3 py-2">
+          <p className="text-xs font-semibold uppercase text-yellow-700">
+            Medium
+          </p>
+
+          <p className="mt-1 text-xl font-bold text-yellow-900">
+            {riskSummary.medium}
+          </p>
+        </div>
+
+        <div className="rounded-lg border border-green-200 bg-green-50 px-3 py-2">
+          <p className="text-xs font-semibold uppercase text-green-700">
+            Low
+          </p>
+
+          <p className="mt-1 text-xl font-bold text-green-900">
+            {riskSummary.low}
+          </p>
+        </div>
+      </div>  
 
       {visibleItems.length > 0 ? (
         <div className="mt-6 space-y-4">
