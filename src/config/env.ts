@@ -11,16 +11,29 @@ const environmentSchema = z.object({
     .trim()
     .min(1, "VITE_APP_VERSION is required"),
 
-  VITE_APP_ENVIRONMENT: z
-    .enum(["development", "test", "production"])
-    .default("development"),
+  VITE_APP_ENVIRONMENT: z.enum([
+    "development",
+    "test",
+    "production",
+  ]),
 
-  VITE_SUPABASE_URL: z.string().trim().optional().default(""),
+  VITE_SUPABASE_URL: z
+    .string()
+    .trim()
+    .url("VITE_SUPABASE_URL must be a valid URL"),
 
-  VITE_SUPABASE_ANON_KEY: z.string().trim().optional().default(""),
+  VITE_SUPABASE_PUBLISHABLE_KEY: z
+    .string()
+    .trim()
+    .min(
+      1,
+      "VITE_SUPABASE_PUBLISHABLE_KEY is required",
+    ),
 })
 
-const environmentResult = environmentSchema.safeParse(import.meta.env)
+const environmentResult = environmentSchema.safeParse(
+  import.meta.env,
+)
 
 if (!environmentResult.success) {
   console.error(

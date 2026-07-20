@@ -1,0 +1,492 @@
+import {
+  RotateCcw,
+  Search,
+  X,
+} from "lucide-react"
+import {
+  useEffect,
+  useMemo,
+  useState,
+  type FormEvent,
+} from "react"
+
+import type {
+  ReturnFilterKey,
+  ReturnFilters,
+  ReturnStaffOption,
+} from "@/features/returns/types/return.types"
+import {
+  returnStatusOptions,
+} from "@/features/returns/utils/return-options"
+import {
+  workflowStatuses,
+  type WorkflowStatus,
+} from "@/features/workflow/types/workflow.types"
+
+interface ReturnFiltersProps {
+  filters: ReturnFilters
+  activeFilterCount: number
+  staffOptions: ReturnStaffOption[]
+  taxYearOptions: number[]
+  onSetFilter: <Key extends ReturnFilterKey>(
+    key: Key,
+    value: ReturnFilters[Key],
+  ) => void
+  onRemoveFilter: (key: ReturnFilterKey) => void
+  onClearFilters: () => void
+}
+
+function getStatusLabel(status: ReturnFilters["status"]) {
+  if (status === "all") {
+    return "All statuses"
+  }
+
+  return (
+    returnStatusOptions.find(
+      (option) => option.value === status,
+    )?.label ?? status
+  )
+}
+
+const workflowLabels: Record<WorkflowStatus, string> = {
+  intake: "Intake",
+  documents_pending: "Documents Pending",
+  ready_for_preparation: "Ready for Preparation",
+  in_preparation: "In Preparation",
+  review: "Review",
+  signature_pending: "Signature Pending",
+  ready_to_file: "Ready to File",
+  filed: "Filed",
+  completed: "Completed",
+  on_hold: "On Hold",
+}
+
+function getWorkflowLabel(
+  workflow: ReturnFilters["workflow"],
+) {
+  if (workflow === "all") {
+    return "All workflow stages"
+  }
+
+  return workflowLabels[workflow]
+}
+
+function getPreparerLabel(
+  preparerId: string,
+  staffOptions: ReturnStaffOption[],
+) {
+  return (
+    staffOptions.find(
+      (staff) => staff.id === preparerId,
+    )?.displayName ?? "Selected preparer"
+  )
+}
+
+export function ReturnFiltersPanel({
+  filters,
+  activeFilterCount,
+  staffOptions,
+  taxYearOptions,
+  onSetFilter,
+  onRemoveFilter,
+  onClearFilters,
+}: ReturnFiltersProps) {
+  const [searchText, setSearchText] =
+    useState(filters.search)
+
+  useEffect(() => {
+    setSearchText(filters.search)
+  }, [filters.search])
+
+  const preparerOptions = useMemo(
+    () =>
+      staffOptions.filter(
+        (staff) => staff.role !== "reviewer",
+      ),
+    [staffOptions],
+  )
+
+  function handleSubmit(
+    event: FormEvent<HTMLFormElement>,
+  ) {
+    event.preventDefault()
+    onSetFilter("search", searchText)
+  }
+
+  return (
+    <form
+      onSubmit={handleSubmit}
+      className="space-y-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"
+    >
+      <div className="relative">
+        <Search className="pointer-events-none absolute left-3 top-3 size-5 text-slate-400" />
+
+        <input
+          type="search"
+          value={searchText}
+          onChange={(event) => {
+            setSearchText(event.target.value)
+          }}
+          placeholder="Search client name, number, tax year, or form"
+          className="w-full rounded-lg border border-slate-300 py-2.5 pl-10 pr-3 outline-none transition focus:border-blue-600 focus:ring-4 focus:ring-blue-100"
+        />
+      </div>
+
+      <div className="grid gap-3 md:grid-cols-3">
+        <div>
+          <label
+            htmlFor="return-status-filter"
+            className="mb-2 block text-sm font-medium text-slate-700"
+          >
+            Return status
+          </label>
+
+          <select
+            id="return-status-filter"
+            value={filters.status}
+            onChange={(event) => {
+              onSetFilter(
+                "status",
+                event.target
+                  .value as ReturnFilters["status"],
+              )
+            }}
+            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-100"
+          >
+            <option value="all">
+              All statuses
+            </option>
+
+            {returnStatusOptions.map((option) => (
+              <option
+                key={option.value}
+                value={option.value}
+              >
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label
+            htmlFor="tax-year-filter"
+            className="mb-2 block text-sm font-medium text-slate-700"
+          >
+            Tax year
+          </label>
+
+          <select
+            id="tax-year-filter"
+            value={filters.taxYear}
+            onChange={(event) => {
+              onSetFilter(
+                "taxYear",
+                event.target.value,
+              )
+            }}
+            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-100"
+          >
+            <option value="all">
+              All years
+            </option>
+
+            {taxYearOptions.map((taxYear) => (
+              <option
+                key={taxYear}
+                value={taxYear}
+              >
+                {taxYear}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label
+            htmlFor="preparer-filter"
+            className="mb-2 block text-sm font-medium text-slate-700"
+          >
+            Assigned preparer
+          </label>
+
+          <select
+            id="preparer-filter"
+            value={filters.preparerId}
+            onChange={(event) => {
+              onSetFilter(
+                "preparerId",
+                event.target.value,
+              )
+            }}
+            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-100"
+          >
+            <option value="all">
+              All preparers
+            </option>
+
+            {preparerOptions.map((staff) => (
+              <option
+                key={staff.id}
+                value={staff.id}
+              >
+                {staff.displayName}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+        <div>
+          <label
+            htmlFor="workflow-filter"
+            className="mb-2 block text-sm font-medium text-slate-700"
+          >
+            Workflow stage
+          </label>
+
+          <select
+            id="workflow-filter"
+            value={filters.workflow}
+            onChange={(event) => {
+              onSetFilter(
+                "workflow",
+                event.target.value as ReturnFilters["workflow"],
+              )
+            }}
+            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-100"
+          >
+            <option value="all">
+              All workflow stages
+            </option>
+
+            {workflowStatuses.map((workflowStatus) => (
+              <option
+                key={workflowStatus}
+                value={workflowStatus}
+              >
+                {workflowLabels[workflowStatus]}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label
+            htmlFor="assignment-filter"
+            className="mb-2 block text-sm font-medium text-slate-700"
+          >
+            Preparer workload
+          </label>
+
+          <select
+            id="assignment-filter"
+            value={filters.assignment}
+            onChange={(event) => {
+              onSetFilter(
+                "assignment",
+                event.target.value as ReturnFilters["assignment"],
+              )
+            }}
+            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-100"
+          >
+            <option value="all">All assignments</option>
+            <option value="mine">Assigned to me</option>
+            <option value="unassigned">Unassigned</option>
+          </select>
+        </div>
+
+        <div>
+          <label
+            htmlFor="reviewer-filter"
+            className="mb-2 block text-sm font-medium text-slate-700"
+          >
+            Reviewer workload
+          </label>
+
+          <select
+            id="reviewer-filter"
+            value={filters.reviewer}
+            onChange={(event) => {
+              onSetFilter(
+                "reviewer",
+                event.target.value as ReturnFilters["reviewer"],
+              )
+            }}
+            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-100"
+          >
+            <option value="all">All review assignments</option>
+            <option value="mine">Review assigned to me</option>
+            <option value="unassigned">No reviewer assigned</option>
+          </select>
+        </div>
+
+        <div>
+          <label
+            htmlFor="deadline-filter"
+            className="mb-2 block text-sm font-medium text-slate-700"
+          >
+            Deadline
+          </label>
+
+          <select
+            id="deadline-filter"
+            value={filters.deadline}
+            onChange={(event) => {
+              onSetFilter(
+                "deadline",
+                event.target.value as ReturnFilters["deadline"],
+              )
+            }}
+            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-100"
+          >
+            <option value="all">All deadlines</option>
+            <option value="overdue">Overdue</option>
+            <option value="due_today">Due today</option>
+            <option value="due_this_week">Due this week</option>
+            <option value="next_7_days">Next 7 days</option>
+            <option value="no_due_date">No due date</option>
+          </select>
+        </div>
+      </div>
+
+      {activeFilterCount > 0 && (
+        <div className="flex flex-wrap items-center gap-2 border-t border-slate-200 pt-4">
+          <span className="text-sm font-semibold text-slate-700">
+            Active filters ({activeFilterCount})
+          </span>
+
+          {filters.search !== "" && (
+            <FilterChip
+              label={`Search: ${filters.search}`}
+              onRemove={() => {
+                onRemoveFilter("search")
+              }}
+            />
+          )}
+
+          {filters.status !== "all" && (
+            <FilterChip
+              label={`Status: ${getStatusLabel(filters.status)}`}
+              onRemove={() => {
+                onRemoveFilter("status")
+              }}
+            />
+          )}
+
+          {filters.workflow !== "all" && (
+            <FilterChip
+              label={`Workflow: ${getWorkflowLabel(filters.workflow)}`}
+              onRemove={() => {
+                onRemoveFilter("workflow")
+              }}
+            />
+          )}
+
+          {filters.taxYear !== "all" && (
+            <FilterChip
+              label={`Tax year: ${filters.taxYear}`}
+              onRemove={() => {
+                onRemoveFilter("taxYear")
+              }}
+            />
+          )}
+
+          {filters.preparerId !== "all" && (
+            <FilterChip
+              label={`Preparer: ${getPreparerLabel(filters.preparerId, staffOptions)}`}
+              onRemove={() => {
+                onRemoveFilter("preparerId")
+              }}
+            />
+          )}
+
+          {filters.assignment !== "all" && (
+            <FilterChip
+              label={filters.assignment === "mine" ? "Preparer: Assigned to me" : "Preparer: Unassigned"}
+              onRemove={() => {
+                onRemoveFilter("assignment")
+              }}
+            />
+          )}
+
+          {filters.reviewer !== "all" && (
+            <FilterChip
+              label={filters.reviewer === "mine" ? "Reviewer: Assigned to me" : "Reviewer: Unassigned"}
+              onRemove={() => {
+                onRemoveFilter("reviewer")
+              }}
+            />
+          )}
+
+          {filters.deadline !== "all" && (
+            <FilterChip
+              label={`Deadline: ${
+                filters.deadline === "overdue"
+                  ? "Overdue"
+                  : filters.deadline === "due_today"
+                    ? "Due today"
+                    : filters.deadline === "due_this_week"
+                      ? "Due this week"
+                      : filters.deadline === "next_7_days"
+                        ? "Next 7 days"
+                        : "No due date"
+              }`}
+              onRemove={() => {
+                onRemoveFilter("deadline")
+              }}
+            />
+          )}
+        </div>
+      )}
+
+      <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
+        <button
+          type="button"
+          disabled={activeFilterCount === 0}
+          onClick={onClearFilters}
+          className="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2.5 font-semibold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          <RotateCcw className="size-4" />
+          Clear Filters
+        </button>
+
+        <button
+          type="submit"
+          className="inline-flex items-center justify-center gap-2 rounded-lg bg-slate-900 px-4 py-2.5 font-semibold text-white hover:bg-slate-800"
+        >
+          <Search className="size-4" />
+          Search
+        </button>
+      </div>
+    </form>
+  )
+}
+
+interface FilterChipProps {
+  label: string
+  onRemove: () => void
+}
+
+function FilterChip({
+  label,
+  onRemove,
+}: FilterChipProps) {
+  return (
+    <span className="inline-flex max-w-full items-center gap-1 rounded-full bg-blue-50 px-3 py-1.5 text-sm font-medium text-blue-800">
+      <span className="truncate">
+        {label}
+      </span>
+
+      <button
+        type="button"
+        onClick={onRemove}
+        aria-label={`Remove ${label} filter`}
+        className="rounded-full p-0.5 hover:bg-blue-100"
+      >
+        <X className="size-3.5" />
+      </button>
+    </span>
+  )
+}
