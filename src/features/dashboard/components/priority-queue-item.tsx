@@ -2,6 +2,7 @@ import {
   ChevronDown,
   ChevronUp,
   ExternalLink,
+  MoreHorizontal,
 } from "lucide-react"
 import {
   useState,
@@ -119,6 +120,11 @@ export function PriorityQueueItem({
     setIsExpanded,
   ] = useState(false)
 
+  const [
+    isQuickActionsOpen,
+    setIsQuickActionsOpen,
+  ] = useState(false)
+
   const dueDateLabel =
     getDueDateLabel(
       item.daysUntilDue,
@@ -161,7 +167,7 @@ export function PriorityQueueItem({
               </p>
             </div>
 
-            <div className="flex shrink-0 gap-2">
+            <div className="flex shrink-0 flex-wrap items-center gap-2">
               <Link
                 to={getClientDetailsRoute(
                   item.clientId,
@@ -171,6 +177,9 @@ export function PriorityQueueItem({
                   "border border-slate-300 bg-white px-3 py-2",
                   "text-sm font-semibold text-slate-700",
                   "transition hover:bg-slate-100",
+                  "focus-visible:outline-none",
+                  "focus-visible:ring-2",
+                  "focus-visible:ring-slate-400",
                   "dark:border-slate-700",
                   "dark:bg-slate-900",
                   "dark:text-slate-200",
@@ -202,6 +211,88 @@ export function PriorityQueueItem({
                   aria-hidden="true"
                 />
               </Link>
+
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setIsQuickActionsOpen(
+                      (currentValue) =>
+                        !currentValue,
+                    )
+                  }
+                  className={[
+                    "inline-flex h-10 w-10 items-center justify-center",
+                    "rounded-md border border-slate-300 bg-white",
+                    "text-slate-700 transition hover:bg-slate-100",
+                    "focus-visible:outline-none",
+                    "focus-visible:ring-2",
+                    "focus-visible:ring-slate-400",
+                    "dark:border-slate-700",
+                    "dark:bg-slate-900",
+                    "dark:text-slate-200",
+                    "dark:hover:bg-slate-800",
+                  ].join(" ")}
+                  aria-expanded={isQuickActionsOpen}
+                  aria-haspopup="menu"
+                  aria-label={`Quick actions for ${item.clientName}`}
+                  title="Quick actions"
+                >
+                  <MoreHorizontal
+                    className="h-5 w-5"
+                    aria-hidden="true"
+                  />
+                </button>
+
+                {isQuickActionsOpen ? (
+                  <div
+                    role="menu"
+                    className={[
+                      "absolute right-0 z-20 mt-2 w-64",
+                      "rounded-lg border border-slate-200",
+                      "bg-white p-2 shadow-lg",
+                      "dark:border-slate-700",
+                      "dark:bg-slate-900",
+                    ].join(" ")}
+                  >
+                    <p className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                      Quick Actions
+                    </p>
+
+                    {[
+                      "Assign Preparer",
+                      "Assign Reviewer",
+                      "Mark Documents Received",
+                      "Request Documents",
+                      "Add Internal Note",
+                      "Record Payment",
+                    ].map((actionLabel) => (
+                      <button
+                        key={actionLabel}
+                        type="button"
+                        disabled
+                        role="menuitem"
+                        title={`${actionLabel} will be available in a later phase.`}
+                        className={[
+                          "flex w-full items-center rounded-md",
+                          "px-3 py-2 text-left text-sm",
+                          "font-medium text-slate-400",
+                          "cursor-not-allowed",
+                          "dark:text-slate-600",
+                        ].join(" ")}
+                      >
+                        {actionLabel}
+                      </button>
+                    ))}
+
+                    <div className="my-2 border-t border-slate-200 dark:border-slate-700" />
+
+                    <p className="px-3 py-2 text-xs text-slate-500 dark:text-slate-400">
+                      Workflow actions will be enabled in upcoming phases.
+                    </p>
+                  </div>
+                ) : null}
+              </div>
             </div>
           </div>
 
