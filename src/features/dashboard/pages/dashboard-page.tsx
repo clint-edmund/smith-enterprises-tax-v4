@@ -55,6 +55,10 @@ import {
   SmartRecommendationsPanel,
 } from "@/features/dashboard/components/smart-recommendations-panel"
 
+import {
+  PriorityQueueCard,
+} from "@/features/dashboard/components/priority-queue-card"
+
 export function DashboardPage() {
   const { profile } = useAuth();
 
@@ -332,6 +336,10 @@ export function DashboardPage() {
             <SmartRecommendationsPanel
               recommendations={dashboardData.recommendations}
             />
+
+      <PriorityQueueCard
+        items={dashboardData.priorityQueue}
+      />
 
 
       <WorkflowOperations workflow={summary.workflow} />
