@@ -19,31 +19,53 @@ type PriorityQueueCardProps = {
   items: DashboardPriorityItem[]
 }
 
+type RiskFilter =
+  | "all"
+  | "critical"
+  | "high"
+  | "medium"
+  | "low"
+
 export function PriorityQueueCard({
   items,
 }: PriorityQueueCardProps) {
   const [
-    searchTerm,
-    setSearchTerm,
-  ] = useState("")
+  searchTerm,
+  setSearchTerm,
+] = useState("")
+
+  const [
+    riskFilter,
+    setRiskFilter,
+  ] = useState<RiskFilter>("all")
 
   const filteredItems = useMemo(() => {
-    const normalizedSearch =
-      searchTerm.trim().toLowerCase()
+  const normalizedSearch =
+    searchTerm
+      .trim()
+      .toLowerCase()
 
-    if (normalizedSearch.length === 0) {
-      return items
-    }
-
-    return items.filter((item) =>
+  return items.filter((item) => {
+    const matchesSearch =
+      normalizedSearch.length === 0 ||
       item.clientName
         .toLowerCase()
-        .includes(normalizedSearch),
+        .includes(normalizedSearch)
+
+    const matchesRisk =
+      riskFilter === "all" ||
+      item.riskLevel === riskFilter
+
+    return (
+      matchesSearch &&
+      matchesRisk
     )
-  }, [
-    items,
-    searchTerm,
-  ])
+  })
+}, [
+  items,
+  searchTerm,
+  riskFilter,
+])
 
   const visibleItems =
     filteredItems.slice(0, 10)
@@ -120,6 +142,42 @@ export function PriorityQueueCard({
             className="w-full rounded-lg border border-slate-300 bg-white py-2 pl-10 pr-4 text-sm shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-blue-400 dark:focus:ring-blue-900"
           />
         </div>
+      </div>
+      
+      <div className="mt-4 flex flex-wrap gap-2">
+        {[
+          "all",
+          "critical",
+          "high",
+          "medium",
+          "low",
+        ].map((filter) => {
+          const active =
+            riskFilter === filter
+
+          return (
+            <button
+              key={filter}
+              type="button"
+              onClick={() =>
+                setRiskFilter(
+                  filter as RiskFilter,
+                )
+              }
+              className={[
+                "rounded-full border px-3 py-1 text-sm font-medium transition",
+                active
+                  ? "border-blue-700 bg-blue-700 text-white"
+                  : "border-slate-300 bg-white text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800",
+              ].join(" ")}
+            >
+              {filter === "all"
+                ? "All Risks"
+                : filter.charAt(0).toUpperCase() +
+                  filter.slice(1)}
+            </button>
+          )
+        })}
       </div>
 
       {visibleItems.length > 0 ? (
