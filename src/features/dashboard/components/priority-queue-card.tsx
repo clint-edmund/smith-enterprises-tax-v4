@@ -26,6 +26,13 @@ type RiskFilter =
   | "medium"
   | "low"
 
+type SortOption =
+  | "highest-risk"
+  | "lowest-risk"
+  | "due-date"
+  | "client-name"
+  | "readiness"
+
 export function PriorityQueueCard({
   items,
 }: PriorityQueueCardProps) {
@@ -38,6 +45,13 @@ export function PriorityQueueCard({
     riskFilter,
     setRiskFilter,
   ] = useState<RiskFilter>("all")
+
+  const [
+    sortOption,
+    setSortOption,
+  ] = useState<SortOption>(
+    "highest-risk",
+  )
 
   const filteredItems = useMemo(() => {
   const normalizedSearch =
@@ -67,8 +81,60 @@ export function PriorityQueueCard({
   riskFilter,
 ])
 
-  const visibleItems =
-    filteredItems.slice(0, 10)
+  const sortedItems = useMemo(() => {
+  const results = [...filteredItems]
+
+  switch (sortOption) {
+    case "lowest-risk":
+      results.sort(
+        (a, b) =>
+          a.riskScore - b.riskScore,
+      )
+      break
+
+    case "due-date":
+      results.sort((a, b) => {
+        if (!a.dueDate) return 1
+        if (!b.dueDate) return -1
+
+        return (
+          new Date(a.dueDate).getTime() -
+          new Date(b.dueDate).getTime()
+        )
+      })
+      break
+
+    case "client-name":
+      results.sort((a, b) =>
+        a.clientName.localeCompare(
+          b.clientName,
+        ),
+      )
+      break
+
+    case "readiness":
+      results.sort(
+        (a, b) =>
+          b.readinessScore -
+          a.readinessScore,
+      )
+      break
+
+    default:
+      results.sort(
+        (a, b) =>
+          b.riskScore - a.riskScore,
+      )
+  }
+
+  return results
+}, [
+  filteredItems,
+  sortOption,
+])
+
+const visibleItems =
+  sortedItems.slice(0, 10)
 
   return (
     <section className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 dark:border-slate-800 dark:bg-slate-950/40 sm:p-6">
@@ -99,6 +165,36 @@ export function PriorityQueueCard({
               ? "return"
               : "returns"}
           </span>
+
+          <select
+            value={sortOption}
+            onChange={(event) =>
+              setSortOption(
+                event.target.value as SortOption,
+              )
+            }
+            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900"
+          >
+            <option value="highest-risk">
+              Highest Risk
+            </option>
+
+            <option value="lowest-risk">
+              Lowest Risk
+            </option>
+
+            <option value="due-date">
+              Due Date
+            </option>
+
+            <option value="client-name">
+              Client Name
+            </option>
+
+            <option value="readiness">
+              Readiness Score
+            </option>
+          </select>
 
           <button
             type="button"
