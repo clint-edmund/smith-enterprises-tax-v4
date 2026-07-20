@@ -12,6 +12,7 @@ import type {
   DashboardSummary,
   DashboardWorkload,
   DashboardPriorityItem,
+  DashboardRiskFactor,
   DashboardRiskMetrics,
 } from "@/features/dashboard/types/dashboard.types"
 import type { PostgrestError } from "@supabase/supabase-js";
@@ -53,6 +54,33 @@ type DashboardRecommendationRpcRow = {
   readiness_score: number | string | null
   due_date: string | null
   action_route: string
+}
+
+type DashboardPriorityQueueRpcRow = {
+  id: string
+  return_id: string
+  client_id: string
+  client_name: string
+  tax_year: number | string | null
+  return_type: string
+  status: string
+  risk_score: number | string | null
+  risk_level: string
+  readiness_score: number | string | null
+  due_date: string | null
+  days_until_due: number | string | null
+  days_since_activity: number | string | null
+  assigned_preparer_name: string | null
+  assigned_reviewer_name: string | null
+  outstanding_balance: number | string | null
+  recommended_action: string
+  action_route: string
+  risk_factors: unknown
+}
+
+type DashboardPriorityQueueRpcResult = {
+  data: DashboardPriorityQueueRpcRow[] | null
+  error: PostgrestError | null
 }
 
 type DashboardMonthlyFinancialRpcRow = {
@@ -141,6 +169,24 @@ async function getDashboardWorkloadRpc(): Promise<DashboardWorkloadRpcResult> {
   return rpc("get_dashboard_my_workload");
 }
 
+async function getDashboardPriorityQueueRpc(
+  requestedLimit = 25,
+): Promise<DashboardPriorityQueueRpcResult> {
+  const rpc = supabase.rpc.bind(supabase) as unknown as (
+    functionName: string,
+    parameters: {
+      requested_limit: number
+    },
+  ) => PromiseLike<DashboardPriorityQueueRpcResult>
+
+  return rpc(
+    "get_dashboard_priority_queue",
+    {
+      requested_limit: requestedLimit,
+    },
+  )
+}
+
 export async function getStaffWorkloadSummary(): Promise<DashboardStaffWorkload> {
   const { data, error } = await supabase.rpc(
     "get_staff_workload_summary",
@@ -193,6 +239,120 @@ function convertToNumber(value: number | string | null | undefined): number {
   const convertedValue = Number(value);
 
   return Number.isFinite(convertedValue) ? convertedValue : 0;
+}
+
+function mapRiskFactors(
+  value: unknown,
+): DashboardRiskFactor[] {
+  if (!Array.isArray(value)) {
+    return []
+  }
+
+  return value.flatMap((item) => {
+    if (
+      typeof item !== "object" ||
+      item === null
+    ) {
+      return []
+    }
+
+    const record =
+      item as Record<string, unknown>
+
+    const type =
+      typeof record.type === "string"
+        ? record.type
+        : null
+
+    const label =
+      typeof record.label === "string"
+        ? record.label
+        : null
+
+    const description =
+      typeof record.description === "string"
+        ? record.description
+        : null
+
+    if (
+      !type ||
+      !label ||
+      !description
+    ) {
+      return []
+    }
+
+    const riskFactor: DashboardRiskFactor = {
+      type:
+        type as DashboardRiskFactor["type"],
+      label,
+      description,
+      points: convertToNumber(
+        record.points as
+          | number
+          | string
+          | null,
+      ),
+    }
+
+    return [riskFactor]
+  })
+}
+
+function mapPriorityQueueItem(
+  row: DashboardPriorityQueueRpcRow,
+): DashboardPriorityItem {
+  return {
+    id: row.id,
+    returnId: row.return_id,
+    clientId: row.client_id,
+    clientName:
+      row.client_name.trim() ||
+      "Unknown Client",
+    taxYear: convertToNumber(
+      row.tax_year,
+    ),
+    returnType: row.return_type,
+    status: row.status,
+    riskScore: convertToNumber(
+      row.risk_score,
+    ),
+    riskLevel:
+      row.risk_level as
+        DashboardPriorityItem["riskLevel"],
+    readinessScore: convertToNumber(
+      row.readiness_score,
+    ),
+    dueDate: row.due_date,
+    daysUntilDue:
+      row.days_until_due === null
+        ? null
+        : convertToNumber(
+            row.days_until_due,
+          ),
+    daysSinceActivity:
+      row.days_since_activity === null
+        ? null
+        : convertToNumber(
+            row.days_since_activity,
+          ),
+    assignedPreparerName:
+      row.assigned_preparer_name,
+    assignedReviewerName:
+      row.assigned_reviewer_name,
+    outstandingBalance:
+      convertToNumber(
+        row.outstanding_balance,
+      ),
+    recommendedAction:
+      row.recommended_action,
+    actionRoute:
+      row.action_route,
+    riskFactors:
+      mapRiskFactors(
+        row.risk_factors,
+      ),
+  }
 }
 
 function mapReturnItem(item: Record<string, unknown>): DashboardReturnItem {
@@ -327,6 +487,7 @@ export async function getDashboardData(): Promise<DashboardData> {
   workloadResult,
   readinessResult,
   recommendationsResult,
+  priorityQueueResult,
   activityResult,
   recentReturnsResult,
   attentionResult,
@@ -349,6 +510,8 @@ export async function getDashboardData(): Promise<DashboardData> {
     callDashboardAnalyticsRpc<DashboardRecommendationRpcRow>(
       "get_dashboard_smart_recommendations",
     ),
+
+    getDashboardPriorityQueueRpc(25),
 
     supabase.rpc(
       "get_recent_dashboard_activity",
@@ -402,6 +565,14 @@ export async function getDashboardData(): Promise<DashboardData> {
 
   if (recommendationsResult.error) {
     throw recommendationsResult.error
+  }
+
+  if (priorityQueueResult.error) {
+    throw new Error(
+      `Unable to load dashboard priority queue: ${
+        priorityQueueResult.error.message
+      }`,
+    )
   }
 
   if (activityResult.error) {
@@ -663,20 +834,80 @@ export async function getDashboardData(): Promise<DashboardData> {
     })),
   };
 
-  const risk: DashboardRiskMetrics = {
-    evaluatedReturns: 0,
-    criticalRiskReturns: 0,
-    highRiskReturns: 0,
-    mediumRiskReturns: 0,
-    lowRiskReturns: 0,
-    overdueReturns: 0,
-    dueWithinThreeDays: 0,
-    dueWithinSevenDays: 0,
-    inactiveReturns: 0,
-    averageRiskScore: 0,
-  }
+  const priorityQueue:
+    DashboardPriorityItem[] = (
+      priorityQueueResult.data ?? []
+    ).map(mapPriorityQueueItem)
 
-const priorityQueue: DashboardPriorityItem[] = []
+  const risk: DashboardRiskMetrics = {
+    evaluatedReturns:
+      priorityQueue.length,
+
+    criticalRiskReturns:
+      priorityQueue.filter(
+        (item) =>
+          item.riskLevel === "critical",
+      ).length,
+
+    highRiskReturns:
+      priorityQueue.filter(
+        (item) =>
+          item.riskLevel === "high",
+      ).length,
+
+    mediumRiskReturns:
+      priorityQueue.filter(
+        (item) =>
+          item.riskLevel === "medium",
+      ).length,
+
+    lowRiskReturns:
+      priorityQueue.filter(
+        (item) =>
+          item.riskLevel === "low",
+      ).length,
+
+    overdueReturns:
+      priorityQueue.filter(
+        (item) =>
+          item.daysUntilDue !== null &&
+          item.daysUntilDue < 0,
+      ).length,
+
+    dueWithinThreeDays:
+      priorityQueue.filter(
+        (item) =>
+          item.daysUntilDue !== null &&
+          item.daysUntilDue >= 0 &&
+          item.daysUntilDue <= 3,
+      ).length,
+
+    dueWithinSevenDays:
+      priorityQueue.filter(
+        (item) =>
+          item.daysUntilDue !== null &&
+          item.daysUntilDue >= 0 &&
+          item.daysUntilDue <= 7,
+      ).length,
+
+    inactiveReturns:
+      priorityQueue.filter(
+        (item) =>
+          item.daysSinceActivity !== null &&
+          item.daysSinceActivity > 7,
+      ).length,
+
+    averageRiskScore:
+      priorityQueue.length === 0
+        ? 0
+        : Math.round(
+            priorityQueue.reduce(
+              (total, item) =>
+                total + item.riskScore,
+              0,
+            ) / priorityQueue.length,
+          ),
+  }
 
   return {
   summary,
