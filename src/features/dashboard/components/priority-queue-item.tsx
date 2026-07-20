@@ -5,6 +5,8 @@ import {
   MoreHorizontal,
 } from "lucide-react"
 import {
+  useEffect,
+  useRef,
   useState,
 } from "react"
 import {
@@ -125,6 +127,72 @@ export function PriorityQueueItem({
     setIsQuickActionsOpen,
   ] = useState(false)
 
+  const quickActionsContainerRef =
+    useRef<HTMLDivElement | null>(
+      null,
+    )
+
+  const quickActionsButtonRef =
+    useRef<HTMLButtonElement | null>(
+      null,
+    )
+
+    useEffect(() => {
+      if (!isQuickActionsOpen) {
+        return
+      }
+
+      function handlePointerDown(
+        event: MouseEvent,
+      ) {
+        const target =
+          event.target as Node
+
+        if (
+          quickActionsContainerRef.current &&
+          !quickActionsContainerRef.current.contains(
+            target,
+          )
+        ) {
+          setIsQuickActionsOpen(false)
+        }
+      }
+
+      function handleKeyDown(
+        event: KeyboardEvent,
+      ) {
+        if (event.key !== "Escape") {
+          return
+        }
+
+        setIsQuickActionsOpen(false)
+
+        quickActionsButtonRef.current?.focus()
+      }
+
+      document.addEventListener(
+        "mousedown",
+        handlePointerDown,
+      )
+
+      document.addEventListener(
+        "keydown",
+        handleKeyDown,
+      )
+
+      return () => {
+        document.removeEventListener(
+          "mousedown",
+          handlePointerDown,
+        )
+
+        document.removeEventListener(
+          "keydown",
+          handleKeyDown,
+        )
+      }
+    }, [isQuickActionsOpen])
+
   const dueDateLabel =
     getDueDateLabel(
       item.daysUntilDue,
@@ -172,6 +240,9 @@ export function PriorityQueueItem({
                 to={getClientDetailsRoute(
                   item.clientId,
                 )}
+                onClick={() =>
+                  setIsQuickActionsOpen(false)
+                }
                 className={[
                   "inline-flex items-center justify-center rounded-md",
                   "border border-slate-300 bg-white px-3 py-2",
@@ -191,6 +262,9 @@ export function PriorityQueueItem({
 
               <Link
                 to={item.actionRoute}
+                onClick={() =>
+                  setIsQuickActionsOpen(false)
+                }
                 className={[
                   "inline-flex items-center justify-center gap-2",
                   "rounded-md bg-slate-900 px-3 py-2",
@@ -212,8 +286,12 @@ export function PriorityQueueItem({
                 />
               </Link>
 
-              <div className="relative">
+              <div
+                ref={quickActionsContainerRef}
+                className="relative"
+              >
                 <button
+                  ref={quickActionsButtonRef}
                   type="button"
                   onClick={() =>
                     setIsQuickActionsOpen(
@@ -235,6 +313,7 @@ export function PriorityQueueItem({
                   ].join(" ")}
                   aria-expanded={isQuickActionsOpen}
                   aria-haspopup="menu"
+                  aria-controls={`priority-actions-${item.id}`}
                   aria-label={`Quick actions for ${item.clientName}`}
                   title="Quick actions"
                 >
@@ -246,6 +325,7 @@ export function PriorityQueueItem({
 
                 {isQuickActionsOpen ? (
                   <div
+                    id={`priority-actions-${item.id}`}
                     role="menu"
                     className={[
                       "absolute right-0 z-20 mt-2 w-64",
