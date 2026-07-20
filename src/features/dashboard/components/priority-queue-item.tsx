@@ -137,7 +137,7 @@ export function PriorityQueueItem({
       null,
     )
 
-    useEffect(() => {
+  useEffect(() => {
       if (!isQuickActionsOpen) {
         return
       }
