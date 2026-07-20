@@ -14,6 +14,9 @@ import {
   RiskFactorList,
 } from "@/features/dashboard/components/risk-factor-list"
 import {
+  getClientDetailsRoute,
+} from "@/config/app-config"
+import {
   RiskLevelBadge,
 } from "@/features/dashboard/components/risk-level-badge"
 import {
@@ -158,26 +161,48 @@ export function PriorityQueueItem({
               </p>
             </div>
 
-            <Link
-              to={item.actionRoute}
-              className={[
-                "inline-flex shrink-0 items-center justify-center gap-2",
-                "rounded-md bg-slate-900 px-3 py-2",
-                "text-sm font-semibold text-white",
-                "transition hover:bg-slate-700",
-                "focus-visible:outline-none focus-visible:ring-2",
-                "focus-visible:ring-slate-400",
-                "dark:bg-slate-100 dark:text-slate-900",
-                "dark:hover:bg-slate-300",
-              ].join(" ")}
-            >
-              Open Return
+            <div className="flex shrink-0 gap-2">
+              <Link
+                to={getClientDetailsRoute(
+                  item.clientId,
+                )}
+                className={[
+                  "inline-flex items-center justify-center rounded-md",
+                  "border border-slate-300 bg-white px-3 py-2",
+                  "text-sm font-semibold text-slate-700",
+                  "transition hover:bg-slate-100",
+                  "dark:border-slate-700",
+                  "dark:bg-slate-900",
+                  "dark:text-slate-200",
+                  "dark:hover:bg-slate-800",
+                ].join(" ")}
+              >
+                Open Client
+              </Link>
 
-              <ExternalLink
-                className="h-4 w-4"
-                aria-hidden="true"
-              />
-            </Link>
+              <Link
+                to={item.actionRoute}
+                className={[
+                  "inline-flex items-center justify-center gap-2",
+                  "rounded-md bg-slate-900 px-3 py-2",
+                  "text-sm font-semibold text-white",
+                  "transition hover:bg-slate-700",
+                  "focus-visible:outline-none",
+                  "focus-visible:ring-2",
+                  "focus-visible:ring-slate-400",
+                  "dark:bg-slate-100",
+                  "dark:text-slate-900",
+                  "dark:hover:bg-slate-300",
+                ].join(" ")}
+              >
+                Open Return
+
+                <ExternalLink
+                  className="h-4 w-4"
+                  aria-hidden="true"
+                />
+              </Link>
+            </div>
           </div>
 
           <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
