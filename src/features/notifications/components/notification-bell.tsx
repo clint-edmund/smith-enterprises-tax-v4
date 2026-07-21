@@ -14,6 +14,10 @@ import {
 } from "react-router-dom"
 
 import {
+  appConfig,
+} from "@/config/app-config"
+
+import {
   useNotificationStore,
 } from "../store/use-notification-store"
 
@@ -370,44 +374,65 @@ export function NotificationBell() {
             </div>
           )}
 
-          <div className="max-h-[32rem] overflow-y-auto p-3">
-            {visibleNotifications.length ===
-            0 ? (
-              <div className="px-4 py-12 text-center">
-                <div className="mx-auto flex size-12 items-center justify-center rounded-full bg-slate-100 text-slate-500">
-                  <Bell className="size-6" />
-                </div>
+                    <div className="max-h-[32rem] overflow-y-auto p-3">
+                      {visibleNotifications.length ===
+                      0 ? (
+                        <div className="px-4 py-12 text-center">
+                          <div className="mx-auto flex size-12 items-center justify-center rounded-full bg-slate-100 text-slate-500">
+                            <Bell className="size-6" />
+                          </div>
 
-                <p className="mt-4 font-semibold text-slate-950">
-                  No notifications
-                </p>
+                          <p className="mt-4 font-semibold text-slate-950">
+                            No notifications
+                          </p>
 
-                <p className="mt-1 text-sm text-slate-500">
-                  New assignments and alerts
-                  will appear here.
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {visibleNotifications.map(
-                  (notification) => (
-                    <NotificationItem
-                      key={
-                        notification.id
-                      }
-                      notification={
-                        notification
-                      }
-                      onRead={markRead}
-                      onClose={() => {
-                        setIsOpen(false)
-                      }}
-                    />
-                  ),
-                )}
-              </div>
-            )}
-          </div>
+                          <p className="mt-1 text-sm text-slate-500">
+                            New assignments and alerts
+                            will appear here.
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="space-y-3">
+                          {visibleNotifications.map(
+                            (notification) => (
+                              <NotificationItem
+                                key={
+                                  notification.id
+                                }
+                                notification={
+                                  notification
+                                }
+                                onRead={markRead}
+                                onClose={() => {
+                                  setIsOpen(false)
+                                }}
+                              />
+                            ),
+                          )}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="border-t border-slate-200 bg-slate-50 px-4 py-3">
+                      {notifications.length > 20 && (
+                        <p className="mb-2 text-center text-xs text-slate-500">
+                          Showing 20 of{" "}
+                          {notifications.length} notifications
+                        </p>
+                      )}
+
+                      <Link
+                        className="flex w-full items-center justify-center rounded-lg px-3 py-2 text-sm font-semibold text-blue-700 transition hover:bg-blue-100 hover:text-blue-900"
+                        onClick={() => {
+                          setIsOpen(false)
+                        }}
+                        to={
+                          appConfig.routes.notifications
+                        }
+                      >
+                        View all notifications
+                      </Link>
+                    </div>
         </div>
       )}
     </div>
