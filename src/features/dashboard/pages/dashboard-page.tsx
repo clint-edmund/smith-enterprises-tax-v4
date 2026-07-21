@@ -9,7 +9,7 @@ import {
   ScanSearch,
   Users,
 } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/services/supabase";
 import { useAuth } from "@/features/auth/hooks/use-auth";
 import { DashboardAttentionList } from "@/features/dashboard/components/dashboard-attention-list";
@@ -62,6 +62,11 @@ import {
 export function DashboardPage() {
   const { profile } = useAuth();
 
+  const realtimeRefreshTimerRef =
+    useRef<ReturnType<typeof setTimeout> | null>(
+      null,
+    )
+
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(
     null,
   );
@@ -101,22 +106,80 @@ export function DashboardPage() {
     }
   }, []);
 
+      const refreshActivity = useCallback(
+      async (
+        showRefreshIndicator = true,
+      ) => {
+        if (showRefreshIndicator) {
+          setIsRefreshingActivity(true)
+        }
+
+        setActivityError(null)
+
+        try {
+          const recentActivity =
+            await getRecentDashboardActivity()
+
+          setActivities(recentActivity)
+        } catch (error) {
+          console.error(
+            "Unable to refresh recent activity:",
+            error,
+          )
+
+          setActivityError(
+            "Unable to refresh recent activity.",
+          )
+        } finally {
+          if (showRefreshIndicator) {
+            setIsRefreshingActivity(false)
+          }
+        }
+      },
+      [],
+    )
+
+    const refreshActivitySilently =
+      useCallback(() => {
+        void refreshActivity(false)
+      }, [refreshActivity])
+
+    useEffect(() => {
+      void loadDashboard()
+    }, [loadDashboard])
+
   useEffect(() => {
-    const taxReturnChannel =
+    const scheduleDashboardRefresh = () => {
+      if (
+        realtimeRefreshTimerRef.current
+      ) {
+        clearTimeout(
+          realtimeRefreshTimerRef.current,
+        )
+      }
+
+      realtimeRefreshTimerRef.current =
+        setTimeout(() => {
+          realtimeRefreshTimerRef.current =
+            null
+
+          void loadDashboard(false)
+        }, 350)
+    }
+
+    const dashboardChannel =
       supabase
         .channel(
-          "dashboard-tax-return-changes",
+          "dashboard-realtime-changes",
         )
         .on(
           "postgres_changes",
           {
-            event: "*",
+            event: "INSERT",
             schema: "public",
-            table: "tax_returns",
+            table: "audit_logs",
           },
-          () => {
-            void loadDashboard(false)
-          },
+          scheduleDashboardRefresh,
         )
         .subscribe((status, error) => {
           if (
@@ -124,7 +187,7 @@ export function DashboardPage() {
             status === "TIMED_OUT"
           ) {
             console.error(
-              "Dashboard tax-return subscription failed:",
+              "Dashboard realtime subscription failed:",
               status,
               error,
             )
@@ -132,62 +195,22 @@ export function DashboardPage() {
         })
 
     return () => {
+      if (
+        realtimeRefreshTimerRef.current
+      ) {
+        clearTimeout(
+          realtimeRefreshTimerRef.current,
+        )
+
+        realtimeRefreshTimerRef.current =
+          null
+      }
+
       void supabase.removeChannel(
-        taxReturnChannel,
+        dashboardChannel,
       )
     }
   }, [loadDashboard])
-
-  const refreshActivity = useCallback(async () => {
-    setIsRefreshingActivity(true);
-    setActivityError(null);
-
-    try {
-      const refreshedActivities = await getRecentDashboardActivity(8);
-
-      setActivities(refreshedActivities);
-    } catch (error) {
-      console.error("Unable to refresh recent activity:", error);
-
-      const message =
-        error instanceof Error
-          ? error.message
-          : "An unexpected error occurred.";
-
-      setActivityError(message);
-    } finally {
-      setIsRefreshingActivity(false);
-    }
-  }, []);
-
-  const refreshActivitySilently =
-  useCallback(async () => {
-    try {
-      const refreshedActivities =
-        await getRecentDashboardActivity(8)
-
-      setActivities(
-        refreshedActivities,
-      )
-
-      setActivityError(null)
-    } catch (error) {
-      console.error(
-        "Unable to refresh recent activity from Realtime:",
-        error,
-      )
-    }
-  }, [])
-
-  useEffect(() => {
-    const timeoutId = window.setTimeout(() => {
-      void loadDashboard();
-    }, 0);
-
-    return () => {
-      window.clearTimeout(timeoutId);
-    };
-  }, [loadDashboard]);
 
   const {
     realtimeStatus,
