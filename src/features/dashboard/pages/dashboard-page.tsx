@@ -10,7 +10,7 @@ import {
   Users,
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
-
+import { supabase } from "@/services/supabase";
 import { useAuth } from "@/features/auth/hooks/use-auth";
 import { DashboardAttentionList } from "@/features/dashboard/components/dashboard-attention-list";
 import { DashboardFinancialChart } from "@/features/dashboard/components/dashboard-financial-chart";
@@ -100,6 +100,43 @@ export function DashboardPage() {
       setIsRefreshing(false);
     }
   }, []);
+
+  useEffect(() => {
+    const taxReturnChannel =
+      supabase
+        .channel(
+          "dashboard-tax-return-changes",
+        )
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "tax_returns",
+          },
+          () => {
+            void loadDashboard(false)
+          },
+        )
+        .subscribe((status, error) => {
+          if (
+            status === "CHANNEL_ERROR" ||
+            status === "TIMED_OUT"
+          ) {
+            console.error(
+              "Dashboard tax-return subscription failed:",
+              status,
+              error,
+            )
+          }
+        })
+
+    return () => {
+      void supabase.removeChannel(
+        taxReturnChannel,
+      )
+    }
+  }, [loadDashboard])
 
   const refreshActivity = useCallback(async () => {
     setIsRefreshingActivity(true);
