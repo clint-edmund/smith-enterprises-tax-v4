@@ -171,6 +171,10 @@ function formatAction(
       "updated a tax return",
     return_status_changed:
       "changed a return status",
+    return_preparer_assigned:
+      "assigned a return preparer",
+    return_preparer_unassigned:
+      "removed a return preparer",
     payment_recorded:
       "recorded a payment",
     document_uploaded:

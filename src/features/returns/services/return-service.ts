@@ -458,32 +458,23 @@ export async function assignTaxReturnPreparer(
     preparerId?.trim() || null
 
   const {
-    data,
     error,
-  } = await supabase
-    .from("tax_returns")
-    .update({
-      assigned_preparer_id:
-        normalizedPreparerId,
-    })
-    .eq(
-      "id",
-      normalizedReturnId,
-    )
-    .select("id")
-    .maybeSingle()
+  } = await supabase.rpc(
+    "assign_tax_return_preparer",
+    {
+      requested_return_id:
+        normalizedReturnId,
+
+      requested_preparer_id:
+        normalizedPreparerId ?? undefined,
+    },
+  )
 
   if (error) {
     throw new Error(
       getReturnServiceErrorMessage(
         error,
       ),
-    )
-  }
-
-  if (!data) {
-    throw new Error(
-      "The tax return was not found or could not be updated.",
     )
   }
 }

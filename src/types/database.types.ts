@@ -246,6 +246,81 @@ export type Database = {
           },
         ]
       }
+      document_access_log: {
+        Row: {
+          action: string
+          actor_id: string | null
+          details: Json
+          document_id: string
+          id: number
+          occurred_at: string
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          details?: Json
+          document_id: string
+          id?: number
+          occurred_at?: string
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          details?: Json
+          document_id?: string
+          id?: number
+          occurred_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_access_log_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "document_access_log_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "client_documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      document_categories: {
+        Row: {
+          code: string
+          created_at: string
+          description: string | null
+          display_order: number
+          id: string
+          is_active: boolean
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       payments: {
         Row: {
           amount: number
@@ -782,6 +857,10 @@ export type Database = {
         Args: { requested_document_id: string }
         Returns: undefined
       }
+      assign_tax_return_preparer: {
+        Args: { requested_preparer_id?: string; requested_return_id: string }
+        Returns: undefined
+      }
       complete_required_document: {
         Args: {
           requested_document_id?: string
@@ -1024,6 +1103,45 @@ export type Database = {
           review_assigned_to_me: number
         }[]
       }
+      get_dashboard_priority_queue: {
+        Args: { requested_limit?: number }
+        Returns: {
+          action_route: string
+          assigned_preparer_name: string
+          assigned_reviewer_name: string
+          client_id: string
+          client_name: string
+          days_since_activity: number
+          days_until_due: number
+          due_date: string
+          id: string
+          outstanding_balance: number
+          readiness_score: number
+          recommended_action: string
+          return_id: string
+          return_type: string
+          risk_factors: Json
+          risk_level: string
+          risk_score: number
+          status: string
+          tax_year: number
+        }[]
+      }
+      get_dashboard_readiness_metrics: {
+        Args: never
+        Returns: {
+          active_returns: number
+          average_readiness_score: number
+          blocked_returns: number
+          missing_preparer: number
+          needs_documents: number
+          office_health_score: number
+          overdue_returns: number
+          readiness_eligible_returns: number
+          ready_for_preparation: number
+          ready_for_review: number
+        }[]
+      }
       get_dashboard_recent_returns: {
         Args: { requested_limit?: number }
         Returns: {
@@ -1039,6 +1157,24 @@ export type Database = {
           tax_form: Database["public"]["Enums"]["tax_form_type"]
           tax_year: number
           updated_at: string
+        }[]
+      }
+      get_dashboard_smart_recommendations: {
+        Args: { requested_limit?: number }
+        Returns: {
+          action_route: string
+          client_id: string
+          client_name: string
+          due_date: string
+          explanation: string
+          id: string
+          priority: string
+          readiness_score: number
+          recommendation_type: string
+          return_id: string
+          return_type: Database["public"]["Enums"]["return_type"]
+          tax_year: number
+          title: string
         }[]
       }
       get_dashboard_staff_workload: {
