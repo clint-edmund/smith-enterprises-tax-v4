@@ -17,6 +17,7 @@ import { PendingApprovalPage } from "@/features/auth/pages/pending-approval-page
 import { SecurityAcknowledgmentPage } from "@/features/auth/pages/security-acknowledgment-page"
 import { ClientsPage } from "@/features/clients/pages/clients-page"
 import { DashboardPage } from "@/features/dashboard/pages/dashboard-page"
+import { NotificationCenterPage, } from "@/features/notifications/pages/notification-center-page"
 import { PaymentsPage } from "@/features/payments/pages/payments-page"
 import { ReportsPage } from "@/features/reports/pages/reports-page"
 import { ReturnsPage } from "@/features/returns/pages/returns-page"
@@ -81,6 +82,10 @@ export const appRouter =
                     appConfig.routes.dashboard,
                   element:
                     <DashboardPage />,
+                },
+                {
+                  path: appConfig.routes.notifications,
+                  element: <NotificationCenterPage />,
                 },
                 {
                   path: appConfig.routes.clients,

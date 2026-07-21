@@ -1,4 +1,5 @@
 import {
+  Bell,
   ChartNoAxesCombined,
   CircleDollarSign,
   FileText,
@@ -15,6 +16,19 @@ export const navigationItems: NavigationItem[] = [
     label: "Dashboard",
     path: appConfig.routes.dashboard,
     icon: LayoutDashboard,
+  },
+  {
+  label: "Notifications",
+    path: appConfig.routes.notifications,
+    icon: Bell,
+    allowedRoles: [
+      "administrator",
+      "manager",
+      "preparer",
+      "reviewer",
+      "receptionist",
+      "read_only",
+    ],
   },
   {
     label: "Clients",

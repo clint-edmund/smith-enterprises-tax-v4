@@ -12,6 +12,7 @@ export const appConfig = {
     accountError: "/account-error",
     securityAcknowledgment: "/security-acknowledgment",
     dashboard: "/dashboard",
+    notifications: "/notifications",
     clients: "/clients",
     clientNew: "/clients/new",
     clientDetails: "/clients/:clientId",
