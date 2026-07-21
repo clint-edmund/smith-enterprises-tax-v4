@@ -140,6 +140,18 @@ export function PriorityQueueItem({
     setIsAssignPreparerOpen,
   ] = useState(false)
 
+  const [
+    actionMessage,
+    setActionMessage,
+  ] = useState<string | null>(null)
+
+  const [
+    actionMessageType,
+    setActionMessageType,
+  ] = useState<
+    "success" | "error"
+  >("success")
+
   const quickActionsContainerRef =
     useRef<HTMLDivElement | null>(
       null,
@@ -206,17 +218,60 @@ export function PriorityQueueItem({
       }
     }, [isQuickActionsOpen])
 
+    useEffect(() => {
+      if (!actionMessage) {
+        return
+      }
+
+      const timeoutId = window.setTimeout(
+        () => {
+          setActionMessage(null)
+        },
+        5000,
+      )
+
+      return () => {
+        window.clearTimeout(timeoutId)
+      }
+    }, [actionMessage])
+
   async function handleAssignPreparer(
     preparerId: string | null,
   ) {
-    await assignTaxReturnPreparer(
-      item.id,
-      preparerId,
-    )
+    setActionMessage(null)
 
-    setIsAssignPreparerOpen(false)
+    try {
+      await assignTaxReturnPreparer(
+        item.id,
+        preparerId,
+      )
 
-    onPriorityItemUpdated()
+      setIsAssignPreparerOpen(false)
+
+      setActionMessageType("success")
+      setActionMessage(
+        preparerId
+          ? "Preparer assigned successfully."
+          : "Preparer assignment removed.",
+      )
+
+      onPriorityItemUpdated()
+    } catch (error) {
+      console.error(
+        "Unable to assign preparer:",
+        error,
+      )
+
+      setActionMessageType("error")
+
+      setActionMessage(
+        error instanceof Error
+          ? error.message
+          : "Unable to update the preparer assignment.",
+      )
+
+      throw error
+    }
   }
 
   const dueDateLabel =
@@ -233,6 +288,39 @@ export function PriorityQueueItem({
   return (
   <>
     <article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950 sm:p-5">
+      {actionMessage ? (
+        <div
+          role={
+            actionMessageType === "error"
+              ? "alert"
+              : "status"
+          }
+          className={[
+            "mb-4 rounded-lg border px-4 py-3",
+            "text-sm font-medium",
+            actionMessageType === "success"
+              ? [
+                  "border-green-200",
+                  "bg-green-50",
+                  "text-green-800",
+                  "dark:border-green-900",
+                  "dark:bg-green-950/40",
+                  "dark:text-green-300",
+                ].join(" ")
+              : [
+                  "border-red-200",
+                  "bg-red-50",
+                  "text-red-800",
+                  "dark:border-red-900",
+                  "dark:bg-red-950/40",
+                  "dark:text-red-300",
+                ].join(" "),
+          ].join(" ")}
+        >
+          {actionMessage}
+        </div>
+      ) : null}
+      
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
         <RiskScoreIndicator
           score={item.riskScore}
