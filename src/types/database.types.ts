@@ -321,6 +321,57 @@ export type Database = {
         }
         Relationships: []
       }
+      notifications: {
+        Row: {
+          action_url: string | null
+          category: string
+          created_at: string
+          expires_at: string | null
+          id: string
+          is_read: boolean
+          message: string
+          metadata: Json
+          priority: string
+          read_at: string | null
+          recipient_user_id: string
+          related_entity_id: string | null
+          related_entity_type: string | null
+          title: string
+        }
+        Insert: {
+          action_url?: string | null
+          category?: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          is_read?: boolean
+          message: string
+          metadata?: Json
+          priority?: string
+          read_at?: string | null
+          recipient_user_id: string
+          related_entity_id?: string | null
+          related_entity_type?: string | null
+          title: string
+        }
+        Update: {
+          action_url?: string | null
+          category?: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          is_read?: boolean
+          message?: string
+          metadata?: Json
+          priority?: string
+          read_at?: string | null
+          recipient_user_id?: string
+          related_entity_id?: string | null
+          related_entity_type?: string | null
+          title?: string
+        }
+        Relationships: []
+      }
       payments: {
         Row: {
           amount: number

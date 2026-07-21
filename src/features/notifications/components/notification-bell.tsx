@@ -193,12 +193,6 @@ export function NotificationBell() {
         state.notifications,
     )
 
-  const addNotification =
-    useNotificationStore(
-      (state) =>
-        state.addNotification,
-    )
-
   const unreadCount =
     useNotificationStore(
       (state) =>
@@ -281,28 +275,9 @@ export function NotificationBell() {
   return (
     <div
       ref={containerRef}
-      className="relative flex items-center"
+      className="relative"
     >
-    <button
-      type="button"
-      onClick={() => {
-        addNotification({
-          id: crypto.randomUUID(),
-          title: "Return Assigned",
-          message:
-            "A 2025 individual tax return has been assigned to you.",
-          category: "assignment",
-          priority: "high",
-          isRead: false,
-          createdAt:
-            new Date().toISOString(),
-          actionUrl: "/returns",
-        })
-      }}
-      className="mr-2 rounded-lg bg-blue-700 px-3 py-2 text-sm font-semibold text-white transition hover:bg-blue-800"
-    >
-      Test Notification
-    </button>
+    
       <button
         type="button"
         onClick={() => {
