@@ -94,7 +94,7 @@ interface NotificationItemProps {
   notification: AppNotification
   onRead: (
     notificationId: string,
-  ) => void
+  ) => Promise<void>
   onClose: () => void
 }
 
@@ -145,7 +145,7 @@ function NotificationItem({
               event.preventDefault()
               event.stopPropagation()
 
-              onRead(
+              void onRead(
                 notification.id,
               )
             }}
@@ -165,7 +165,10 @@ function NotificationItem({
       <Link
         to={notification.actionUrl}
         onClick={() => {
-          onRead(notification.id)
+          void onRead(
+            notification.id,
+          )
+
           onClose()
         }}
         className="block rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2"
@@ -341,7 +344,9 @@ export function NotificationBell() {
             <div className="flex items-center justify-between gap-3 border-b border-slate-200 px-4 py-3">
               <button
                 type="button"
-                onClick={markAllRead}
+                onClick={() => {
+                  void markAllRead()
+                }}
                 disabled={
                   unreadCount === 0
                 }
@@ -353,7 +358,9 @@ export function NotificationBell() {
 
               <button
                 type="button"
-                onClick={clearAll}
+                onClick={() => {
+                  void clearAll()
+                }}
                 className="inline-flex items-center gap-2 text-xs font-semibold text-red-700 transition hover:text-red-900"
               >
                 <Trash2 className="size-4" />

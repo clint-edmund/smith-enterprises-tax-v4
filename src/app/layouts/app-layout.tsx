@@ -12,6 +12,9 @@ import { AppSidebar } from "@/components/navigation/app-sidebar"
 import { MobileNavigation } from "@/components/navigation/mobile-navigation"
 import { appConfig } from "@/config/app-config"
 import { useAuth } from "@/features/auth/hooks/use-auth"
+import {
+  NotificationSync,
+} from "@/features/notifications/components/notification-sync"
 
 export function AppLayout() {
   const navigate = useNavigate()
@@ -81,6 +84,7 @@ export function AppLayout() {
 
   return (
     <div className="min-h-screen bg-slate-100">
+      <NotificationSync />
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-72 border-r border-slate-200 bg-white lg:block">
         <AppSidebar profile={profile} />
       </aside>

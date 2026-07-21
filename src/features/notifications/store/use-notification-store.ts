@@ -1,4 +1,12 @@
-import { create } from "zustand"
+import {
+  create,
+} from "zustand"
+
+import {
+  clearNotifications,
+  markAllNotificationsRead,
+  markNotificationRead,
+} from "../services/notification-service"
 
 import type {
   AppNotification,
@@ -9,25 +17,32 @@ interface NotificationState {
 
   unreadCount: number
 
+  isUpdating: boolean
+
   setNotifications: (
-    notifications: AppNotification[],
+    notifications:
+      AppNotification[],
   ) => void
 
   addNotification: (
-    notification: AppNotification,
+    notification:
+      AppNotification,
   ) => void
 
   markRead: (
     id: string,
-  ) => void
+  ) => Promise<void>
 
-  markAllRead: () => void
+  markAllRead: () =>
+    Promise<void>
 
-  clearAll: () => void
+  clearAll: () =>
+    Promise<void>
 }
 
 function calculateUnreadCount(
-  notifications: AppNotification[],
+  notifications:
+    AppNotification[],
 ): number {
   return notifications.filter(
     (notification) =>
@@ -36,91 +51,171 @@ function calculateUnreadCount(
 }
 
 export const useNotificationStore =
-  create<NotificationState>((set) => ({
-    notifications: [],
+  create<NotificationState>(
+    (set, get) => ({
+      notifications: [],
 
-    unreadCount: 0,
+      unreadCount: 0,
 
-    setNotifications: (
-      notifications,
-    ) =>
-      set({
+      isUpdating: false,
+
+      setNotifications: (
         notifications,
-        unreadCount:
-          calculateUnreadCount(
+      ) => {
+        set({
+          notifications,
+
+          unreadCount:
+            calculateUnreadCount(
+              notifications,
+            ),
+        })
+      },
+
+      addNotification: (
+        notification,
+      ) => {
+        set((state) => {
+          const alreadyExists =
+            state.notifications.some(
+              (item) =>
+                item.id ===
+                notification.id,
+            )
+
+          if (alreadyExists) {
+            return state
+          }
+
+          const notifications = [
+            notification,
+            ...state.notifications,
+          ]
+
+          return {
             notifications,
-          ),
-      }),
 
-    addNotification: (
-      notification,
-    ) =>
-      set((state) => {
-        const existingNotification =
-          state.notifications.some(
+            unreadCount:
+              calculateUnreadCount(
+                notifications,
+              ),
+          }
+        })
+      },
+
+      markRead: async (id) => {
+        const currentNotifications =
+          get().notifications
+
+        const notification =
+          currentNotifications.find(
             (item) =>
-              item.id === notification.id,
+              item.id === id,
           )
 
-        if (existingNotification) {
-          return state
+        if (
+          !notification ||
+          notification.isRead
+        ) {
+          return
         }
 
-        const notifications = [
-          notification,
-          ...state.notifications,
-        ]
+        set({
+          isUpdating: true,
+        })
 
-        return {
-          notifications,
-          unreadCount:
-            calculateUnreadCount(
+        try {
+          await markNotificationRead(
+            id,
+          )
+
+          set((state) => {
+            const notifications =
+              state.notifications.map(
+                (item) =>
+                  item.id === id
+                    ? {
+                        ...item,
+                        isRead: true,
+                      }
+                    : item,
+              )
+
+            return {
               notifications,
-            ),
+
+              unreadCount:
+                calculateUnreadCount(
+                  notifications,
+                ),
+            }
+          })
+        } finally {
+          set({
+            isUpdating: false,
+          })
         }
-      }),
+      },
 
-    markRead: (id) =>
-      set((state) => {
-        const notifications =
-          state.notifications.map(
-            (notification) =>
-              notification.id === id
-                ? {
-                    ...notification,
-                    isRead: true,
-                  }
-                : notification,
-          )
+      markAllRead: async () => {
+        if (
+          get().unreadCount === 0
+        ) {
+          return
+        }
 
-        return {
-          notifications,
-          unreadCount:
-            calculateUnreadCount(
+        set({
+          isUpdating: true,
+        })
+
+        try {
+          await markAllNotificationsRead()
+
+          set((state) => {
+            const notifications =
+              state.notifications.map(
+                (notification) => ({
+                  ...notification,
+                  isRead: true,
+                }),
+              )
+
+            return {
               notifications,
-            ),
+              unreadCount: 0,
+            }
+          })
+        } finally {
+          set({
+            isUpdating: false,
+          })
         }
-      }),
+      },
 
-    markAllRead: () =>
-      set((state) => {
-        const notifications =
-          state.notifications.map(
-            (notification) => ({
-              ...notification,
-              isRead: true,
-            }),
-          )
-
-        return {
-          notifications,
-          unreadCount: 0,
+      clearAll: async () => {
+        if (
+          get().notifications.length ===
+          0
+        ) {
+          return
         }
-      }),
 
-    clearAll: () =>
-      set({
-        notifications: [],
-        unreadCount: 0,
-      }),
-  }))
+        set({
+          isUpdating: true,
+        })
+
+        try {
+          await clearNotifications()
+
+          set({
+            notifications: [],
+            unreadCount: 0,
+          })
+        } finally {
+          set({
+            isUpdating: false,
+          })
+        }
+      },
+    }),
+  )
