@@ -8,6 +8,10 @@ import type {
   StaffProfile,
 } from "@/features/auth/types/auth.types"
 
+import {
+  NotificationBell,
+} from "@/features/notifications/components/notification-bell"
+
 interface AppHeaderProps {
   profile: StaffProfile
   isSigningOut: boolean
@@ -84,6 +88,8 @@ export function AppHeader({
               {profile.role.replaceAll("_", " ")}
             </p>
           </div>
+
+          <NotificationBell />
 
           <button
             type="button"
