@@ -3,9 +3,11 @@ import {
 } from "zustand"
 
 import {
+  archiveNotifications,
   clearNotifications,
   markAllNotificationsRead,
   markNotificationRead,
+  restoreNotifications,
 } from "../services/notification-service"
 
 import type {
@@ -36,6 +38,14 @@ interface NotificationState {
   markAllRead: () =>
     Promise<void>
 
+  archiveSelected: (
+    ids: string[],
+  ) => Promise<void>
+
+  restoreSelected: (
+    ids: string[],
+  ) => Promise<void>
+
   clearAll: () =>
     Promise<void>
 }
@@ -46,8 +56,24 @@ function calculateUnreadCount(
 ): number {
   return notifications.filter(
     (notification) =>
-      !notification.isRead,
+      !notification.isRead &&
+      !notification.isArchived &&
+      !notification.deletedAt,
   ).length
+}
+
+function normalizeNotificationIds(
+  ids: string[],
+): string[] {
+  return Array.from(
+    new Set(
+      ids
+        .map((id) =>
+          id.trim(),
+        )
+        .filter(Boolean),
+    ),
+  )
 }
 
 export const useNotificationStore =
@@ -104,18 +130,34 @@ export const useNotificationStore =
       },
 
       markRead: async (id) => {
-        const currentNotifications =
-          get().notifications
+        const normalizedId =
+          id.trim()
+
+        if (!normalizedId) {
+          return
+        }
+
+        const currentState =
+          get()
+
+        if (
+          currentState.isUpdating
+        ) {
+          return
+        }
 
         const notification =
-          currentNotifications.find(
+          currentState.notifications.find(
             (item) =>
-              item.id === id,
+              item.id ===
+              normalizedId,
           )
 
         if (
           !notification ||
-          notification.isRead
+          notification.isRead ||
+          notification.isArchived ||
+          notification.deletedAt
         ) {
           return
         }
@@ -126,16 +168,18 @@ export const useNotificationStore =
 
         try {
           await markNotificationRead(
-            id,
+            normalizedId,
           )
 
           set((state) => {
             const notifications =
               state.notifications.map(
                 (item) =>
-                  item.id === id
+                  item.id ===
+                  normalizedId
                     ? {
                         ...item,
+
                         isRead: true,
                       }
                     : item,
@@ -158,8 +202,13 @@ export const useNotificationStore =
       },
 
       markAllRead: async () => {
+        const currentState =
+          get()
+
         if (
-          get().unreadCount === 0
+          currentState.isUpdating ||
+          currentState.unreadCount ===
+            0
         ) {
           return
         }
@@ -174,15 +223,221 @@ export const useNotificationStore =
           set((state) => {
             const notifications =
               state.notifications.map(
-                (notification) => ({
-                  ...notification,
-                  isRead: true,
-                }),
+                (notification) => {
+                  if (
+                    notification
+                      .isArchived ||
+                    notification
+                      .deletedAt
+                  ) {
+                    return notification
+                  }
+
+                  return {
+                    ...notification,
+
+                    isRead: true,
+                  }
+                },
               )
 
             return {
               notifications,
-              unreadCount: 0,
+
+              unreadCount:
+                calculateUnreadCount(
+                  notifications,
+                ),
+            }
+          })
+        } finally {
+          set({
+            isUpdating: false,
+          })
+        }
+      },
+
+      archiveSelected: async (
+        ids,
+      ) => {
+        const normalizedIds =
+          normalizeNotificationIds(
+            ids,
+          )
+
+        const currentState =
+          get()
+
+        if (
+          normalizedIds.length ===
+            0 ||
+          currentState.isUpdating
+        ) {
+          return
+        }
+
+        const activeIds =
+          normalizedIds.filter(
+            (notificationId) => {
+              const notification =
+                currentState
+                  .notifications
+                  .find(
+                    (item) =>
+                      item.id ===
+                      notificationId,
+                  )
+
+              return Boolean(
+                notification &&
+                !notification
+                  .isArchived &&
+                !notification
+                  .deletedAt,
+              )
+            },
+          )
+
+        if (
+          activeIds.length === 0
+        ) {
+          return
+        }
+
+        set({
+          isUpdating: true,
+        })
+
+        try {
+          await archiveNotifications(
+            activeIds,
+          )
+
+          const archivedAt =
+            new Date().toISOString()
+
+          set((state) => {
+            const archivedIdSet =
+              new Set(activeIds)
+
+            const notifications =
+              state.notifications.map(
+                (notification) =>
+                  archivedIdSet.has(
+                    notification.id,
+                  )
+                    ? {
+                        ...notification,
+
+                        isArchived:
+                          true,
+
+                        archivedAt,
+                      }
+                    : notification,
+              )
+
+            return {
+              notifications,
+
+              unreadCount:
+                calculateUnreadCount(
+                  notifications,
+                ),
+            }
+          })
+        } finally {
+          set({
+            isUpdating: false,
+          })
+        }
+      },
+
+      restoreSelected: async (
+        ids,
+      ) => {
+        const normalizedIds =
+          normalizeNotificationIds(
+            ids,
+          )
+
+        const currentState =
+          get()
+
+        if (
+          normalizedIds.length ===
+            0 ||
+          currentState.isUpdating
+        ) {
+          return
+        }
+
+        const archivedIds =
+          normalizedIds.filter(
+            (notificationId) => {
+              const notification =
+                currentState
+                  .notifications
+                  .find(
+                    (item) =>
+                      item.id ===
+                      notificationId,
+                  )
+
+              return Boolean(
+                notification &&
+                notification
+                  .isArchived &&
+                !notification
+                  .deletedAt,
+              )
+            },
+          )
+
+        if (
+          archivedIds.length === 0
+        ) {
+          return
+        }
+
+        set({
+          isUpdating: true,
+        })
+
+        try {
+          await restoreNotifications(
+            archivedIds,
+          )
+
+          const restoredIdSet =
+            new Set(archivedIds)
+
+          set((state) => {
+            const notifications =
+              state.notifications.map(
+                (notification) =>
+                  restoredIdSet.has(
+                    notification.id,
+                  )
+                    ? {
+                        ...notification,
+
+                        isArchived:
+                          false,
+
+                        archivedAt:
+                          undefined,
+                      }
+                    : notification,
+              )
+
+            return {
+              notifications,
+
+              unreadCount:
+                calculateUnreadCount(
+                  notifications,
+                ),
             }
           })
         } finally {
@@ -193,9 +448,14 @@ export const useNotificationStore =
       },
 
       clearAll: async () => {
+        const currentState =
+          get()
+
         if (
-          get().notifications.length ===
-          0
+          currentState
+            .notifications
+            .length === 0 ||
+          currentState.isUpdating
         ) {
           return
         }
@@ -209,6 +469,7 @@ export const useNotificationStore =
 
           set({
             notifications: [],
+
             unreadCount: 0,
           })
         } finally {

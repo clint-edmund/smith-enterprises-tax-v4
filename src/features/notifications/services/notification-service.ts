@@ -33,10 +33,23 @@ function mapNotificationRow(
 
     isRead: row.is_read,
 
-    createdAt: row.created_at,
+    isArchived:
+      row.is_archived,
+
+    createdAt:
+      row.created_at,
+
+    archivedAt:
+      row.archived_at ??
+      undefined,
+
+    deletedAt:
+      row.deleted_at ??
+      undefined,
 
     actionUrl:
-      row.action_url ?? undefined,
+      row.action_url ??
+      undefined,
 
     relatedEntityId:
       row.related_entity_id ??
@@ -56,7 +69,9 @@ Promise<string> {
   } = await supabase.auth.getUser()
 
   if (error) {
-    throw new Error(error.message)
+    throw new Error(
+      error.message,
+    )
   }
 
   if (!data.user) {
@@ -66,6 +81,20 @@ Promise<string> {
   }
 
   return data.user.id
+}
+
+function normalizeNotificationIds(
+  notificationIds: string[],
+): string[] {
+  return Array.from(
+    new Set(
+      notificationIds
+        .map((notificationId) =>
+          notificationId.trim(),
+        )
+        .filter(Boolean),
+    ),
+  )
 }
 
 export async function getNotifications():
@@ -83,6 +112,10 @@ Promise<AppNotification[]> {
       "recipient_user_id",
       userId,
     )
+    .is(
+      "deleted_at",
+      null,
+    )
     .or(
       `expires_at.is.null,expires_at.gt.${new Date().toISOString()}`,
     )
@@ -95,7 +128,9 @@ Promise<AppNotification[]> {
     .limit(100)
 
   if (error) {
-    throw new Error(error.message)
+    throw new Error(
+      error.message,
+    )
   }
 
   return (data ?? []).map(
@@ -115,12 +150,16 @@ export async function markNotificationRead(
     )
   }
 
+  const userId =
+    await getAuthenticatedUserId()
+
   const {
     error,
   } = await supabase
     .from("notifications")
     .update({
       is_read: true,
+
       read_at:
         new Date().toISOString(),
     })
@@ -128,9 +167,19 @@ export async function markNotificationRead(
       "id",
       normalizedId,
     )
+    .eq(
+      "recipient_user_id",
+      userId,
+    )
+    .is(
+      "deleted_at",
+      null,
+    )
 
   if (error) {
-    throw new Error(error.message)
+    throw new Error(
+      error.message,
+    )
   }
 }
 
@@ -145,6 +194,7 @@ Promise<void> {
     .from("notifications")
     .update({
       is_read: true,
+
       read_at:
         new Date().toISOString(),
     })
@@ -156,9 +206,119 @@ Promise<void> {
       "is_read",
       false,
     )
+    .eq(
+      "is_archived",
+      false,
+    )
+    .is(
+      "deleted_at",
+      null,
+    )
 
   if (error) {
-    throw new Error(error.message)
+    throw new Error(
+      error.message,
+    )
+  }
+}
+
+export async function archiveNotifications(
+  notificationIds: string[],
+): Promise<void> {
+  const normalizedIds =
+    normalizeNotificationIds(
+      notificationIds,
+    )
+
+  if (
+    normalizedIds.length === 0
+  ) {
+    throw new Error(
+      "At least one notification identifier is required.",
+    )
+  }
+
+  const userId =
+    await getAuthenticatedUserId()
+
+  const archivedAt =
+    new Date().toISOString()
+
+  const {
+    error,
+  } = await supabase
+    .from("notifications")
+    .update({
+      is_archived: true,
+
+      archived_at:
+        archivedAt,
+    })
+    .eq(
+      "recipient_user_id",
+      userId,
+    )
+    .in(
+      "id",
+      normalizedIds,
+    )
+    .is(
+      "deleted_at",
+      null,
+    )
+
+  if (error) {
+    throw new Error(
+      error.message,
+    )
+  }
+}
+
+export async function restoreNotifications(
+  notificationIds: string[],
+): Promise<void> {
+  const normalizedIds =
+    normalizeNotificationIds(
+      notificationIds,
+    )
+
+  if (
+    normalizedIds.length === 0
+  ) {
+    throw new Error(
+      "At least one notification identifier is required.",
+    )
+  }
+
+  const userId =
+    await getAuthenticatedUserId()
+
+  const {
+    error,
+  } = await supabase
+    .from("notifications")
+    .update({
+      is_archived: false,
+
+      archived_at: null,
+    })
+    .eq(
+      "recipient_user_id",
+      userId,
+    )
+    .in(
+      "id",
+      normalizedIds,
+    )
+    .is(
+      "deleted_at",
+      null,
+    )
+
+  if (error) {
+    throw new Error(
+      error.message,
+    )
   }
 }
 
@@ -167,17 +327,29 @@ Promise<void> {
   const userId =
     await getAuthenticatedUserId()
 
+  const deletedAt =
+    new Date().toISOString()
+
   const {
     error,
   } = await supabase
     .from("notifications")
-    .delete()
+    .update({
+      deleted_at:
+        deletedAt,
+    })
     .eq(
       "recipient_user_id",
       userId,
     )
+    .is(
+      "deleted_at",
+      null,
+    )
 
   if (error) {
-    throw new Error(error.message)
+    throw new Error(
+      error.message,
+    )
   }
 }

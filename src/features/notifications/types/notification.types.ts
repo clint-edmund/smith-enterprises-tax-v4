@@ -25,7 +25,13 @@ export interface AppNotification {
 
   isRead: boolean
 
+  isArchived: boolean
+
   createdAt: string
+
+  archivedAt?: string
+
+  deletedAt?: string
 
   actionUrl?: string
 

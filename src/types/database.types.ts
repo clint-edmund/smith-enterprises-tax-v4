@@ -402,10 +402,13 @@ export type Database = {
       notifications: {
         Row: {
           action_url: string | null
+          archived_at: string | null
           category: string
           created_at: string
+          deleted_at: string | null
           expires_at: string | null
           id: string
+          is_archived: boolean
           is_read: boolean
           message: string
           metadata: Json
@@ -418,10 +421,13 @@ export type Database = {
         }
         Insert: {
           action_url?: string | null
+          archived_at?: string | null
           category?: string
           created_at?: string
+          deleted_at?: string | null
           expires_at?: string | null
           id?: string
+          is_archived?: boolean
           is_read?: boolean
           message: string
           metadata?: Json
@@ -434,10 +440,13 @@ export type Database = {
         }
         Update: {
           action_url?: string | null
+          archived_at?: string | null
           category?: string
           created_at?: string
+          deleted_at?: string | null
           expires_at?: string | null
           id?: string
+          is_archived?: boolean
           is_read?: boolean
           message?: string
           metadata?: Json

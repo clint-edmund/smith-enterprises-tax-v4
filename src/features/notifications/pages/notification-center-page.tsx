@@ -6,6 +6,7 @@ import {
   CheckCheck,
   ExternalLink,
   ListChecks,
+  RotateCcw,
   Search,
   Trash2,
   X,
@@ -30,6 +31,7 @@ type NotificationFilter =
   | "all"
   | "unread"
   | "read"
+  | "archived"
 
 interface NotificationCardProps {
   notification: AppNotification
@@ -148,9 +150,14 @@ function NotificationCard({
           "ring-2",
           "ring-blue-100",
         ].join(" ")
-      : notification.isRead
-        ? "border-slate-200 bg-white"
-        : "border-blue-200 bg-blue-50/40",
+      : notification.isArchived
+        ? [
+            "border-slate-300",
+            "bg-slate-50",
+          ].join(" ")
+        : notification.isRead
+          ? "border-slate-200 bg-white"
+          : "border-blue-200 bg-blue-50/40",
     selectionMode
       ? "cursor-pointer"
       : "",
@@ -204,12 +211,13 @@ function NotificationCard({
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2">
-                {!notification.isRead && (
-                  <span
-                    aria-label="Unread notification"
-                    className="h-2.5 w-2.5 rounded-full bg-blue-600"
-                  />
-                )}
+                {!notification.isRead &&
+                  !notification.isArchived && (
+                    <span
+                      aria-label="Unread notification"
+                      className="h-2.5 w-2.5 rounded-full bg-blue-600"
+                    />
+                  )}
 
                 <h2 className="text-base font-semibold text-slate-900">
                   {notification.title}
@@ -232,6 +240,12 @@ function NotificationCard({
                     notification.category,
                   )}
                 </span>
+
+                {notification.isArchived && (
+                  <span className="rounded-full border border-violet-200 bg-violet-50 px-2.5 py-1 text-xs font-medium text-violet-700">
+                    Archived
+                  </span>
+                )}
               </div>
 
               <p className="mt-3 text-sm leading-6 text-slate-600">
@@ -240,10 +254,20 @@ function NotificationCard({
 
               <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-slate-500">
                 <span>
+                  Created:{" "}
                   {formatNotificationDate(
                     notification.createdAt,
                   )}
                 </span>
+
+                {notification.archivedAt && (
+                  <span>
+                    Archived:{" "}
+                    {formatNotificationDate(
+                      notification.archivedAt,
+                    )}
+                  </span>
+                )}
 
                 {notification.relatedEntityType && (
                   <span>
@@ -257,51 +281,52 @@ function NotificationCard({
               </div>
             </div>
 
-            {!selectionMode && (
-              <div className="flex shrink-0 flex-wrap items-center gap-2">
-                {!notification.isRead && (
-                  <button
-                    className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-                    onClick={(event) => {
-                      event.stopPropagation()
+            {!selectionMode &&
+              !notification.isArchived && (
+                <div className="flex shrink-0 flex-wrap items-center gap-2">
+                  {!notification.isRead && (
+                    <button
+                      className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                      onClick={(event) => {
+                        event.stopPropagation()
 
-                      void onMarkRead(
-                        notification.id,
-                      )
-                    }}
-                    type="button"
-                  >
-                    <Check className="h-4 w-4" />
-
-                    Mark read
-                  </button>
-                )}
-
-                {notification.actionUrl && (
-                  <Link
-                    className="inline-flex items-center gap-2 rounded-lg bg-blue-700 px-3 py-2 text-sm font-medium text-white hover:bg-blue-800"
-                    onClick={(event) => {
-                      event.stopPropagation()
-
-                      if (
-                        !notification.isRead
-                      ) {
                         void onMarkRead(
                           notification.id,
                         )
-                      }
-                    }}
-                    to={
-                      notification.actionUrl
-                    }
-                  >
-                    Open
+                      }}
+                      type="button"
+                    >
+                      <Check className="h-4 w-4" />
 
-                    <ExternalLink className="h-4 w-4" />
-                  </Link>
-                )}
-              </div>
-            )}
+                      Mark read
+                    </button>
+                  )}
+
+                  {notification.actionUrl && (
+                    <Link
+                      className="inline-flex items-center gap-2 rounded-lg bg-blue-700 px-3 py-2 text-sm font-medium text-white hover:bg-blue-800"
+                      onClick={(event) => {
+                        event.stopPropagation()
+
+                        if (
+                          !notification.isRead
+                        ) {
+                          void onMarkRead(
+                            notification.id,
+                          )
+                        }
+                      }}
+                      to={
+                        notification.actionUrl
+                      }
+                    >
+                      Open
+
+                      <ExternalLink className="h-4 w-4" />
+                    </Link>
+                  )}
+                </div>
+              )}
           </div>
         </div>
       </div>
@@ -356,15 +381,54 @@ export function NotificationCenterPage() {
         state.markAllRead,
     )
 
+  const archiveSelected =
+    useNotificationStore(
+      (state) =>
+        state.archiveSelected,
+    )
+
+  const restoreSelected =
+    useNotificationStore(
+      (state) =>
+        state.restoreSelected,
+    )
+
   const clearAll =
     useNotificationStore(
       (state) =>
         state.clearAll,
     )
 
+  const activeNotifications =
+    useMemo(
+      () =>
+        notifications.filter(
+          (notification) =>
+            !notification.isArchived &&
+            !notification.deletedAt,
+        ),
+      [notifications],
+    )
+
+  const archivedNotifications =
+    useMemo(
+      () =>
+        notifications.filter(
+          (notification) =>
+            notification.isArchived &&
+            !notification.deletedAt,
+        ),
+      [notifications],
+    )
+
   const readCount =
-    notifications.length -
-    unreadCount
+    activeNotifications.filter(
+      (notification) =>
+        notification.isRead,
+    ).length
+
+  const archivedCount =
+    archivedNotifications.length
 
   const filteredNotifications =
     useMemo(() => {
@@ -375,18 +439,29 @@ export function NotificationCenterPage() {
 
       return notifications.filter(
         (notification) => {
+          if (
+            notification.deletedAt
+          ) {
+            return false
+          }
+
           const matchesFilter =
-            activeFilter === "all" ||
-            (
-              activeFilter ===
-                "unread" &&
-              !notification.isRead
-            ) ||
-            (
-              activeFilter ===
-                "read" &&
-              notification.isRead
-            )
+            activeFilter === "archived"
+              ? notification.isArchived
+              : !notification.isArchived &&
+                (
+                  activeFilter === "all" ||
+                  (
+                    activeFilter ===
+                      "unread" &&
+                    !notification.isRead
+                  ) ||
+                  (
+                    activeFilter ===
+                      "read" &&
+                    notification.isRead
+                  )
+                )
 
           if (!matchesFilter) {
             return false
@@ -507,6 +582,39 @@ export function NotificationCenterPage() {
     setSelectionMode(true)
   }
 
+  const changeFilter = (
+    filter:
+      NotificationFilter,
+  ) => {
+    setActiveFilter(filter)
+    setSelectedNotificationIds([])
+  }
+
+  const handleLifecycleAction =
+    async () => {
+      if (
+        selectedNotificationIds.length ===
+          0 ||
+        isUpdating
+      ) {
+        return
+      }
+
+      if (
+        activeFilter === "archived"
+      ) {
+        await restoreSelected(
+          selectedNotificationIds,
+        )
+      } else {
+        await archiveSelected(
+          selectedNotificationIds,
+        )
+      }
+
+      clearSelection()
+    }
+
   const filterButtonClasses = (
     filter:
       NotificationFilter,
@@ -529,6 +637,12 @@ export function NotificationCenterPage() {
           ].join(" "),
     ].join(" ")
   }
+
+  const isArchivedView =
+    activeFilter === "archived"
+
+  const visibleCount =
+    filteredNotifications.length
 
   return (
     <section className="space-y-6 p-6 lg:p-8">
@@ -554,8 +668,7 @@ export function NotificationCenterPage() {
             <button
               className="inline-flex items-center gap-2 rounded-lg border border-blue-200 bg-white px-4 py-2 text-sm font-medium text-blue-700 hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-50"
               disabled={
-                notifications.length ===
-                  0 ||
+                visibleCount === 0 ||
                 isUpdating
               }
               onClick={
@@ -568,21 +681,23 @@ export function NotificationCenterPage() {
               Select
             </button>
 
-            <button
-              className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
-              disabled={
-                unreadCount === 0 ||
-                isUpdating
-              }
-              onClick={() => {
-                void markAllRead()
-              }}
-              type="button"
-            >
-              <CheckCheck className="h-4 w-4" />
+            {!isArchivedView && (
+              <button
+                className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+                disabled={
+                  unreadCount === 0 ||
+                  isUpdating
+                }
+                onClick={() => {
+                  void markAllRead()
+                }}
+                type="button"
+              >
+                <CheckCheck className="h-4 w-4" />
 
-              Mark all read
-            </button>
+                Mark all read
+              </button>
+            )}
 
             <button
               className="inline-flex items-center gap-2 rounded-lg border border-red-200 bg-white px-4 py-2 text-sm font-medium text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
@@ -594,7 +709,7 @@ export function NotificationCenterPage() {
               onClick={() => {
                 const shouldClear =
                   window.confirm(
-                    "Clear all notifications? This action cannot be undone.",
+                    "Remove all notifications? They will be soft-deleted and will no longer appear in the notification center.",
                   )
 
                 if (shouldClear) {
@@ -621,7 +736,8 @@ export function NotificationCenterPage() {
               className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
               disabled={
                 visibleNotificationIds
-                  .length === 0
+                  .length === 0 ||
+                isUpdating
               }
               onClick={() => {
                 if (allVisibleSelected) {
@@ -640,20 +756,52 @@ export function NotificationCenterPage() {
             </button>
 
             <button
-              className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
-              disabled
-              title="Archive will be enabled in Phase 10.5.8C"
+              className={[
+                "inline-flex items-center gap-2",
+                "rounded-lg border bg-white",
+                "px-4 py-2 text-sm font-medium",
+                "disabled:cursor-not-allowed",
+                "disabled:opacity-50",
+                isArchivedView
+                  ? [
+                      "border-emerald-200",
+                      "text-emerald-700",
+                      "hover:bg-emerald-50",
+                    ].join(" ")
+                  : [
+                      "border-violet-200",
+                      "text-violet-700",
+                      "hover:bg-violet-50",
+                    ].join(" "),
+              ].join(" ")}
+              disabled={
+                selectedCount === 0 ||
+                isUpdating
+              }
+              onClick={() => {
+                void handleLifecycleAction()
+              }}
               type="button"
             >
-              <Archive className="h-4 w-4" />
+              {isArchivedView ? (
+                <>
+                  <RotateCcw className="h-4 w-4" />
 
-              Archive
+                  Restore
+                </>
+              ) : (
+                <>
+                  <Archive className="h-4 w-4" />
+
+                  Archive
+                </>
+              )}
             </button>
 
             <button
               className="inline-flex items-center gap-2 rounded-lg border border-red-200 bg-white px-4 py-2 text-sm font-medium text-red-700 disabled:cursor-not-allowed disabled:opacity-50"
               disabled
-              title="Delete selected will be enabled in Phase 10.5.8B"
+              title="Permanent delete will be added in a later phase"
               type="button"
             >
               <Trash2 className="h-4 w-4" />
@@ -662,7 +810,8 @@ export function NotificationCenterPage() {
             </button>
 
             <button
-              className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+              className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+              disabled={isUpdating}
               onClick={clearSelection}
               type="button"
             >
@@ -674,18 +823,18 @@ export function NotificationCenterPage() {
         )}
       </header>
 
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
           <div className="flex items-center justify-between">
             <p className="text-sm font-medium text-slate-600">
-              Total
+              Active
             </p>
 
             <Bell className="h-5 w-5 text-slate-400" />
           </div>
 
           <p className="mt-3 text-3xl font-bold text-slate-900">
-            {notifications.length}
+            {activeNotifications.length}
           </p>
         </div>
 
@@ -716,11 +865,25 @@ export function NotificationCenterPage() {
             {readCount}
           </p>
         </div>
+
+        <div className="rounded-xl border border-violet-200 bg-violet-50 p-5 shadow-sm">
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-medium text-violet-700">
+              Archived
+            </p>
+
+            <Archive className="h-5 w-5 text-violet-600" />
+          </div>
+
+          <p className="mt-3 text-3xl font-bold text-violet-900">
+            {archivedCount}
+          </p>
+        </div>
       </div>
 
       <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <div className="relative w-full lg:max-w-md">
+        <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+          <div className="relative w-full xl:max-w-md">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
 
             <input
@@ -729,6 +892,10 @@ export function NotificationCenterPage() {
               onChange={(event) => {
                 setSearchQuery(
                   event.target.value,
+                )
+
+                setSelectedNotificationIds(
+                  [],
                 )
               }}
               placeholder="Search notifications..."
@@ -743,13 +910,11 @@ export function NotificationCenterPage() {
                 "all",
               )}
               onClick={() => {
-                setActiveFilter(
-                  "all",
-                )
+                changeFilter("all")
               }}
               type="button"
             >
-              All ({notifications.length})
+              All ({activeNotifications.length})
             </button>
 
             <button
@@ -757,9 +922,7 @@ export function NotificationCenterPage() {
                 "unread",
               )}
               onClick={() => {
-                setActiveFilter(
-                  "unread",
-                )
+                changeFilter("unread")
               }}
               type="button"
             >
@@ -771,13 +934,25 @@ export function NotificationCenterPage() {
                 "read",
               )}
               onClick={() => {
-                setActiveFilter(
-                  "read",
-                )
+                changeFilter("read")
               }}
               type="button"
             >
               Read ({readCount})
+            </button>
+
+            <button
+              className={filterButtonClasses(
+                "archived",
+              )}
+              onClick={() => {
+                changeFilter(
+                  "archived",
+                )
+              }}
+              type="button"
+            >
+              Archived ({archivedCount})
             </button>
           </div>
         </div>
@@ -785,13 +960,9 @@ export function NotificationCenterPage() {
 
       {selectionMode && (
         <div className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-900">
-          Selection mode is active. Select
-          individual notifications or use{" "}
-          <span className="font-semibold">
-            Select visible
-          </span>{" "}
-          to select notifications currently
-          displayed by your search and filter.
+          {isArchivedView
+            ? "Selection mode is active. Select archived notifications to restore them."
+            : "Selection mode is active. Select active notifications to archive them."}
         </div>
       )}
 
@@ -826,16 +997,25 @@ export function NotificationCenterPage() {
         </div>
       ) : (
         <div className="rounded-xl border border-dashed border-slate-300 bg-white px-6 py-16 text-center">
-          <BellOff className="mx-auto h-10 w-10 text-slate-400" />
+          {isArchivedView ? (
+            <Archive className="mx-auto h-10 w-10 text-slate-400" />
+          ) : (
+            <BellOff className="mx-auto h-10 w-10 text-slate-400" />
+          )}
 
           <h2 className="mt-4 text-lg font-semibold text-slate-900">
-            No notifications found
+            {isArchivedView
+              ? "No archived notifications"
+              : "No notifications found"}
           </h2>
 
           <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-600">
-            {notifications.length === 0
-              ? "You do not currently have any notifications."
-              : "No notifications match the selected filter or search term."}
+            {isArchivedView
+              ? "Notifications you archive will appear here and can be restored."
+              : activeNotifications.length ===
+                  0
+                ? "You do not currently have any active notifications."
+                : "No notifications match the selected filter or search term."}
           </p>
 
           {searchQuery && (
@@ -843,9 +1023,7 @@ export function NotificationCenterPage() {
               className="mt-5 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
               onClick={() => {
                 setSearchQuery("")
-                setActiveFilter(
-                  "all",
-                )
+                changeFilter("all")
               }}
               type="button"
             >
