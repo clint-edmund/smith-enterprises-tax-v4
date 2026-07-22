@@ -63,6 +63,9 @@ import {
 import {
   ClientCommandBar,
 } from "@/features/clients/components/client-command-bar"
+import {
+  ClientHealthCard,
+} from "@/features/clients/components/client-health-card"
 
 const editRoles = [
   "administrator",
@@ -601,6 +604,11 @@ export function ClientDetailsPage() {
       <ClientCommandBar
         client={client}
         canEdit={canEdit}
+      />
+
+      <ClientHealthCard
+        client={client}
+        clientReturns={clientReturns}
       />
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.75fr)]">
