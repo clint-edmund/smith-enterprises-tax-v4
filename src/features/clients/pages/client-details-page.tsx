@@ -4,6 +4,7 @@ import {
   CalendarDays,
   Cake,
   CheckCircle2,
+  ChevronRight,
   ClipboardList,
   Clock3,
   Edit3,
@@ -307,7 +308,32 @@ export function ClientDetailsPage() {
             ),
       ).length
 
+    const sortedReturns =
+      [...clientReturns].sort(
+        (firstReturn, secondReturn) => {
+          if (
+            secondReturn.taxYear !==
+            firstReturn.taxYear
+          ) {
+            return (
+              secondReturn.taxYear -
+              firstReturn.taxYear
+            )
+          }
+
+          return (
+            new Date(
+              secondReturn.updatedAt,
+            ).getTime() -
+            new Date(
+              firstReturn.updatedAt,
+            ).getTime()
+          )
+        },
+      )
+
     return {
+      sortedReturns,
       openReturns,
       completedReturns,
       totalNetFees,
@@ -842,50 +868,88 @@ export function ClientDetailsPage() {
         </aside>
       </div>
 
-      <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-        <div className="flex flex-col gap-4 border-b border-slate-200 p-5 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h2 className="font-bold text-slate-950">
-              Client Returns
-            </h2>
-            <p className="mt-1 text-sm text-slate-500">
-              Tax returns associated with this client.
-            </p>
-          </div>
+      <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+        <div className="border-b border-slate-200 bg-slate-50/70 p-5 sm:p-6">
+          <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <div className="flex items-center gap-3">
+                <div className="flex size-11 items-center justify-center rounded-xl bg-blue-100 text-blue-700">
+                  <ClipboardList
+                    className="size-5"
+                    aria-hidden="true"
+                  />
+                </div>
 
-          <div className="flex flex-wrap gap-3">
-            <button
-              type="button"
-              onClick={() => {
-                void loadClientReturns(true)
-              }}
-              disabled={isRefreshingReturns}
-              className="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              <RefreshCw
-                className={`size-4 ${
-                  isRefreshingReturns
-                    ? "animate-spin"
-                    : ""
-                }`}
-              />
-              Refresh
-            </button>
+                <div>
+                  <h2 className="text-lg font-bold text-slate-950">
+                    Return Portfolio
+                  </h2>
+                  <p className="mt-1 text-sm text-slate-500">
+                    Review tax years, workflow status, assignments, due dates,
+                    and fees for this client.
+                  </p>
+                </div>
+              </div>
+            </div>
 
-            {canEdit && (
-              <Link
-                to={getNewClientReturnRoute(client.id)}
-                className="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-800"
+            <div className="flex flex-wrap gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  void loadClientReturns(true)
+                }}
+                disabled={isRefreshingReturns}
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                <FilePlus2 className="size-4" />
-                New Return
-              </Link>
-            )}
+                <RefreshCw
+                  className={[
+                    "size-4",
+                    isRefreshingReturns
+                      ? "animate-spin"
+                      : "",
+                  ].join(" ")}
+                  aria-hidden="true"
+                />
+                Refresh
+              </button>
+
+              {canEdit && (
+                <Link
+                  to={getNewClientReturnRoute(client.id)}
+                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-800"
+                >
+                  <FilePlus2
+                    className="size-4"
+                    aria-hidden="true"
+                  />
+                  New Return
+                </Link>
+              )}
+            </div>
           </div>
+
+          {clientReturns.length > 0 && (
+            <div className="mt-5 flex flex-wrap gap-2">
+              <span className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700">
+                {clientReturns.length} total
+              </span>
+              <span className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-800">
+                {clientSummary.openReturns} open
+              </span>
+              <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-800">
+                {clientSummary.completedReturns} completed
+              </span>
+              {clientSummary.overdueReturns > 0 && (
+                <span className="rounded-full border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-800">
+                  {clientSummary.overdueReturns} overdue
+                </span>
+              )}
+            </div>
+          )}
         </div>
 
         {returnsErrorMessage ? (
-          <div className="m-5 rounded-xl border border-red-200 bg-red-50 p-5">
+          <div className="m-5 rounded-2xl border border-red-200 bg-red-50 p-5 sm:m-6">
             <p className="font-semibold text-red-900">
               Unable to load client returns
             </p>
@@ -894,21 +958,31 @@ export function ClientDetailsPage() {
             </p>
           </div>
         ) : clientReturns.length === 0 ? (
-          <div className="p-10 text-center">
-            <FileText className="mx-auto size-10 text-slate-300" />
-            <h3 className="mt-4 font-bold text-slate-950">
+          <div className="px-6 py-14 text-center">
+            <div className="mx-auto flex size-16 items-center justify-center rounded-2xl bg-slate-100">
+              <FileText
+                className="size-8 text-slate-400"
+                aria-hidden="true"
+              />
+            </div>
+
+            <h3 className="mt-5 text-xl font-bold text-slate-950">
               No returns found
             </h3>
-            <p className="mt-2 text-sm text-slate-500">
+
+            <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">
               This client does not have any tax returns yet.
             </p>
 
             {canEdit && (
               <Link
                 to={getNewClientReturnRoute(client.id)}
-                className="mt-5 inline-flex items-center gap-2 rounded-lg bg-blue-700 px-4 py-2.5 font-semibold text-white hover:bg-blue-800"
+                className="mt-5 inline-flex items-center gap-2 rounded-xl bg-blue-700 px-5 py-3 font-semibold text-white transition hover:bg-blue-800"
               >
-                <FilePlus2 className="size-4" />
+                <FilePlus2
+                  className="size-4"
+                  aria-hidden="true"
+                />
                 Create First Return
               </Link>
             )}
@@ -917,151 +991,229 @@ export function ClientDetailsPage() {
           <>
             <div className="hidden overflow-x-auto md:block">
               <table className="min-w-full divide-y divide-slate-200">
-                <thead className="bg-slate-50">
+                <thead className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur">
                   <tr>
-                    <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">
+                    <th className="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-[0.12em] text-slate-600">
                       Return
                     </th>
-                    <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">
+                    <th className="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-[0.12em] text-slate-600">
                       Status
                     </th>
-                    <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">
+                    <th className="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-[0.12em] text-slate-600">
                       Assignment
                     </th>
-                    <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">
+                    <th className="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-[0.12em] text-slate-600">
                       Dates
                     </th>
-                    <th className="px-5 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-600">
+                    <th className="px-5 py-3.5 text-right text-xs font-semibold uppercase tracking-[0.12em] text-slate-600">
                       Net Fee
                     </th>
-                    <th className="px-5 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-600">
+                    <th className="px-5 py-3.5 text-right text-xs font-semibold uppercase tracking-[0.12em] text-slate-600">
                       Action
                     </th>
                   </tr>
                 </thead>
 
                 <tbody className="divide-y divide-slate-100">
-                  {clientReturns.map((taxReturn) => (
-                    <tr
-                      key={taxReturn.id}
-                      className="hover:bg-slate-50"
-                    >
-                      <td className="px-5 py-4">
-                        <p className="font-semibold text-slate-950">
-                          {taxReturn.taxYear}{" "}
-                          {taxFormLabels[taxReturn.taxForm]}
-                        </p>
-                        <p className="mt-1 text-xs text-slate-500">
-                          {returnTypeLabels[taxReturn.returnType]}
-                        </p>
-                      </td>
+                  {clientSummary.sortedReturns.map((taxReturn) => {
+                    const isClosed =
+                      taxReturn.status === "completed" ||
+                      taxReturn.status === "accepted"
 
-                      <td className="px-5 py-4">
-                        <ReturnStatusBadge
-                          status={taxReturn.status}
-                        />
-                      </td>
+                    const isOverdue =
+                      Boolean(taxReturn.dueDate) &&
+                      !isClosed &&
+                      new Date(
+                        taxReturn.dueDate!,
+                      ).getTime() <
+                        new Date().setHours(
+                          0,
+                          0,
+                          0,
+                          0,
+                        )
 
-                      <td className="px-5 py-4 text-sm text-slate-700">
-                        <p>
-                          Preparer: {taxReturn.assignedPreparerName || "Unassigned"}
-                        </p>
-                        <p className="mt-1 text-slate-500">
-                          Reviewer: {taxReturn.assignedReviewerName || "Unassigned"}
-                        </p>
-                      </td>
+                    return (
+                      <tr
+                        key={taxReturn.id}
+                        className="group transition hover:bg-blue-50/40"
+                      >
+                        <td className="px-5 py-4">
+                          <Link
+                            to={getReturnDetailsRoute(taxReturn.id)}
+                            className="focus-visible:outline-none"
+                          >
+                            <p className="font-semibold text-slate-950 transition group-hover:text-blue-800">
+                              {taxReturn.taxYear}{" "}
+                              {taxFormLabels[taxReturn.taxForm]}
+                            </p>
+                            <p className="mt-1 text-xs text-slate-500">
+                              {returnTypeLabels[taxReturn.returnType]}
+                            </p>
+                          </Link>
+                        </td>
 
-                      <td className="px-5 py-4 text-sm text-slate-700">
-                        <p>
-                          Received: {formatReturnDate(taxReturn.dateReceived)}
-                        </p>
-                        <p className="mt-1 text-slate-500">
-                          Due: {formatReturnDate(taxReturn.dueDate)}
-                        </p>
-                      </td>
+                        <td className="px-5 py-4">
+                          <ReturnStatusBadge
+                            status={taxReturn.status}
+                          />
+                        </td>
 
-                      <td className="px-5 py-4 text-right font-semibold text-slate-950">
-                        {formatReturnCurrency(taxReturn.netFee)}
-                      </td>
+                        <td className="px-5 py-4 text-sm text-slate-700">
+                          <p className="font-medium">
+                            {taxReturn.assignedPreparerName ||
+                              "Unassigned preparer"}
+                          </p>
+                          <p className="mt-1 text-slate-500">
+                            Reviewer:{" "}
+                            {taxReturn.assignedReviewerName ||
+                              "Unassigned"}
+                          </p>
+                        </td>
 
-                      <td className="px-5 py-4 text-right">
-                        <Link
-                          to={getReturnDetailsRoute(taxReturn.id)}
-                          className="font-semibold text-blue-700 hover:underline"
-                        >
-                          View
-                        </Link>
-                      </td>
-                    </tr>
-                  ))}
+                        <td className="px-5 py-4 text-sm text-slate-700">
+                          <p>
+                            Received:{" "}
+                            {formatReturnDate(taxReturn.dateReceived)}
+                          </p>
+                          <p
+                            className={[
+                              "mt-1 font-medium",
+                              isOverdue
+                                ? "text-red-700"
+                                : "text-slate-500",
+                            ].join(" ")}
+                          >
+                            Due:{" "}
+                            {formatReturnDate(taxReturn.dueDate)}
+                            {isOverdue ? " · Overdue" : ""}
+                          </p>
+                        </td>
+
+                        <td className="px-5 py-4 text-right font-bold text-slate-950">
+                          {formatReturnCurrency(taxReturn.netFee)}
+                        </td>
+
+                        <td className="px-5 py-4 text-right">
+                          <Link
+                            to={getReturnDetailsRoute(taxReturn.id)}
+                            className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold text-blue-700 transition hover:bg-blue-100 hover:text-blue-900"
+                          >
+                            View Return
+                            <ChevronRight
+                              className="size-4"
+                              aria-hidden="true"
+                            />
+                          </Link>
+                        </td>
+                      </tr>
+                    )
+                  })}
                 </tbody>
               </table>
             </div>
 
             <div className="divide-y divide-slate-200 md:hidden">
-              {clientReturns.map((taxReturn) => (
-                <article
-                  key={taxReturn.id}
-                  className="space-y-4 p-5"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <h3 className="font-bold text-slate-950">
-                        {taxReturn.taxYear}{" "}
-                        {taxFormLabels[taxReturn.taxForm]}
-                      </h3>
-                      <p className="mt-1 text-sm text-slate-500">
-                        {returnTypeLabels[taxReturn.returnType]}
-                      </p>
-                    </div>
-                    <ReturnStatusBadge
-                      status={taxReturn.status}
-                    />
-                  </div>
+              {clientSummary.sortedReturns.map((taxReturn) => {
+                const isClosed =
+                  taxReturn.status === "completed" ||
+                  taxReturn.status === "accepted"
 
-                  <dl className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <dt className="text-slate-500">
-                        Preparer
-                      </dt>
-                      <dd className="mt-1 font-semibold text-slate-900">
-                        {taxReturn.assignedPreparerName || "Unassigned"}
-                      </dd>
-                    </div>
-                    <div>
-                      <dt className="text-slate-500">
-                        Net fee
-                      </dt>
-                      <dd className="mt-1 font-semibold text-slate-900">
-                        {formatReturnCurrency(taxReturn.netFee)}
-                      </dd>
-                    </div>
-                    <div>
-                      <dt className="text-slate-500">
-                        Received
-                      </dt>
-                      <dd className="mt-1 font-semibold text-slate-900">
-                        {formatReturnDate(taxReturn.dateReceived)}
-                      </dd>
-                    </div>
-                    <div>
-                      <dt className="text-slate-500">
-                        Due
-                      </dt>
-                      <dd className="mt-1 font-semibold text-slate-900">
-                        {formatReturnDate(taxReturn.dueDate)}
-                      </dd>
-                    </div>
-                  </dl>
+                const isOverdue =
+                  Boolean(taxReturn.dueDate) &&
+                  !isClosed &&
+                  new Date(
+                    taxReturn.dueDate!,
+                  ).getTime() <
+                    new Date().setHours(
+                      0,
+                      0,
+                      0,
+                      0,
+                    )
 
-                  <Link
-                    to={getReturnDetailsRoute(taxReturn.id)}
-                    className="inline-flex font-semibold text-blue-700 hover:underline"
+                return (
+                  <article
+                    key={taxReturn.id}
+                    className="p-5"
                   >
-                    View Return
-                  </Link>
-                </article>
-              ))}
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <h3 className="font-bold text-slate-950">
+                          {taxReturn.taxYear}{" "}
+                          {taxFormLabels[taxReturn.taxForm]}
+                        </h3>
+                        <p className="mt-1 text-sm text-slate-500">
+                          {returnTypeLabels[taxReturn.returnType]}
+                        </p>
+                      </div>
+
+                      <ReturnStatusBadge
+                        status={taxReturn.status}
+                      />
+                    </div>
+
+                    <dl className="mt-4 grid gap-3 rounded-2xl bg-slate-50 p-4 text-sm sm:grid-cols-2">
+                      <div>
+                        <dt className="text-xs font-medium uppercase tracking-wide text-slate-500">
+                          Preparer
+                        </dt>
+                        <dd className="mt-1 font-semibold text-slate-900">
+                          {taxReturn.assignedPreparerName ||
+                            "Unassigned"}
+                        </dd>
+                      </div>
+
+                      <div>
+                        <dt className="text-xs font-medium uppercase tracking-wide text-slate-500">
+                          Reviewer
+                        </dt>
+                        <dd className="mt-1 font-semibold text-slate-900">
+                          {taxReturn.assignedReviewerName ||
+                            "Unassigned"}
+                        </dd>
+                      </div>
+
+                      <div>
+                        <dt className="text-xs font-medium uppercase tracking-wide text-slate-500">
+                          Due Date
+                        </dt>
+                        <dd
+                          className={[
+                            "mt-1 font-semibold",
+                            isOverdue
+                              ? "text-red-700"
+                              : "text-slate-900",
+                          ].join(" ")}
+                        >
+                          {formatReturnDate(taxReturn.dueDate)}
+                          {isOverdue ? " · Overdue" : ""}
+                        </dd>
+                      </div>
+
+                      <div>
+                        <dt className="text-xs font-medium uppercase tracking-wide text-slate-500">
+                          Net Fee
+                        </dt>
+                        <dd className="mt-1 font-semibold text-slate-900">
+                          {formatReturnCurrency(taxReturn.netFee)}
+                        </dd>
+                      </div>
+                    </dl>
+
+                    <Link
+                      to={getReturnDetailsRoute(taxReturn.id)}
+                      className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
+                    >
+                      View Return
+                      <ChevronRight
+                        className="size-4"
+                        aria-hidden="true"
+                      />
+                    </Link>
+                  </article>
+                )
+              })}
             </div>
           </>
         )}
