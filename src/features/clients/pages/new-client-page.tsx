@@ -1,5 +1,8 @@
 import {
   ArrowLeft,
+  BadgePlus,
+  ShieldCheck,
+  UserPlus,
 } from "lucide-react"
 import {
   useState,
@@ -80,22 +83,71 @@ export function NewClientPage() {
 
   return (
     <section className="space-y-6">
-      <header>
-        <Link
-          to={appConfig.routes.clients}
-          className="inline-flex items-center gap-2 text-sm font-semibold text-blue-700 hover:underline"
-        >
-          <ArrowLeft className="size-4" />
-          Back to Clients
-        </Link>
+      <header className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+        <div className="border-b border-slate-200 bg-gradient-to-r from-blue-50 via-white to-slate-50 px-5 py-5 sm:px-7">
+          <Link
+            to={appConfig.routes.clients}
+            className="inline-flex items-center gap-2 text-sm font-semibold text-blue-700 transition hover:text-blue-900"
+          >
+            <ArrowLeft
+              className="size-4"
+              aria-hidden="true"
+            />
+            Back to Clients
+          </Link>
+        </div>
 
-        <h1 className="mt-4 text-3xl font-bold text-slate-950">
-          New Client
-        </h1>
+        <div className="grid gap-6 p-5 sm:p-7 lg:grid-cols-[1fr_auto] lg:items-center">
+          <div className="flex items-start gap-4">
+            <div className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-blue-100 text-blue-700">
+              <UserPlus
+                className="size-7"
+                aria-hidden="true"
+              />
+            </div>
 
-        <p className="mt-2 text-slate-600">
-          Create a new taxpayer client record.
-        </p>
+            <div>
+              <div className="flex flex-wrap items-center gap-2">
+                <h1 className="text-3xl font-bold tracking-tight text-slate-950">
+                  New Client
+                </h1>
+
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-800">
+                  <BadgePlus
+                    className="size-3.5"
+                    aria-hidden="true"
+                  />
+                  New record
+                </span>
+              </div>
+
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">
+                Create a complete taxpayer client record for use across
+                returns, assignments, communication, and future document
+                workflows.
+              </p>
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 lg:max-w-sm">
+            <div className="flex gap-3">
+              <ShieldCheck
+                className="mt-0.5 size-5 shrink-0 text-emerald-700"
+                aria-hidden="true"
+              />
+
+              <div>
+                <p className="text-sm font-semibold text-emerald-900">
+                  Secure client setup
+                </p>
+                <p className="mt-1 text-xs leading-5 text-emerald-800">
+                  Use approved secure workflows for SSNs, banking details,
+                  payment information, and uploaded tax documents.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
       </header>
 
       <ClientForm
