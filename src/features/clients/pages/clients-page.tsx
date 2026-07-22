@@ -19,6 +19,7 @@ import {
   getClientDetailsRoute,
 } from "@/config/app-config"
 import { useAuth } from "@/features/auth/hooks/use-auth"
+import type { AppRole } from "@/features/auth/types/auth.types"
 import { searchClients } from "@/features/clients/services/client-service"
 import type {
   ClientListItem,
@@ -33,11 +34,9 @@ type StatusFilter =
   | ClientStatus
   | "all"
 
-const createRoles = [
+const createRoles: AppRole[] = [
   "administrator",
   "manager",
-  "preparer",
-  "reviewer",
   "receptionist",
 ]
 

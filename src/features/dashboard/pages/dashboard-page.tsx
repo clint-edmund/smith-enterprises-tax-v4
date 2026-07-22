@@ -272,7 +272,26 @@ export function DashboardPage() {
   loadedAt,
 } = dashboardData
 
-  const staffName = profile.firstName || profile.displayName || "Staff Member";
+  const staffName =
+    profile.firstName ||
+    profile.displayName ||
+    "Staff Member";
+
+  const isAdministrator =
+    profile.role === "administrator";
+
+  const isManager =
+    profile.role === "manager";
+
+  const canViewExecutiveData =
+    isAdministrator || isManager;
+
+  const canViewReturnReadiness =
+    profile.role !== "receptionist" &&
+    profile.role !== "read_only";
+
+  const canViewPriorityQueue =
+    profile.role !== "read_only";
 
   return (
     <section className="space-y-6">
@@ -365,14 +384,16 @@ export function DashboardPage() {
           href="/returns?status=documents_pending"
         />
 
-        <SummaryCard
-          label="Net Preparation Fees"
-          value={formatCurrency(summary.totalFees)}
-          description={`${formatCurrency(
-            summary.totalPayments,
-          )} in recorded payments`}
-          icon={CircleDollarSign}
-        />
+        {canViewExecutiveData && (
+          <SummaryCard
+            label="Net Preparation Fees"
+            value={formatCurrency(summary.totalFees)}
+            description={`${formatCurrency(
+              summary.totalPayments,
+            )} in recorded payments`}
+            icon={CircleDollarSign}
+          />
+        )}
 
         <SummaryCard
           label="Completed Returns"
@@ -385,39 +406,70 @@ export function DashboardPage() {
         />
             </div>
 
-            <ReturnReadinessCenter
-              metrics={readiness}
-            />
+      {canViewReturnReadiness && (
+        <ReturnReadinessCenter
+          metrics={readiness}
+        />
+      )}
 
-            <ExecutiveKpis
-              metrics={executive}
-            />
+      {canViewExecutiveData && (
+        <>
+          <ExecutiveKpis
+            metrics={executive}
+          />
 
-            <SmartRecommendationsPanel
-              recommendations={dashboardData.recommendations}
-            />
+          <SmartRecommendationsPanel
+            recommendations={
+              dashboardData.recommendations
+            }
+          />
+        </>
+      )}
 
-      <PriorityQueueCard
-        items={dashboardData.priorityQueue}
-        onPriorityItemUpdated={() => {
-          void loadDashboard(true)
-        }}
-      />
+      {canViewPriorityQueue && (
+        <PriorityQueueCard
+          items={dashboardData.priorityQueue}
+          onPriorityItemUpdated={() => {
+            void loadDashboard(true)
+          }}
+        />
+      )}
 
+      {canViewExecutiveData && (
+        <>
+          <WorkflowOperations
+            workflow={summary.workflow}
+          />
 
-      <WorkflowOperations workflow={summary.workflow} />
-
-      <StaffWorkload workload={staffWorkload} />
+          <StaffWorkload
+            workload={staffWorkload}
+          />
+        </>
+      )}
 
       <MyWorkload workload={workload} />
 
-      <div className="grid gap-6 xl:grid-cols-2">
-        <DashboardFinancialChart data={analytics.monthlyFinancials} />
+      {canViewExecutiveData ? (
+        <div className="grid gap-6 xl:grid-cols-2">
+          <DashboardFinancialChart
+            data={analytics.monthlyFinancials}
+          />
 
-        <DashboardStatusChart data={analytics.statusMetrics} />
-      </div>
+          <DashboardStatusChart
+            data={analytics.statusMetrics}
+          />
+        </div>
+      ) : (
+        <DashboardStatusChart
+          data={analytics.statusMetrics}
+        />
+      )}
 
-      <DashboardStaffWorkloadChart data={analytics.staffWorkload} />
+      {canViewExecutiveData && (
+        <DashboardStaffWorkloadChart
+          data={analytics.staffWorkload}
+        />
+      )}
 
       <div className="grid gap-6 xl:grid-cols-2">
         <DashboardReturnList returns={recentReturns} />
@@ -440,7 +492,10 @@ export function DashboardPage() {
 
         <div className="space-y-6">
           <QuickActions role={profile.role} />
-          <QuickReports />
+
+          {canViewExecutiveData && (
+            <QuickReports />
+          )}
         </div>
       </div>
     </section>
