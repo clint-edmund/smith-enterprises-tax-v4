@@ -321,6 +321,48 @@ export type Database = {
         }
         Relationships: []
       }
+      document_types: {
+        Row: {
+          category: string
+          code: string
+          created_at: string
+          default_required: boolean
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          sort_order: number
+          supports_multiple: boolean
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          code: string
+          created_at?: string
+          default_required?: boolean
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          sort_order?: number
+          supports_multiple?: boolean
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          code?: string
+          created_at?: string
+          default_required?: boolean
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          sort_order?: number
+          supports_multiple?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
       notification_preferences: {
         Row: {
           assignment_notifications: boolean
@@ -784,6 +826,87 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      tax_package_template_items: {
+        Row: {
+          created_at: string
+          document_type_id: string
+          id: string
+          instructions: string | null
+          requirement_level: string
+          sort_order: number
+          template_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          document_type_id: string
+          id?: string
+          instructions?: string | null
+          requirement_level?: string
+          sort_order?: number
+          template_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          document_type_id?: string
+          id?: string
+          instructions?: string | null
+          requirement_level?: string
+          sort_order?: number
+          template_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tax_package_template_items_document_type_id_fkey"
+            columns: ["document_type_id"]
+            isOneToOne: false
+            referencedRelation: "document_types"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tax_package_template_items_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "tax_package_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tax_package_templates: {
+        Row: {
+          code: string
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          return_form: string
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          return_form: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          return_form?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       tax_return_activity: {
         Row: {
