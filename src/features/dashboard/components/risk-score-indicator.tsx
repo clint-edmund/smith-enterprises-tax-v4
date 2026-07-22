@@ -45,17 +45,17 @@ export function RiskScoreIndicator({
   return (
     <div
       className={[
-        "flex h-16 w-16 shrink-0 flex-col items-center justify-center",
-        "rounded-full border-2",
+        "flex h-16 w-16 shrink-0 flex-col items-center justify-center shadow-sm",
+        "rounded-2xl border-2",
         riskScoreStyles[level],
       ].join(" ")}
       aria-label={`Risk score ${normalizedScore} out of 100`}
     >
-      <span className="text-[10px] font-semibold uppercase tracking-wide">
+      <span className="text-[10px] font-bold uppercase tracking-[0.16em]">
         Risk
       </span>
 
-      <span className="text-xl font-bold leading-none">
+      <span className="mt-0.5 text-xl font-extrabold leading-none">
         {normalizedScore}
       </span>
     </div>

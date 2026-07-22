@@ -287,7 +287,7 @@ export function PriorityQueueItem({
 
   return (
   <>
-    <article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950 sm:p-5">
+    <article className="rounded-2xl border border-stone-200 bg-white p-4 shadow-[0_14px_32px_-24px_rgba(15,23,42,0.5)] transition duration-200 hover:-translate-y-0.5 hover:border-stone-300 hover:shadow-[0_20px_40px_-25px_rgba(15,23,42,0.45)] dark:border-stone-800 dark:bg-stone-950 dark:hover:border-stone-700 sm:p-5">
       {actionMessage ? (
         <div
           role={
@@ -331,7 +331,7 @@ export function PriorityQueueItem({
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
-                <h3 className="truncate text-lg font-semibold text-slate-950 dark:text-slate-50">
+                <h3 className="truncate text-lg font-semibold tracking-tight text-stone-950 dark:text-stone-50">
                   {item.clientName}
                 </h3>
 
@@ -340,12 +340,12 @@ export function PriorityQueueItem({
                 />
               </div>
 
-              <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
+              <p className="mt-1 text-sm text-stone-600 dark:text-stone-400">
                 {item.taxYear}{" "}
                 {item.returnType}
               </p>
 
-              <p className="mt-2 text-sm font-medium text-slate-900 dark:text-slate-100">
+              <p className="mt-2 text-sm font-semibold text-stone-900 dark:text-stone-100">
                 {item.recommendedAction}
               </p>
             </div>
@@ -360,16 +360,16 @@ export function PriorityQueueItem({
                 }
                 className={[
                   "inline-flex items-center justify-center rounded-md",
-                  "border border-slate-300 bg-white px-3 py-2",
-                  "text-sm font-semibold text-slate-700",
-                  "transition hover:bg-slate-100",
+                  "border border-stone-300 bg-white px-3 py-2",
+                  "text-sm font-semibold text-stone-700",
+                  "transition hover:bg-stone-100",
                   "focus-visible:outline-none",
                   "focus-visible:ring-2",
-                  "focus-visible:ring-slate-400",
-                  "dark:border-slate-700",
-                  "dark:bg-slate-900",
-                  "dark:text-slate-200",
-                  "dark:hover:bg-slate-800",
+                  "focus-visible:ring-stone-400",
+                  "dark:border-stone-700",
+                  "dark:bg-stone-900",
+                  "dark:text-stone-200",
+                  "dark:hover:bg-stone-800",
                 ].join(" ")}
               >
                 Open Client
@@ -382,15 +382,15 @@ export function PriorityQueueItem({
                 }
                 className={[
                   "inline-flex items-center justify-center gap-2",
-                  "rounded-md bg-slate-900 px-3 py-2",
+                  "rounded-md bg-stone-900 px-3 py-2",
                   "text-sm font-semibold text-white",
-                  "transition hover:bg-slate-700",
+                  "transition hover:bg-stone-700",
                   "focus-visible:outline-none",
                   "focus-visible:ring-2",
-                  "focus-visible:ring-slate-400",
-                  "dark:bg-slate-100",
-                  "dark:text-slate-900",
-                  "dark:hover:bg-slate-300",
+                  "focus-visible:ring-stone-400",
+                  "dark:bg-stone-100",
+                  "dark:text-stone-900",
+                  "dark:hover:bg-stone-300",
                 ].join(" ")}
               >
                 Open Return
@@ -416,15 +416,15 @@ export function PriorityQueueItem({
                   }
                   className={[
                     "inline-flex h-10 w-10 items-center justify-center",
-                    "rounded-md border border-slate-300 bg-white",
-                    "text-slate-700 transition hover:bg-slate-100",
+                    "rounded-md border border-stone-300 bg-white",
+                    "text-stone-700 transition hover:bg-stone-100",
                     "focus-visible:outline-none",
                     "focus-visible:ring-2",
-                    "focus-visible:ring-slate-400",
-                    "dark:border-slate-700",
-                    "dark:bg-slate-900",
-                    "dark:text-slate-200",
-                    "dark:hover:bg-slate-800",
+                    "focus-visible:ring-stone-400",
+                    "dark:border-stone-700",
+                    "dark:bg-stone-900",
+                    "dark:text-stone-200",
+                    "dark:hover:bg-stone-800",
                   ].join(" ")}
                   aria-expanded={isQuickActionsOpen}
                   aria-haspopup="menu"
@@ -444,13 +444,13 @@ export function PriorityQueueItem({
                     role="menu"
                     className={[
                       "absolute right-0 z-20 mt-2 w-64",
-                      "rounded-lg border border-slate-200",
-                      "bg-white p-2 shadow-lg",
-                      "dark:border-slate-700",
-                      "dark:bg-slate-900",
+                      "rounded-xl border border-stone-200",
+                      "bg-white p-2 shadow-xl",
+                      "dark:border-stone-700",
+                      "dark:bg-stone-900",
                     ].join(" ")}
                   >
-                    <p className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                    <p className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-stone-500 dark:text-stone-400">
                       Quick Actions
                     </p>
 
@@ -464,13 +464,13 @@ export function PriorityQueueItem({
                       className={[
                         "flex w-full items-center rounded-md",
                         "px-3 py-2 text-left text-sm",
-                        "font-medium text-slate-700",
-                        "transition hover:bg-slate-100",
+                        "font-medium text-stone-700",
+                        "transition hover:bg-stone-100",
                         "focus-visible:outline-none",
                         "focus-visible:ring-2",
-                        "focus-visible:ring-slate-400",
-                        "dark:text-slate-200",
-                        "dark:hover:bg-slate-800",
+                        "focus-visible:ring-stone-400",
+                        "dark:text-stone-200",
+                        "dark:hover:bg-stone-800",
                       ].join(" ")}
                     >
                       Assign Preparer
@@ -492,18 +492,18 @@ export function PriorityQueueItem({
                         className={[
                           "flex w-full items-center rounded-md",
                           "px-3 py-2 text-left text-sm",
-                          "font-medium text-slate-400",
+                          "font-medium text-stone-400",
                           "cursor-not-allowed",
-                          "dark:text-slate-600",
+                          "dark:text-stone-600",
                         ].join(" ")}
                       >
                         {actionLabel}
                       </button>
                     ))}
 
-                    <div className="my-2 border-t border-slate-200 dark:border-slate-700" />
+                    <div className="my-2 border-t border-stone-200 dark:border-stone-700" />
 
-                    <p className="px-3 py-2 text-xs text-slate-500 dark:text-slate-400">
+                    <p className="px-3 py-2 text-xs text-stone-500 dark:text-stone-400">
                       Workflow actions will be enabled in upcoming phases.
                     </p>
                   </div>
@@ -513,12 +513,12 @@ export function PriorityQueueItem({
           </div>
 
           <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-            <div className="rounded-lg bg-slate-50 p-3 dark:bg-slate-900/60">
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+            <div className="rounded-lg bg-slate-50 p-3 dark:bg-stone-900/60">
+              <p className="text-xs font-semibold uppercase tracking-wide text-stone-500 dark:text-stone-400">
                 Readiness
               </p>
 
-              <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">
+              <p className="mt-1 text-sm font-semibold text-stone-900 dark:text-stone-100">
                 {Math.round(
                   item.readinessScore,
                 )}
@@ -526,34 +526,34 @@ export function PriorityQueueItem({
               </p>
             </div>
 
-            <div className="rounded-lg bg-slate-50 p-3 dark:bg-slate-900/60">
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+            <div className="rounded-lg bg-slate-50 p-3 dark:bg-stone-900/60">
+              <p className="text-xs font-semibold uppercase tracking-wide text-stone-500 dark:text-stone-400">
                 Due Date
               </p>
 
-              <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">
+              <p className="mt-1 text-sm font-semibold text-stone-900 dark:text-stone-100">
                 {dueDateLabel}
               </p>
             </div>
 
-            <div className="rounded-lg bg-slate-50 p-3 dark:bg-slate-900/60">
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+            <div className="rounded-lg bg-slate-50 p-3 dark:bg-stone-900/60">
+              <p className="text-xs font-semibold uppercase tracking-wide text-stone-500 dark:text-stone-400">
                 Outstanding
               </p>
 
-              <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">
+              <p className="mt-1 text-sm font-semibold text-stone-900 dark:text-stone-100">
                 {formatCurrency(
                   item.outstandingBalance,
                 )}
               </p>
             </div>
 
-            <div className="rounded-lg bg-slate-50 p-3 dark:bg-slate-900/60">
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+            <div className="rounded-lg bg-slate-50 p-3 dark:bg-stone-900/60">
+              <p className="text-xs font-semibold uppercase tracking-wide text-stone-500 dark:text-stone-400">
                 Activity
               </p>
 
-              <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">
+              <p className="mt-1 text-sm font-semibold text-stone-900 dark:text-stone-100">
                 {activityLabel}
               </p>
             </div>
@@ -561,27 +561,27 @@ export function PriorityQueueItem({
 
           <div className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
             <div>
-              <span className="font-medium text-slate-700 dark:text-slate-300">
+              <span className="font-medium text-stone-700 dark:text-slate-300">
                 Preparer:
               </span>{" "}
-              <span className="text-slate-600 dark:text-slate-400">
+              <span className="text-stone-600 dark:text-stone-400">
                 {item.assignedPreparerName ??
                   "Unassigned"}
               </span>
             </div>
 
             <div>
-              <span className="font-medium text-slate-700 dark:text-slate-300">
+              <span className="font-medium text-stone-700 dark:text-slate-300">
                 Reviewer:
               </span>{" "}
-              <span className="text-slate-600 dark:text-slate-400">
+              <span className="text-stone-600 dark:text-stone-400">
                 {item.assignedReviewerName ??
                   "Unassigned"}
               </span>
             </div>
           </div>
 
-          <div className="mt-4 border-t border-slate-200 pt-4 dark:border-slate-800">
+          <div className="mt-4 border-t border-stone-200 pt-4 dark:border-slate-800">
             <button
               type="button"
               onClick={() =>
@@ -592,11 +592,11 @@ export function PriorityQueueItem({
               }
               className={[
                 "inline-flex items-center gap-2",
-                "text-sm font-semibold text-slate-700",
-                "transition hover:text-slate-950",
+                "text-sm font-semibold text-stone-700",
+                "transition hover:text-stone-950",
                 "focus-visible:outline-none focus-visible:ring-2",
-                "focus-visible:ring-slate-400",
-                "dark:text-slate-300 dark:hover:text-white",
+                "focus-visible:ring-stone-400",
+                "dark:text-stone-300 dark:hover:text-white",
               ].join(" ")}
               aria-expanded={isExpanded}
             >
