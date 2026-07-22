@@ -1,16 +1,20 @@
 import {
   ArrowLeft,
+  AlertTriangle,
   CalendarDays,
   Cake,
+  CheckCircle2,
   ClipboardList,
   Clock3,
   Edit3,
   FilePlus2,
   FileText,
+  Gauge,
   Mail,
   MapPin,
   Phone,
   RefreshCw,
+  TrendingUp,
   UserRoundCheck,
   UsersRound,
 } from "lucide-react"
@@ -231,9 +235,86 @@ export function ClientDetailsPage() {
         ),
       )
 
+    const completedReturns =
+      clientReturns.filter(
+        (taxReturn) =>
+          closedStatuses.has(
+            taxReturn.status,
+          ),
+      ).length
+
+    const averageNetFee =
+      clientReturns.length > 0
+        ? totalNetFees /
+          clientReturns.length
+        : 0
+
+    const latestTaxYear =
+      clientReturns.length > 0
+        ? Math.max(
+            ...clientReturns.map(
+              (taxReturn) =>
+                taxReturn.taxYear,
+            ),
+          )
+        : null
+
+    const upcomingDueReturn =
+      clientReturns
+        .filter((taxReturn) => {
+          if (
+            !taxReturn.dueDate ||
+            closedStatuses.has(
+              taxReturn.status,
+            )
+          ) {
+            return false
+          }
+
+          return (
+            new Date(
+              taxReturn.dueDate,
+            ).getTime() >= Date.now()
+          )
+        })
+        .sort(
+          (firstReturn, secondReturn) =>
+            new Date(
+              firstReturn.dueDate!,
+            ).getTime() -
+            new Date(
+              secondReturn.dueDate!,
+            ).getTime(),
+        )[0]
+
+    const overdueReturns =
+      clientReturns.filter(
+        (taxReturn) =>
+          Boolean(
+            taxReturn.dueDate,
+          ) &&
+          !closedStatuses.has(
+            taxReturn.status,
+          ) &&
+          new Date(
+            taxReturn.dueDate!,
+          ).getTime() <
+            new Date().setHours(
+              0,
+              0,
+              0,
+              0,
+            ),
+      ).length
+
     return {
       openReturns,
+      completedReturns,
       totalNetFees,
+      averageNetFee,
+      latestTaxYear,
+      upcomingDueReturn,
+      overdueReturns,
       mostRecentReturn,
       preparerNames,
       reviewerNames,
@@ -625,6 +706,129 @@ export function ClientDetailsPage() {
                 </span>
               </button>
             </div>
+          </section>
+
+          <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="flex size-11 items-center justify-center rounded-xl bg-amber-50 text-amber-700">
+                <Gauge
+                  className="size-5"
+                  aria-hidden="true"
+                />
+              </div>
+
+              <div>
+                <h2 className="font-bold text-slate-950">
+                  Client Insights
+                </h2>
+                <p className="mt-1 text-sm text-slate-500">
+                  At-a-glance return history and workload indicators.
+                </p>
+              </div>
+            </div>
+
+            <dl className="mt-6 space-y-4">
+              <div className="flex items-center justify-between gap-4 rounded-2xl bg-slate-50 p-4">
+                <dt className="flex items-center gap-2 text-sm font-medium text-slate-600">
+                  <CheckCircle2
+                    className="size-4 text-emerald-600"
+                    aria-hidden="true"
+                  />
+                  Completed Returns
+                </dt>
+                <dd className="text-lg font-bold text-slate-950">
+                  {clientSummary.completedReturns}
+                </dd>
+              </div>
+
+              <div className="flex items-center justify-between gap-4 rounded-2xl bg-slate-50 p-4">
+                <dt className="flex items-center gap-2 text-sm font-medium text-slate-600">
+                  <TrendingUp
+                    className="size-4 text-blue-600"
+                    aria-hidden="true"
+                  />
+                  Average Net Fee
+                </dt>
+                <dd className="text-lg font-bold text-slate-950">
+                  {formatReturnCurrency(
+                    clientSummary.averageNetFee,
+                  )}
+                </dd>
+              </div>
+
+              <div className="flex items-center justify-between gap-4 rounded-2xl bg-slate-50 p-4">
+                <dt className="text-sm font-medium text-slate-600">
+                  Latest Tax Year
+                </dt>
+                <dd className="text-lg font-bold text-slate-950">
+                  {clientSummary.latestTaxYear ??
+                    "No returns"}
+                </dd>
+              </div>
+
+              <div className="rounded-2xl bg-slate-50 p-4">
+                <dt className="flex items-center gap-2 text-sm font-medium text-slate-600">
+                  <CalendarDays
+                    className="size-4 text-violet-600"
+                    aria-hidden="true"
+                  />
+                  Next Upcoming Due Date
+                </dt>
+                <dd className="mt-2 font-bold text-slate-950">
+                  {clientSummary.upcomingDueReturn
+                    ? formatReturnDate(
+                        clientSummary
+                          .upcomingDueReturn
+                          .dueDate,
+                      )
+                    : "No upcoming due date"}
+                </dd>
+
+                {clientSummary.upcomingDueReturn && (
+                  <p className="mt-1 text-sm text-slate-500">
+                    {
+                      clientSummary
+                        .upcomingDueReturn
+                        .taxYear
+                    }{" "}
+                    {
+                      taxFormLabels[
+                        clientSummary
+                          .upcomingDueReturn
+                          .taxForm
+                      ]
+                    }
+                  </p>
+                )}
+              </div>
+
+              <div
+                className={[
+                  "rounded-2xl border p-4",
+                  clientSummary.overdueReturns >
+                  0
+                    ? "border-red-200 bg-red-50"
+                    : "border-emerald-200 bg-emerald-50",
+                ].join(" ")}
+              >
+                <dt className="flex items-center gap-2 text-sm font-medium text-slate-700">
+                  <AlertTriangle
+                    className={[
+                      "size-4",
+                      clientSummary.overdueReturns >
+                      0
+                        ? "text-red-600"
+                        : "text-emerald-600",
+                    ].join(" ")}
+                    aria-hidden="true"
+                  />
+                  Overdue Open Returns
+                </dt>
+                <dd className="mt-2 text-2xl font-bold text-slate-950">
+                  {clientSummary.overdueReturns}
+                </dd>
+              </div>
+            </dl>
           </section>
 
           <section className="rounded-3xl border border-dashed border-slate-300 bg-slate-50 p-6">
