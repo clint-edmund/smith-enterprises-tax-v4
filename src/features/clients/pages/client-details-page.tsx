@@ -165,40 +165,6 @@ export function ClientDetailsPage() {
     void loadPage()
   }, [clientId])
 
-  if (isLoading) {
-    return (
-      <div className="rounded-2xl border border-slate-200 bg-white p-10 text-center">
-        Loading client...
-      </div>
-    )
-  }
-
-  if (errorMessage || !client) {
-    return (
-      <section className="rounded-2xl border border-red-200 bg-white p-8">
-        <h1 className="text-2xl font-bold text-slate-950">
-          Client unavailable
-        </h1>
-
-        <p className="mt-3 text-slate-600">
-          {errorMessage ??
-            "The client record could not be loaded."}
-        </p>
-
-        <Link
-          to={appConfig.routes.clients}
-          className="mt-6 inline-flex font-semibold text-blue-700"
-        >
-          Return to Clients
-        </Link>
-      </section>
-    )
-  }
-
-  const canEdit =
-    profile !== null &&
-    editRoles.includes(profile.role)
-
   const clientSummary = useMemo(() => {
     const closedStatuses = new Set([
       "completed",
@@ -273,6 +239,42 @@ export function ClientDetailsPage() {
       reviewerNames,
     }
   }, [clientReturns])
+
+  if (isLoading) {
+    return (
+      <div className="rounded-2xl border border-slate-200 bg-white p-10 text-center">
+        Loading client...
+      </div>
+    )
+  }
+
+  if (errorMessage || !client) {
+    return (
+      <section className="rounded-2xl border border-red-200 bg-white p-8">
+        <h1 className="text-2xl font-bold text-slate-950">
+          Client unavailable
+        </h1>
+
+        <p className="mt-3 text-slate-600">
+          {errorMessage ??
+            "The client record could not be loaded."}
+        </p>
+
+        <Link
+          to={appConfig.routes.clients}
+          className="mt-6 inline-flex font-semibold text-blue-700"
+        >
+          Return to Clients
+        </Link>
+      </section>
+    )
+  }
+
+  const canEdit =
+    profile !== null &&
+    editRoles.includes(profile.role)
+
+
 
   return (
     <section className="space-y-6">
