@@ -1,7 +1,3 @@
-import {
-  ShieldCheck,
-} from "lucide-react"
-
 import { AppNavigation } from "@/components/navigation/app-navigation"
 import { appConfig } from "@/config/app-config"
 import type {
@@ -33,25 +29,24 @@ export function AppSidebar({
   onNavigate,
 }: AppSidebarProps) {
   return (
-    <div className="flex h-full flex-col">
-      <div className="border-b border-slate-200 p-5">
-        <div className="flex items-center gap-3">
-          <div className="flex size-10 items-center justify-center rounded-xl bg-blue-700 text-white">
-            <ShieldCheck
-              className="size-6"
-              aria-hidden="true"
-            />
-          </div>
+    <div className="flex h-full flex-col bg-sidebar text-sidebar-foreground">
+      <div className="border-b border-sidebar-border px-5 py-6">
+        <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-3 shadow-inner">
+          <img
+            src="/smith-enterprises-logo.png"
+            alt="Smith Enterprises"
+            className="h-auto w-full max-w-56 object-contain"
+          />
+        </div>
 
-          <div className="min-w-0">
-            <p className="truncate font-bold text-slate-950">
-              Smith Enterprises
-            </p>
+        <div className="mt-4 px-1">
+          <p className="text-sm font-semibold tracking-wide text-white">
+            Tax Management System
+          </p>
 
-            <p className="text-xs text-slate-500">
-              Tax Management v{appConfig.version}
-            </p>
-          </div>
+          <p className="mt-1 text-xs text-brand-300">
+            Version {appConfig.version}
+          </p>
         </div>
       </div>
 
@@ -62,17 +57,17 @@ export function AppSidebar({
         />
       </div>
 
-      <div className="border-t border-slate-200 p-4">
-        <div className="rounded-xl bg-slate-100 p-3">
-          <p className="truncate text-sm font-semibold text-slate-900">
+      <div className="border-t border-sidebar-border p-4">
+        <div className="rounded-2xl border border-white/10 bg-white/[0.06] p-4 shadow-sm">
+          <p className="truncate text-sm font-semibold text-white">
             {getStaffName(profile)}
           </p>
 
-          <p className="mt-0.5 truncate text-xs text-slate-500">
+          <p className="mt-1 truncate text-xs text-brand-300">
             {profile.email}
           </p>
 
-          <p className="mt-2 inline-flex rounded-full bg-blue-100 px-2.5 py-1 text-xs font-semibold capitalize text-blue-800">
+          <p className="mt-3 inline-flex rounded-full border border-white/15 bg-white/10 px-2.5 py-1 text-xs font-semibold capitalize text-white">
             {profile.role.replaceAll("_", " ")}
           </p>
         </div>
