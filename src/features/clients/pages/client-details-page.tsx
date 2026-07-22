@@ -71,6 +71,10 @@ import {
   ClientProfileProgress,
 } from "@/features/clients/components/client-profile-progress"
 
+import {
+  ClientSmartAlerts,
+} from "@/features/clients/components/client-smart-alerts"
+
 const editRoles = [
   "administrator",
   "manager",
@@ -620,6 +624,11 @@ export function ClientDetailsPage() {
           client={client}
         />
       </div>
+
+      <ClientSmartAlerts
+        client={client}
+        clientReturns={clientReturns}
+      />
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.75fr)]">
         <div className="space-y-6">
