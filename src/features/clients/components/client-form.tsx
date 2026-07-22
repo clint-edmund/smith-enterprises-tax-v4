@@ -15,6 +15,7 @@ import {
 } from "react"
 import {
   useForm,
+  useWatch,
 } from "react-hook-form"
 
 import {
@@ -84,6 +85,25 @@ const navigationItems = [
   },
 ]
 
+function FieldError({
+    message,
+  }: {
+    message?: string
+  }) {
+    if (!message) {
+      return null
+    }
+
+    return (
+      <p
+        className="mt-1.5 text-sm font-medium text-red-700"
+        role="alert"
+      >
+        {message}
+      </p>
+    )
+  }
+
 export function ClientForm({
   defaultValues = emptyValues,
   submitLabel,
@@ -93,11 +113,11 @@ export function ClientForm({
   onCancel,
 }: ClientFormProps) {
   const {
+    control,
     register,
     handleSubmit,
     reset,
     setValue,
-    watch,
     formState: {
       errors,
       isDirty,
@@ -112,13 +132,40 @@ export function ClientForm({
     reset(defaultValues)
   }, [defaultValues, reset])
 
-  const firstName = watch("firstName")
-  const lastName = watch("lastName")
-  const email = watch("email")
-  const phone = watch("phone")
-  const addressLine1 = watch("addressLine1")
-  const city = watch("city")
-  const state = watch("state")
+  const firstName = useWatch({
+    control,
+    name: "firstName",
+  })
+
+  const lastName = useWatch({
+    control,
+    name: "lastName",
+  })
+
+  const email = useWatch({
+    control,
+    name: "email",
+  })
+
+  const phone = useWatch({
+    control,
+    name: "phone",
+  })
+
+  const addressLine1 = useWatch({
+    control,
+    name: "addressLine1",
+  })
+
+  const city = useWatch({
+    control,
+    name: "city",
+  })
+
+  const state = useWatch({
+    control,
+    name: "state",
+  })
 
   const completedSections = [
     Boolean(firstName.trim() && lastName.trim()),
@@ -155,24 +202,7 @@ export function ClientForm({
     await onSubmit(values)
   }
 
-  function FieldError({
-    message,
-  }: {
-    message?: string
-  }) {
-    if (!message) {
-      return null
-    }
-
-    return (
-      <p
-        className="mt-1.5 text-sm font-medium text-red-700"
-        role="alert"
-      >
-        {message}
-      </p>
-    )
-  }
+  
 
   return (
     <form

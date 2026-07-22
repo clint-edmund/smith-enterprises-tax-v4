@@ -93,8 +93,8 @@ export interface ClientDocument {
   archivedAt: string | null
 }
 
-export interface ClientDocumentListItem
-  extends ClientDocument {}
+export type ClientDocumentListItem =
+  ClientDocument
 
 export interface UploadDocumentRequest {
   clientId: string

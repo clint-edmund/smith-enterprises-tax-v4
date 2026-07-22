@@ -111,6 +111,19 @@ export function ClientDetailsPage() {
   const [returnsErrorMessage, setReturnsErrorMessage] =
     useState<string | null>(null)
 
+  const [todayStart] = useState(() => {
+    const today = new Date()
+
+    today.setHours(
+      0,
+      0,
+      0,
+      0,
+    )
+
+    return today.getTime()
+  })
+
   const loadClientReturns = useCallback(
     async (showRefreshing = false) => {
       if (!clientId) {
@@ -317,7 +330,7 @@ export function ClientDetailsPage() {
           return (
             new Date(
               taxReturn.dueDate,
-            ).getTime() >= Date.now()
+            ).getTime() >= todayStart
           )
         })
         .sort(
@@ -341,13 +354,7 @@ export function ClientDetailsPage() {
           ) &&
           new Date(
             taxReturn.dueDate!,
-          ).getTime() <
-            new Date().setHours(
-              0,
-              0,
-              0,
-              0,
-            ),
+          ).getTime() < todayStart
       ).length
 
     const activityItems = [
@@ -465,7 +472,11 @@ export function ClientDetailsPage() {
       preparerNames,
       reviewerNames,
     }
-  }, [client, clientReturns])
+  }, [
+    client,
+    clientReturns,
+    todayStart,
+  ])
 
   if (isLoading) {
     return (
