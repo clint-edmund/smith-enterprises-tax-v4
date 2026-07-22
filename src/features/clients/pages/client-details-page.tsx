@@ -60,6 +60,9 @@ import {
   returnTypeLabels,
   taxFormLabels,
 } from "@/features/returns/utils/return-formatters"
+import {
+  ClientCommandBar,
+} from "@/features/clients/components/client-command-bar"
 
 const editRoles = [
   "administrator",
@@ -594,6 +597,11 @@ export function ClientDetailsPage() {
           </div>
         </div>
       </header>
+      
+      <ClientCommandBar
+        client={client}
+        canEdit={canEdit}
+      />
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.75fr)]">
         <div className="space-y-6">
