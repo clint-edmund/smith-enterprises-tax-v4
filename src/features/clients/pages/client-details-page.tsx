@@ -1,5 +1,6 @@
 import {
   ArrowLeft,
+  Activity,
   AlertTriangle,
   CalendarDays,
   Cake,
@@ -8,6 +9,7 @@ import {
   ClipboardList,
   Clock3,
   Edit3,
+  Flag,
   FilePlus2,
   FileText,
   Gauge,
@@ -15,6 +17,7 @@ import {
   MapPin,
   Phone,
   RefreshCw,
+  Sparkles,
   TrendingUp,
   UserRoundCheck,
   UsersRound,
@@ -171,6 +174,25 @@ export function ClientDetailsPage() {
   }, [clientId])
 
   const clientSummary = useMemo(() => {
+    if (!client) {
+      return {
+        activityItems: [],
+        sortedReturns: [],
+        openReturns: 0,
+        completedReturns: 0,
+        totalNetFees: 0,
+        averageNetFee: 0,
+        latestTaxYear: null,
+        upcomingDueReturn: undefined,
+        overdueReturns: 0,
+        mostRecentReturn: undefined,
+        preparerNames: [],
+        reviewerNames: [],
+      }
+    }
+
+    const currentClient = client
+
     const closedStatuses = new Set([
       "completed",
       "accepted",
@@ -308,6 +330,83 @@ export function ClientDetailsPage() {
             ),
       ).length
 
+    const activityItems = [
+      {
+        id: `client-created-${currentClient.id}`,
+        label: "Client record created",
+        description: `${formatClientName(currentClient)} was added to the client directory.`,
+        occurredAt: currentClient.createdAt,
+        icon: UsersRound,
+        tone: "blue",
+      },
+      {
+        id: `client-updated-${currentClient.id}`,
+        label: "Client information updated",
+        description: "The client profile was most recently updated.",
+        occurredAt: currentClient.updatedAt,
+        icon: Edit3,
+        tone: "slate",
+      },
+      ...clientReturns.flatMap((taxReturn) => {
+        const returnLabel = `${taxReturn.taxYear} ${
+          taxFormLabels[taxReturn.taxForm]
+        }`
+
+        const items = [
+          {
+            id: `return-created-${taxReturn.id}`,
+            label: "Tax return created",
+            description: `${returnLabel} was added to the client portfolio.`,
+            occurredAt: taxReturn.createdAt,
+            icon: FilePlus2,
+            tone: "violet",
+          },
+          {
+            id: `return-updated-${taxReturn.id}`,
+            label: "Return activity updated",
+            description: `${returnLabel} is currently ${taxReturn.status.replaceAll(
+              "_",
+              " ",
+            )}.`,
+            occurredAt: taxReturn.updatedAt,
+            icon: Activity,
+            tone: "amber",
+          },
+        ]
+
+        if (taxReturn.filedDate) {
+          items.push({
+            id: `return-filed-${taxReturn.id}`,
+            label: "Return filed",
+            description: `${returnLabel} was marked as filed.`,
+            occurredAt: taxReturn.filedDate,
+            icon: Flag,
+            tone: "blue",
+          })
+        }
+
+        if (taxReturn.acceptedDate) {
+          items.push({
+            id: `return-accepted-${taxReturn.id}`,
+            label: "Return accepted",
+            description: `${returnLabel} was accepted.`,
+            occurredAt: taxReturn.acceptedDate,
+            icon: CheckCircle2,
+            tone: "emerald",
+          })
+        }
+
+        return items
+      }),
+    ]
+      .filter((item) => Boolean(item.occurredAt))
+      .sort(
+        (firstItem, secondItem) =>
+          new Date(secondItem.occurredAt).getTime() -
+          new Date(firstItem.occurredAt).getTime(),
+      )
+      .slice(0, 10)
+
     const sortedReturns =
       [...clientReturns].sort(
         (firstReturn, secondReturn) => {
@@ -333,6 +432,7 @@ export function ClientDetailsPage() {
       )
 
     return {
+      activityItems,
       sortedReturns,
       openReturns,
       completedReturns,
@@ -345,7 +445,7 @@ export function ClientDetailsPage() {
       preparerNames,
       reviewerNames,
     }
-  }, [clientReturns])
+  }, [client, clientReturns])
 
   if (isLoading) {
     return (
@@ -857,13 +957,81 @@ export function ClientDetailsPage() {
             </dl>
           </section>
 
-          <section className="rounded-3xl border border-dashed border-slate-300 bg-slate-50 p-6">
-            <CalendarDays className="size-6 text-slate-400" aria-hidden="true" />
-            <h2 className="mt-4 font-bold text-slate-950">Timeline Coming Next</h2>
-            <p className="mt-2 text-sm leading-6 text-slate-600">
-              Client activity, payments, document events, and staff notes will
-              be added in a later incremental phase.
-            </p>
+          <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="flex size-11 items-center justify-center rounded-xl bg-blue-50 text-blue-700">
+                <Activity className="size-5" aria-hidden="true" />
+              </div>
+
+              <div>
+                <h2 className="font-bold text-slate-950">Recent Activity</h2>
+                <p className="mt-1 text-sm text-slate-500">
+                  Latest profile and return milestones.
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-6 space-y-1">
+              {clientSummary.activityItems.map((item, index) => {
+                const Icon = item.icon
+
+                const iconClasses = {
+                  blue: "bg-blue-100 text-blue-700",
+                  violet: "bg-violet-100 text-violet-700",
+                  amber: "bg-amber-100 text-amber-700",
+                  emerald: "bg-emerald-100 text-emerald-700",
+                  slate: "bg-slate-100 text-slate-700",
+                }[item.tone]
+
+                return (
+                  <div
+                    key={item.id}
+                    className="relative flex gap-4 pb-6 last:pb-0"
+                  >
+                    {index < clientSummary.activityItems.length - 1 && (
+                      <div
+                        className="absolute left-5 top-10 h-[calc(100%-1rem)] w-px bg-slate-200"
+                        aria-hidden="true"
+                      />
+                    )}
+
+                    <div
+                      className={[
+                        "relative z-10 flex size-10 shrink-0 items-center justify-center rounded-full",
+                        iconClasses,
+                      ].join(" ")}
+                    >
+                      <Icon className="size-4" aria-hidden="true" />
+                    </div>
+
+                    <div className="min-w-0 pt-0.5">
+                      <p className="font-semibold text-slate-950">
+                        {item.label}
+                      </p>
+                      <p className="mt-1 text-sm leading-6 text-slate-600">
+                        {item.description}
+                      </p>
+                      <p className="mt-2 text-xs font-medium text-slate-400">
+                        {formatReturnDate(item.occurredAt)}
+                      </p>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+
+            <div className="mt-6 rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-4">
+              <div className="flex gap-3">
+                <Sparkles
+                  className="mt-0.5 size-5 shrink-0 text-slate-400"
+                  aria-hidden="true"
+                />
+                <p className="text-sm leading-6 text-slate-600">
+                  Payment, document, note, and staff audit events can be added
+                  once dedicated client-activity data is available.
+                </p>
+              </div>
+            </div>
           </section>
         </aside>
       </div>
