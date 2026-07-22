@@ -1,5 +1,9 @@
 import {
   ArrowLeft,
+  CalendarDays,
+  Cake,
+  ClipboardList,
+  Clock3,
   Edit3,
   FilePlus2,
   FileText,
@@ -7,10 +11,13 @@ import {
   MapPin,
   Phone,
   RefreshCw,
+  UserRoundCheck,
+  UsersRound,
 } from "lucide-react"
 import {
   useCallback,
   useEffect,
+  useMemo,
   useState,
 } from "react"
 import {
@@ -192,156 +199,442 @@ export function ClientDetailsPage() {
     profile !== null &&
     editRoles.includes(profile.role)
 
+  const clientSummary = useMemo(() => {
+    const closedStatuses = new Set([
+      "completed",
+      "accepted",
+    ])
+
+    const openReturns =
+      clientReturns.filter(
+        (taxReturn) =>
+          !closedStatuses.has(
+            taxReturn.status,
+          ),
+      ).length
+
+    const totalNetFees =
+      clientReturns.reduce(
+        (total, taxReturn) =>
+          total + taxReturn.netFee,
+        0,
+      )
+
+    const mostRecentReturn =
+      [...clientReturns].sort(
+        (firstReturn, secondReturn) =>
+          new Date(
+            secondReturn.updatedAt,
+          ).getTime() -
+          new Date(
+            firstReturn.updatedAt,
+          ).getTime(),
+      )[0]
+
+    const preparerNames =
+      Array.from(
+        new Set(
+          clientReturns
+            .map(
+              (taxReturn) =>
+                taxReturn.assignedPreparerName,
+            )
+            .filter(
+              (
+                name,
+              ): name is string =>
+                Boolean(name),
+            ),
+        ),
+      )
+
+    const reviewerNames =
+      Array.from(
+        new Set(
+          clientReturns
+            .map(
+              (taxReturn) =>
+                taxReturn.assignedReviewerName,
+            )
+            .filter(
+              (
+                name,
+              ): name is string =>
+                Boolean(name),
+            ),
+        ),
+      )
+
+    return {
+      openReturns,
+      totalNetFees,
+      mostRecentReturn,
+      preparerNames,
+      reviewerNames,
+    }
+  }, [clientReturns])
+
   return (
     <section className="space-y-6">
-      <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
+      <header className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+        <div className="border-b border-slate-200 bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 p-6 text-white sm:p-8">
           <Link
             to={appConfig.routes.clients}
-            className="inline-flex items-center gap-2 text-sm font-semibold text-blue-700 hover:underline"
+            className="inline-flex items-center gap-2 text-sm font-semibold text-blue-200 transition hover:text-white"
           >
-            <ArrowLeft className="size-4" />
+            <ArrowLeft className="size-4" aria-hidden="true" />
             Back to Clients
           </Link>
 
-          <h1 className="mt-4 text-3xl font-bold text-slate-950">
-            {formatClientName(client)}
-          </h1>
-
-          <p className="mt-2 text-slate-500">
-            {formatClientNumber(
-              client.clientNumber,
-            )}
-          </p>
-        </div>
-
-        <div className="flex flex-wrap gap-3">
-          {canEdit && (
-            <Link
-              to={getNewClientReturnRoute(client.id)}
-              className="inline-flex items-center justify-center gap-2 rounded-lg border border-blue-700 bg-white px-4 py-3 font-semibold text-blue-700 hover:bg-blue-50"
-            >
-              <FilePlus2 className="size-4" />
-              New Return
-            </Link>
-          )}
-
-          {canEdit && (
-            <Link
-              to={getClientEditRoute(client.id)}
-              className="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-700 px-4 py-3 font-semibold text-white hover:bg-blue-800"
-            >
-              <Edit3 className="size-4" />
-              Edit Client
-            </Link>
-          )}
-        </div>
-      </header>
-
-      <div className="grid gap-6 lg:grid-cols-2">
-        <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-          <h2 className="font-bold text-slate-950">
-            Client information
-          </h2>
-
-          <dl className="mt-5 grid gap-5 sm:grid-cols-2">
+          <div className="mt-6 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <div>
-              <dt className="text-sm text-slate-500">
-                Status
-              </dt>
-              <dd className="mt-1 font-semibold capitalize text-slate-950">
-                {client.status}
-              </dd>
-            </div>
+              <div className="flex flex-wrap items-center gap-3">
+                <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
+                  {formatClientName(client)}
+                </h1>
 
-            <div>
-              <dt className="text-sm text-slate-500">
-                Birth date
-              </dt>
-              <dd className="mt-1 font-semibold text-slate-950">
-                {formatDate(client.birthDate)}
-              </dd>
-            </div>
+                <span
+                  className={[
+                    "inline-flex items-center rounded-full border px-3 py-1 text-xs font-bold uppercase tracking-wide",
+                    client.status === "active"
+                      ? "border-emerald-300/50 bg-emerald-400/15 text-emerald-100"
+                      : client.status === "inactive"
+                        ? "border-amber-300/50 bg-amber-400/15 text-amber-100"
+                        : "border-slate-300/40 bg-white/10 text-slate-200",
+                  ].join(" ")}
+                >
+                  {client.status}
+                </span>
+              </div>
 
-            <div>
-              <dt className="text-sm text-slate-500">
-                Preferred name
-              </dt>
-              <dd className="mt-1 font-semibold text-slate-950">
-                {client.preferredName ||
-                  "Not provided"}
-              </dd>
-            </div>
-          </dl>
-        </section>
+              <p className="mt-3 text-sm font-medium text-slate-300">
+                {formatClientNumber(client.clientNumber)}
+              </p>
 
-        <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-          <h2 className="font-bold text-slate-950">
-            Contact information
-          </h2>
-
-          <div className="mt-5 space-y-4">
-            <div className="flex gap-3">
-              <Mail className="mt-0.5 size-5 text-slate-400" />
-              <p className="text-slate-700">
-                {client.email ||
-                  "No email provided"}
+              <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-300">
+                Review this client&apos;s contact details, return history,
+                assignments, and internal notes from one workspace.
               </p>
             </div>
 
-            <div className="flex gap-3">
-              <Phone className="mt-0.5 size-5 text-slate-400" />
-              <div>
-                <p className="text-slate-700">
-                  {client.phone ||
-                    "No primary phone"}
-                </p>
+            <div className="flex flex-wrap gap-3">
+              {canEdit && (
+                <Link
+                  to={getNewClientReturnRoute(client.id)}
+                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-white/25 bg-white/10 px-5 py-3 font-semibold text-white transition hover:bg-white/20"
+                >
+                  <FilePlus2 className="size-5" aria-hidden="true" />
+                  New Return
+                </Link>
+              )}
 
-                {client.alternatePhone && (
-                  <p className="mt-1 text-sm text-slate-500">
-                    Alternate: {client.alternatePhone}
-                  </p>
-                )}
-              </div>
-            </div>
-
-            <div className="flex gap-3">
-              <MapPin className="mt-0.5 size-5 text-slate-400" />
-              <div className="text-slate-700">
-                {client.addressLine1 ? (
-                  <>
-                    <p>{client.addressLine1}</p>
-                    {client.addressLine2 && (
-                      <p>{client.addressLine2}</p>
-                    )}
-                    <p>
-                      {[client.city, client.state]
-                        .filter(Boolean)
-                        .join(", ")}
-                      {client.postalCode
-                        ? ` ${client.postalCode}`
-                        : ""}
-                    </p>
-                  </>
-                ) : (
-                  <p>No address provided</p>
-                )}
-              </div>
+              {canEdit && (
+                <Link
+                  to={getClientEditRoute(client.id)}
+                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-white px-5 py-3 font-semibold text-slate-950 shadow-sm transition hover:bg-blue-50"
+                >
+                  <Edit3 className="size-5" aria-hidden="true" />
+                  Edit Client
+                </Link>
+              )}
             </div>
           </div>
-        </section>
+        </div>
+
+        <div className="grid gap-px bg-slate-200 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="bg-white p-5">
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-sm font-medium text-slate-500">Total Returns</p>
+              <ClipboardList className="size-5 text-blue-600" aria-hidden="true" />
+            </div>
+            <p className="mt-3 text-3xl font-bold text-slate-950">
+              {clientReturns.length}
+            </p>
+          </div>
+
+          <div className="bg-white p-5">
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-sm font-medium text-slate-500">Open Returns</p>
+              <FileText className="size-5 text-amber-600" aria-hidden="true" />
+            </div>
+            <p className="mt-3 text-3xl font-bold text-slate-950">
+              {clientSummary.openReturns}
+            </p>
+          </div>
+
+          <div className="bg-white p-5">
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-sm font-medium text-slate-500">Total Net Fees</p>
+              <FilePlus2 className="size-5 text-emerald-600" aria-hidden="true" />
+            </div>
+            <p className="mt-3 text-3xl font-bold text-slate-950">
+              {formatReturnCurrency(clientSummary.totalNetFees)}
+            </p>
+          </div>
+
+          <div className="bg-white p-5">
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-sm font-medium text-slate-500">Last Return Activity</p>
+              <Clock3 className="size-5 text-violet-600" aria-hidden="true" />
+            </div>
+            <p className="mt-3 text-lg font-bold text-slate-950">
+              {clientSummary.mostRecentReturn
+                ? formatReturnDate(clientSummary.mostRecentReturn.updatedAt)
+                : "No activity"}
+            </p>
+          </div>
+        </div>
+      </header>
+
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.75fr)]">
+        <div className="space-y-6">
+          <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="flex size-11 items-center justify-center rounded-xl bg-blue-50 text-blue-700">
+                <UsersRound className="size-5" aria-hidden="true" />
+              </div>
+              <div>
+                <h2 className="font-bold text-slate-950">Client Profile</h2>
+                <p className="mt-1 text-sm text-slate-500">
+                  Personal and account information.
+                </p>
+              </div>
+            </div>
+
+            <dl className="mt-6 grid gap-5 sm:grid-cols-2">
+              <div className="rounded-2xl bg-slate-50 p-4">
+                <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Preferred Name
+                </dt>
+                <dd className="mt-2 font-semibold text-slate-950">
+                  {client.preferredName || "Not provided"}
+                </dd>
+              </div>
+
+              <div className="rounded-2xl bg-slate-50 p-4">
+                <dt className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  <Cake className="size-4" aria-hidden="true" />
+                  Birth Date
+                </dt>
+                <dd className="mt-2 font-semibold text-slate-950">
+                  {formatDate(client.birthDate)}
+                </dd>
+              </div>
+
+              <div className="rounded-2xl bg-slate-50 p-4">
+                <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Record Created
+                </dt>
+                <dd className="mt-2 font-semibold text-slate-950">
+                  {formatDate(client.createdAt)}
+                </dd>
+              </div>
+
+              <div className="rounded-2xl bg-slate-50 p-4">
+                <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Last Updated
+                </dt>
+                <dd className="mt-2 font-semibold text-slate-950">
+                  {formatDate(client.updatedAt)}
+                </dd>
+              </div>
+            </dl>
+          </section>
+
+          <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="flex size-11 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700">
+                <Mail className="size-5" aria-hidden="true" />
+              </div>
+              <div>
+                <h2 className="font-bold text-slate-950">Contact Information</h2>
+                <p className="mt-1 text-sm text-slate-500">
+                  Primary communication and mailing details.
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-6 grid gap-4 sm:grid-cols-2">
+              <div className="flex gap-3 rounded-2xl border border-slate-200 p-4">
+                <Mail className="mt-0.5 size-5 shrink-0 text-slate-400" />
+                <div className="min-w-0">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Email</p>
+                  <p className="mt-2 break-words font-medium text-slate-800">
+                    {client.email || "No email provided"}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex gap-3 rounded-2xl border border-slate-200 p-4">
+                <Phone className="mt-0.5 size-5 shrink-0 text-slate-400" />
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Phone</p>
+                  <p className="mt-2 font-medium text-slate-800">
+                    {client.phone || "No primary phone"}
+                  </p>
+                  {client.alternatePhone && (
+                    <p className="mt-1 text-sm text-slate-500">
+                      Alternate: {client.alternatePhone}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex gap-3 rounded-2xl border border-slate-200 p-4 sm:col-span-2">
+                <MapPin className="mt-0.5 size-5 shrink-0 text-slate-400" />
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    Mailing Address
+                  </p>
+                  <div className="mt-2 font-medium leading-6 text-slate-800">
+                    {client.addressLine1 ? (
+                      <>
+                        <p>{client.addressLine1}</p>
+                        {client.addressLine2 && <p>{client.addressLine2}</p>}
+                        <p>
+                          {[client.city, client.state].filter(Boolean).join(", ")}
+                          {client.postalCode ? ` ${client.postalCode}` : ""}
+                        </p>
+                      </>
+                    ) : (
+                      <p>No address provided</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <h2 className="font-bold text-slate-950">Internal Notes</h2>
+            <p className="mt-1 text-sm text-slate-500">
+              Staff-only context associated with this client.
+            </p>
+            <div className="mt-5 rounded-2xl bg-slate-50 p-5">
+              <p className="whitespace-pre-wrap text-sm leading-7 text-slate-700">
+                {client.notes || "No internal notes have been recorded."}
+              </p>
+            </div>
+          </section>
+        </div>
+
+        <aside className="space-y-6">
+          <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="flex size-11 items-center justify-center rounded-xl bg-violet-50 text-violet-700">
+                <UserRoundCheck className="size-5" aria-hidden="true" />
+              </div>
+              <div>
+                <h2 className="font-bold text-slate-950">Return Assignments</h2>
+                <p className="mt-1 text-sm text-slate-500">
+                  Staff assigned across this client&apos;s returns.
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-6 space-y-5">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Preparers</p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {clientSummary.preparerNames.length > 0 ? (
+                    clientSummary.preparerNames.map((name) => (
+                      <span
+                        key={name}
+                        className="rounded-full bg-blue-50 px-3 py-1.5 text-sm font-semibold text-blue-800"
+                      >
+                        {name}
+                      </span>
+                    ))
+                  ) : (
+                    <p className="text-sm text-slate-500">No preparer assigned</p>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Reviewers</p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {clientSummary.reviewerNames.length > 0 ? (
+                    clientSummary.reviewerNames.map((name) => (
+                      <span
+                        key={name}
+                        className="rounded-full bg-violet-50 px-3 py-1.5 text-sm font-semibold text-violet-800"
+                      >
+                        {name}
+                      </span>
+                    ))
+                  ) : (
+                    <p className="text-sm text-slate-500">No reviewer assigned</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <h2 className="font-bold text-slate-950">Quick Actions</h2>
+            <p className="mt-1 text-sm text-slate-500">
+              Common client workflow shortcuts.
+            </p>
+
+            <div className="mt-5 grid gap-3">
+              {canEdit && (
+                <Link
+                  to={getNewClientReturnRoute(client.id)}
+                  className="inline-flex min-h-12 items-center justify-between gap-3 rounded-xl bg-blue-700 px-4 py-3 font-semibold text-white transition hover:bg-blue-800"
+                >
+                  <span className="inline-flex items-center gap-2">
+                    <FilePlus2 className="size-5" />
+                    Create New Return
+                  </span>
+                  <ArrowLeft className="size-4 rotate-180" />
+                </Link>
+              )}
+
+              {canEdit && (
+                <Link
+                  to={getClientEditRoute(client.id)}
+                  className="inline-flex min-h-12 items-center justify-between gap-3 rounded-xl border border-slate-300 bg-white px-4 py-3 font-semibold text-slate-800 transition hover:bg-slate-50"
+                >
+                  <span className="inline-flex items-center gap-2">
+                    <Edit3 className="size-5" />
+                    Edit Client Record
+                  </span>
+                  <ArrowLeft className="size-4 rotate-180" />
+                </Link>
+              )}
+
+              <button
+                type="button"
+                onClick={() => {
+                  void loadClientReturns(true)
+                }}
+                disabled={isRefreshingReturns}
+                className="inline-flex min-h-12 items-center justify-between gap-3 rounded-xl border border-slate-300 bg-white px-4 py-3 font-semibold text-slate-800 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                <span className="inline-flex items-center gap-2">
+                  <RefreshCw
+                    className={[
+                      "size-5",
+                      isRefreshingReturns ? "animate-spin" : "",
+                    ].join(" ")}
+                  />
+                  Refresh Returns
+                </span>
+              </button>
+            </div>
+          </section>
+
+          <section className="rounded-3xl border border-dashed border-slate-300 bg-slate-50 p-6">
+            <CalendarDays className="size-6 text-slate-400" aria-hidden="true" />
+            <h2 className="mt-4 font-bold text-slate-950">Timeline Coming Next</h2>
+            <p className="mt-2 text-sm leading-6 text-slate-600">
+              Client activity, payments, document events, and staff notes will
+              be added in a later incremental phase.
+            </p>
+          </section>
+        </aside>
       </div>
-
-      <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-        <h2 className="font-bold text-slate-950">
-          Internal notes
-        </h2>
-
-        <p className="mt-4 whitespace-pre-wrap text-sm leading-7 text-slate-700">
-          {client.notes ||
-            "No internal notes have been recorded."}
-        </p>
-      </section>
 
       <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
         <div className="flex flex-col gap-4 border-b border-slate-200 p-5 sm:flex-row sm:items-center sm:justify-between">
