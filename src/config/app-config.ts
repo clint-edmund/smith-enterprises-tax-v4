@@ -24,6 +24,7 @@ export const appConfig = {
     payments: "/payments",
     reports: "/reports",
     settings: "/settings",
+    notificationPreferences: "/settings/notifications",
   },
 } as const
 

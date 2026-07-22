@@ -28,6 +28,7 @@ import { NewClientPage } from "@/features/clients/pages/new-client-page"
 import { NewReturnPage } from "@/features/returns/pages/new-return-page"
 import { ReturnDetailsPage } from "@/features/returns/pages/return-details-page"
 import { EditReturnPage } from "@/features/returns/pages/edit-return-page"
+import { NotificationPreferencesPage } from "@/features/notifications/pages/notification-preferences-page"
 
 export const appRouter =
   createBrowserRouter([
@@ -137,8 +138,14 @@ export const appRouter =
                   path:
                     appConfig.routes.settings,
                   element:
-                    <SettingsPage />,
+                    <SettingsPage />,    
                 },
+                {
+                  path:
+                    appConfig.routes.notificationPreferences,
+                  element:
+                    <NotificationPreferencesPage />,
+                }
               ],
             },
           ],
