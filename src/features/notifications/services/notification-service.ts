@@ -416,6 +416,51 @@ export async function restoreDeletedNotifications(
   }
 }
 
+export async function permanentlyDeleteNotifications(
+  notificationIds: string[],
+): Promise<void> {
+  const normalizedIds =
+    normalizeNotificationIds(
+      notificationIds,
+    )
+
+  if (
+    normalizedIds.length === 0
+  ) {
+    throw new Error(
+      "At least one notification identifier is required.",
+    )
+  }
+
+  const userId =
+    await getAuthenticatedUserId()
+
+  const {
+    error,
+  } = await supabase
+    .from("notifications")
+    .delete()
+    .eq(
+      "recipient_user_id",
+      userId,
+    )
+    .in(
+      "id",
+      normalizedIds,
+    )
+    .not(
+      "deleted_at",
+      "is",
+      null,
+    )
+
+  if (error) {
+    throw new Error(
+      error.message,
+    )
+  }
+}
+
 export async function clearNotifications():
 Promise<void> {
   const userId =

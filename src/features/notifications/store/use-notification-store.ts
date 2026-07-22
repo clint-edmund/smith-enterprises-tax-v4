@@ -7,6 +7,7 @@ import {
   clearNotifications,
   markAllNotificationsRead,
   markNotificationRead,
+  permanentlyDeleteNotifications,
   restoreDeletedNotifications,
   restoreNotifications,
   softDeleteNotifications,
@@ -50,6 +51,12 @@ interface NotificationState {
   ) => Promise<void>
 
   restoreDeletedSelected: (
+    ids: string[],
+  ) => Promise<void>
+
+  
+
+    permanentlyDeleteSelected: (
     ids: string[],
   ) => Promise<void>
 
@@ -618,7 +625,90 @@ export const useNotificationStore =
             })
           }
         },
+            permanentlyDeleteSelected:
+        async (
+          ids,
+        ) => {
+          const normalizedIds =
+            normalizeNotificationIds(
+              ids,
+            )
 
+          const currentState =
+            get()
+
+          if (
+            normalizedIds.length ===
+              0 ||
+            currentState.isUpdating
+          ) {
+            return
+          }
+
+          const permanentlyDeletableIds =
+            normalizedIds.filter(
+              (notificationId) => {
+                const notification =
+                  currentState
+                    .notifications
+                    .find(
+                      (item) =>
+                        item.id ===
+                        notificationId,
+                    )
+
+                return Boolean(
+                  notification
+                    ?.deletedAt,
+                )
+              },
+            )
+
+          if (
+            permanentlyDeletableIds
+              .length === 0
+          ) {
+            return
+          }
+
+          set({
+            isUpdating: true,
+          })
+
+          try {
+            await permanentlyDeleteNotifications(
+              permanentlyDeletableIds,
+            )
+
+            const deletedIdSet =
+              new Set(
+                permanentlyDeletableIds,
+              )
+
+            set((state) => {
+              const notifications =
+                state.notifications.filter(
+                  (notification) =>
+                    !deletedIdSet.has(
+                      notification.id,
+                    ),
+                )
+
+              return {
+                notifications,
+
+                unreadCount:
+                  calculateUnreadCount(
+                    notifications,
+                  ),
+              }
+            })
+          } finally {
+            set({
+              isUpdating: false,
+            })
+          }
+        },
       clearAll: async () => {
         const currentState =
           get()
