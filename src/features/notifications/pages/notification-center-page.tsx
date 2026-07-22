@@ -1,11 +1,14 @@
 import {
+  Archive,
   Bell,
   BellOff,
   Check,
   CheckCheck,
   ExternalLink,
+  ListChecks,
   Search,
   Trash2,
+  X,
 } from "lucide-react"
 import {
   useMemo,
@@ -27,6 +30,22 @@ type NotificationFilter =
   | "all"
   | "unread"
   | "read"
+
+interface NotificationCardProps {
+  notification: AppNotification
+
+  onMarkRead: (
+    notificationId: string,
+  ) => Promise<void>
+
+  onToggleSelection: (
+    notificationId: string,
+  ) => void
+
+  selected: boolean
+
+  selectionMode: boolean
+}
 
 function formatNotificationDate(
   value: string,
@@ -111,123 +130,179 @@ function getCategoryLabel(
     )
 }
 
-interface NotificationCardProps {
-  notification:
-    AppNotification
-
-  onMarkRead: (
-    notificationId: string,
-  ) => Promise<void>
-}
-
 function NotificationCard({
   notification,
   onMarkRead,
+  onToggleSelection,
+  selected,
+  selectionMode,
 }: NotificationCardProps) {
   const cardClasses = [
     "rounded-xl border p-5",
-    "transition-shadow",
+    "transition-all",
     "hover:shadow-sm",
-    notification.isRead
-      ? "border-slate-200 bg-white"
-      : "border-blue-200 bg-blue-50/40",
+    selected
+      ? [
+          "border-blue-500",
+          "bg-blue-50",
+          "ring-2",
+          "ring-blue-100",
+        ].join(" ")
+      : notification.isRead
+        ? "border-slate-200 bg-white"
+        : "border-blue-200 bg-blue-50/40",
+    selectionMode
+      ? "cursor-pointer"
+      : "",
   ].join(" ")
 
+  const handleCardSelection = () => {
+    if (!selectionMode) {
+      return
+    }
+
+    onToggleSelection(
+      notification.id,
+    )
+  }
+
   return (
-    <article className={cardClasses}>
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-2">
-            {!notification.isRead && (
-              <span
-                aria-label="Unread notification"
-                className="h-2.5 w-2.5 rounded-full bg-blue-600"
-              />
-            )}
-
-            <h2 className="text-base font-semibold text-slate-900">
-              {notification.title}
-            </h2>
-
-            <span
-              className={[
-                "rounded-full border px-2.5 py-1",
-                "text-xs font-medium",
-                getPriorityClasses(
-                  notification.priority,
-                ),
-              ].join(" ")}
-            >
-              {notification.priority}
-            </span>
-
-            <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-600">
-              {getCategoryLabel(
-                notification.category,
-              )}
-            </span>
-          </div>
-
-          <p className="mt-3 text-sm leading-6 text-slate-600">
-            {notification.message}
-          </p>
-
-          <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-slate-500">
-            <span>
-              {formatNotificationDate(
-                notification.createdAt,
-              )}
-            </span>
-
-            {notification.relatedEntityType && (
-              <span>
-                Related record:{" "}
-                {formatLabel(
-              notification.relatedEntityType,
-            )}
-              </span>
-            )}
-          </div>
-        </div>
-
-        <div className="flex shrink-0 flex-wrap items-center gap-2">
-          {!notification.isRead && (
-            <button
-              className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-              onClick={() => {
-                void onMarkRead(
+    <article
+      aria-selected={
+        selectionMode
+          ? selected
+          : undefined
+      }
+      className={cardClasses}
+      onClick={handleCardSelection}
+    >
+      <div className="flex items-start gap-4">
+        {selectionMode && (
+          <div className="pt-1">
+            <input
+              aria-label={
+                selected
+                  ? `Deselect ${notification.title}`
+                  : `Select ${notification.title}`
+              }
+              checked={selected}
+              className="h-5 w-5 cursor-pointer rounded border-slate-300 text-blue-700 focus:ring-blue-600"
+              onChange={() => {
+                onToggleSelection(
                   notification.id,
                 )
               }}
-              type="button"
-            >
-              <Check className="h-4 w-4" />
-
-              Mark read
-            </button>
-          )}
-
-          {notification.actionUrl && (
-            <Link
-              className="inline-flex items-center gap-2 rounded-lg bg-blue-700 px-3 py-2 text-sm font-medium text-white hover:bg-blue-800"
-              onClick={() => {
-                if (
-                  !notification.isRead
-                ) {
-                  void onMarkRead(
-                    notification.id,
-                  )
-                }
+              onClick={(event) => {
+                event.stopPropagation()
               }}
-              to={
-                notification.actionUrl
-              }
-            >
-              Open
+              type="checkbox"
+            />
+          </div>
+        )}
 
-              <ExternalLink className="h-4 w-4" />
-            </Link>
-          )}
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-2">
+                {!notification.isRead && (
+                  <span
+                    aria-label="Unread notification"
+                    className="h-2.5 w-2.5 rounded-full bg-blue-600"
+                  />
+                )}
+
+                <h2 className="text-base font-semibold text-slate-900">
+                  {notification.title}
+                </h2>
+
+                <span
+                  className={[
+                    "rounded-full border px-2.5 py-1",
+                    "text-xs font-medium",
+                    getPriorityClasses(
+                      notification.priority,
+                    ),
+                  ].join(" ")}
+                >
+                  {notification.priority}
+                </span>
+
+                <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-600">
+                  {getCategoryLabel(
+                    notification.category,
+                  )}
+                </span>
+              </div>
+
+              <p className="mt-3 text-sm leading-6 text-slate-600">
+                {notification.message}
+              </p>
+
+              <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-slate-500">
+                <span>
+                  {formatNotificationDate(
+                    notification.createdAt,
+                  )}
+                </span>
+
+                {notification.relatedEntityType && (
+                  <span>
+                    Related record:{" "}
+                    {formatLabel(
+                      notification
+                        .relatedEntityType,
+                    )}
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {!selectionMode && (
+              <div className="flex shrink-0 flex-wrap items-center gap-2">
+                {!notification.isRead && (
+                  <button
+                    className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                    onClick={(event) => {
+                      event.stopPropagation()
+
+                      void onMarkRead(
+                        notification.id,
+                      )
+                    }}
+                    type="button"
+                  >
+                    <Check className="h-4 w-4" />
+
+                    Mark read
+                  </button>
+                )}
+
+                {notification.actionUrl && (
+                  <Link
+                    className="inline-flex items-center gap-2 rounded-lg bg-blue-700 px-3 py-2 text-sm font-medium text-white hover:bg-blue-800"
+                    onClick={(event) => {
+                      event.stopPropagation()
+
+                      if (
+                        !notification.isRead
+                      ) {
+                        void onMarkRead(
+                          notification.id,
+                        )
+                      }
+                    }}
+                    to={
+                      notification.actionUrl
+                    }
+                  >
+                    Open
+
+                    <ExternalLink className="h-4 w-4" />
+                  </Link>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </article>
@@ -242,6 +317,14 @@ export function NotificationCenterPage() {
     useState<NotificationFilter>(
       "all",
     )
+
+  const [selectionMode, setSelectionMode] =
+    useState(false)
+
+  const [
+    selectedNotificationIds,
+    setSelectedNotificationIds,
+  ] = useState<string[]>([])
 
   const notifications =
     useNotificationStore(
@@ -318,7 +401,8 @@ export function NotificationCenterPage() {
             notification.message,
             notification.category,
             notification.priority,
-            notification.relatedEntityType ??
+            notification
+              .relatedEntityType ??
               "",
           ]
             .join(" ")
@@ -334,6 +418,94 @@ export function NotificationCenterPage() {
       notifications,
       searchQuery,
     ])
+
+  const visibleNotificationIds =
+    useMemo(
+      () =>
+        filteredNotifications.map(
+          (notification) =>
+            notification.id,
+        ),
+      [filteredNotifications],
+    )
+
+  const selectedCount =
+    selectedNotificationIds.length
+
+  const allVisibleSelected =
+    visibleNotificationIds.length > 0 &&
+    visibleNotificationIds.every(
+      (notificationId) =>
+        selectedNotificationIds.includes(
+          notificationId,
+        ),
+    )
+
+  const toggleSelection = (
+    notificationId: string,
+  ) => {
+    setSelectedNotificationIds(
+      (currentIds) => {
+        if (
+          currentIds.includes(
+            notificationId,
+          )
+        ) {
+          return currentIds.filter(
+            (currentId) =>
+              currentId !==
+              notificationId,
+          )
+        }
+
+        return [
+          ...currentIds,
+          notificationId,
+        ]
+      },
+    )
+  }
+
+  const selectAllVisible = () => {
+    setSelectedNotificationIds(
+      (currentIds) => {
+        const nextIds =
+          new Set(currentIds)
+
+        visibleNotificationIds.forEach(
+          (notificationId) => {
+            nextIds.add(
+              notificationId,
+            )
+          },
+        )
+
+        return Array.from(nextIds)
+      },
+    )
+  }
+
+  const deselectAllVisible = () => {
+    setSelectedNotificationIds(
+      (currentIds) =>
+        currentIds.filter(
+          (notificationId) =>
+            !visibleNotificationIds.includes(
+              notificationId,
+            ),
+        ),
+    )
+  }
+
+  const clearSelection = () => {
+    setSelectedNotificationIds([])
+    setSelectionMode(false)
+  }
+
+  const startSelectionMode = () => {
+    setSelectedNotificationIds([])
+    setSelectionMode(true)
+  }
 
   const filterButtonClasses = (
     filter:
@@ -377,47 +549,129 @@ export function NotificationCenterPage() {
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          <button
-            className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
-            disabled={
-              unreadCount === 0 ||
-              isUpdating
-            }
-            onClick={() => {
-              void markAllRead()
-            }}
-            type="button"
-          >
-            <CheckCheck className="h-4 w-4" />
-
-            Mark all read
-          </button>
-
-          <button
-            className="inline-flex items-center gap-2 rounded-lg border border-red-200 bg-white px-4 py-2 text-sm font-medium text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
-            disabled={
-              notifications.length ===
-                0 ||
-              isUpdating
-            }
-            onClick={() => {
-              const shouldClear =
-                window.confirm(
-                  "Clear all notifications? This action cannot be undone.",
-                )
-
-              if (shouldClear) {
-                void clearAll()
+        {!selectionMode ? (
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              className="inline-flex items-center gap-2 rounded-lg border border-blue-200 bg-white px-4 py-2 text-sm font-medium text-blue-700 hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-50"
+              disabled={
+                notifications.length ===
+                  0 ||
+                isUpdating
               }
-            }}
-            type="button"
-          >
-            <Trash2 className="h-4 w-4" />
+              onClick={
+                startSelectionMode
+              }
+              type="button"
+            >
+              <ListChecks className="h-4 w-4" />
 
-            Clear all
-          </button>
-        </div>
+              Select
+            </button>
+
+            <button
+              className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+              disabled={
+                unreadCount === 0 ||
+                isUpdating
+              }
+              onClick={() => {
+                void markAllRead()
+              }}
+              type="button"
+            >
+              <CheckCheck className="h-4 w-4" />
+
+              Mark all read
+            </button>
+
+            <button
+              className="inline-flex items-center gap-2 rounded-lg border border-red-200 bg-white px-4 py-2 text-sm font-medium text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+              disabled={
+                notifications.length ===
+                  0 ||
+                isUpdating
+              }
+              onClick={() => {
+                const shouldClear =
+                  window.confirm(
+                    "Clear all notifications? This action cannot be undone.",
+                  )
+
+                if (shouldClear) {
+                  void clearAll()
+                }
+              }}
+              type="button"
+            >
+              <Trash2 className="h-4 w-4" />
+
+              Clear all
+            </button>
+          </div>
+        ) : (
+          <div className="flex flex-wrap items-center gap-2">
+            <span
+              aria-live="polite"
+              className="inline-flex min-h-10 items-center rounded-lg border border-blue-200 bg-blue-50 px-4 text-sm font-semibold text-blue-800"
+            >
+              {selectedCount} selected
+            </span>
+
+            <button
+              className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+              disabled={
+                visibleNotificationIds
+                  .length === 0
+              }
+              onClick={() => {
+                if (allVisibleSelected) {
+                  deselectAllVisible()
+                } else {
+                  selectAllVisible()
+                }
+              }}
+              type="button"
+            >
+              <CheckCheck className="h-4 w-4" />
+
+              {allVisibleSelected
+                ? "Deselect visible"
+                : "Select visible"}
+            </button>
+
+            <button
+              className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
+              disabled
+              title="Archive will be enabled in Phase 10.5.8C"
+              type="button"
+            >
+              <Archive className="h-4 w-4" />
+
+              Archive
+            </button>
+
+            <button
+              className="inline-flex items-center gap-2 rounded-lg border border-red-200 bg-white px-4 py-2 text-sm font-medium text-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+              disabled
+              title="Delete selected will be enabled in Phase 10.5.8B"
+              type="button"
+            >
+              <Trash2 className="h-4 w-4" />
+
+              Delete
+            </button>
+
+            <button
+              className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+              onClick={clearSelection}
+              type="button"
+            >
+              <X className="h-4 w-4" />
+
+              Cancel
+            </button>
+          </div>
+        )}
       </header>
 
       <div className="grid gap-4 sm:grid-cols-3">
@@ -529,6 +783,18 @@ export function NotificationCenterPage() {
         </div>
       </div>
 
+      {selectionMode && (
+        <div className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-900">
+          Selection mode is active. Select
+          individual notifications or use{" "}
+          <span className="font-semibold">
+            Select visible
+          </span>{" "}
+          to select notifications currently
+          displayed by your search and filter.
+        </div>
+      )}
+
       {filteredNotifications.length >
       0 ? (
         <div className="space-y-3">
@@ -541,6 +807,18 @@ export function NotificationCenterPage() {
                 }
                 onMarkRead={
                   markRead
+                }
+                onToggleSelection={
+                  toggleSelection
+                }
+                selected={
+                  selectedNotificationIds
+                    .includes(
+                      notification.id,
+                    )
+                }
+                selectionMode={
+                  selectionMode
                 }
               />
             ),
