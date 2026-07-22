@@ -80,6 +80,9 @@ import {
 import {
   ClientCommunicationCenter,
 } from "@/features/clients/components/client-communication-center"
+import {
+  DocumentWorkspace,
+} from "@/features/documents/components/document-workspace"
 
 const editRoles = [
   "administrator",
@@ -653,6 +656,11 @@ export function ClientDetailsPage() {
 
       <ClientCommunicationCenter
         client={client}
+      />
+
+      <DocumentWorkspace
+        clientId={client.id}
+        title="Client Documents"
       />
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.75fr)]">
