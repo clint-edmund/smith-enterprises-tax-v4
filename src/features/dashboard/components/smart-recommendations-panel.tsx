@@ -52,9 +52,9 @@ function getPriorityStyles(
     default:
       return {
         badge:
-          "border-blue-200 bg-blue-50 text-blue-700",
+          "border-border bg-muted text-foreground",
         icon:
-          "bg-blue-100 text-blue-700",
+          "bg-primary text-primary-foreground",
       }
   }
 }
@@ -124,24 +124,24 @@ export function SmartRecommendationsPanel({
   recommendations,
 }: SmartRecommendationsPanelProps) {
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">
-      <div className="flex flex-col gap-3 border-b border-slate-200 px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
+    <section className="rounded-2xl border border-border bg-card text-card-foreground shadow-sm">
+      <div className="flex flex-col gap-3 border-b border-border px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-wide text-blue-700">
+          <p className="text-sm font-semibold uppercase tracking-wide text-primary">
             Smart Recommendations
           </p>
 
-          <h2 className="mt-1 text-xl font-semibold text-slate-950">
+          <h2 className="mt-1 text-xl font-semibold text-foreground">
             Recommended Next Actions
           </h2>
 
-          <p className="mt-1 text-sm text-slate-600">
+          <p className="mt-1 text-sm text-muted-foreground">
             Prioritized actions based on return readiness,
             deadlines, assignments, and workflow blockers.
           </p>
         </div>
 
-        <div className="w-fit rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-sm font-semibold text-slate-700">
+        <div className="w-fit rounded-full border border-border bg-muted/60 px-3 py-1 text-sm font-semibold text-foreground">
           {recommendations.length}
           {" "}
           {recommendations.length === 1
@@ -159,11 +159,11 @@ export function SmartRecommendationsPanel({
             />
           </div>
 
-          <h3 className="mt-4 text-base font-semibold text-slate-950">
+          <h3 className="mt-4 text-base font-semibold text-foreground">
             No immediate actions identified
           </h3>
 
-          <p className="mx-auto mt-2 max-w-lg text-sm text-slate-600">
+          <p className="mx-auto mt-2 max-w-lg text-sm text-muted-foreground">
             The recommendation engine did not find any
             returns requiring immediate workflow action.
           </p>
@@ -189,7 +189,7 @@ export function SmartRecommendationsPanel({
 
               return (
                 <article
-                  className="px-6 py-5 transition hover:bg-slate-50"
+                  className="px-6 py-5 transition hover:bg-muted/60"
                   key={recommendation.id}
                 >
                   <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
@@ -205,7 +205,7 @@ export function SmartRecommendationsPanel({
 
                       <div className="min-w-0">
                         <div className="flex flex-wrap items-center gap-2">
-                          <h3 className="font-semibold text-slate-950">
+                          <h3 className="font-semibold text-foreground">
                             {recommendation.title}
                           </h3>
 
@@ -218,7 +218,7 @@ export function SmartRecommendationsPanel({
                           </span>
                         </div>
 
-                        <p className="mt-1 text-sm font-medium text-slate-700">
+                        <p className="mt-1 text-sm font-medium text-foreground">
                           {recommendation.clientName}
                           {" · "}
                           {recommendation.taxYear}
@@ -226,15 +226,15 @@ export function SmartRecommendationsPanel({
                           {recommendation.returnType}
                         </p>
 
-                        <p className="mt-2 text-sm leading-6 text-slate-600">
+                        <p className="mt-2 text-sm leading-6 text-muted-foreground">
                           {recommendation.explanation}
                         </p>
 
-                        <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-xs text-slate-500">
+                        <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-xs text-muted-foreground">
                           <span>
                             Readiness:
                             {" "}
-                            <strong className="font-semibold text-slate-700">
+                            <strong className="font-semibold text-foreground">
                               {recommendation.readinessScore}
                               %
                             </strong>
@@ -244,7 +244,7 @@ export function SmartRecommendationsPanel({
                             <span>
                               Due:
                               {" "}
-                              <strong className="font-semibold text-slate-700">
+                              <strong className="font-semibold text-foreground">
                                 {formattedDueDate}
                               </strong>
                             </span>

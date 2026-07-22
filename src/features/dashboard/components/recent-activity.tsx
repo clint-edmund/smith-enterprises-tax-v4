@@ -27,10 +27,10 @@ export function RecentActivity({
   realtimeStatus = "disconnected",
 }: RecentActivityProps) {
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">
-      <div className="flex items-center justify-between gap-4 border-b border-slate-200 px-6 py-5">
+    <section className="rounded-2xl border border-border bg-card text-card-foreground shadow-sm">
+      <div className="flex items-center justify-between gap-4 border-b border-border px-6 py-5">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-700">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
             <Activity
               aria-hidden="true"
               className="h-5 w-5"
@@ -39,7 +39,7 @@ export function RecentActivity({
 
           <div>
             <div className="flex flex-wrap items-center gap-2">
-              <h2 className="text-lg font-semibold text-slate-950">
+              <h2 className="text-lg font-semibold text-foreground">
                 Recent Activity
               </h2>
 
@@ -48,7 +48,7 @@ export function RecentActivity({
               />
             </div>
 
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-muted-foreground">
               Latest activity across the tax office
             </p>
           </div>
@@ -56,7 +56,7 @@ export function RecentActivity({
 
         {onRefresh ? (
           <button
-            className="inline-flex h-9 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex h-9 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-sm font-medium text-foreground transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
             disabled={isRefreshing}
             onClick={onRefresh}
             type="button"
@@ -100,14 +100,14 @@ export function RecentActivity({
           <div className="py-10 text-center">
             <Activity
               aria-hidden="true"
-              className="mx-auto h-8 w-8 text-slate-300"
+              className="mx-auto h-8 w-8 text-muted-foreground/50"
             />
 
-            <p className="mt-3 text-sm font-medium text-slate-700">
+            <p className="mt-3 text-sm font-medium text-foreground">
               No recent activity
             </p>
 
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm text-muted-foreground">
               New client, return, and payment
               activity will appear here.
             </p>
@@ -115,7 +115,7 @@ export function RecentActivity({
         ) : null}
 
         {activities.length > 0 ? (
-          <ul className="divide-y divide-slate-100">
+          <ul className="divide-y divide-border/70">
             {activities.map((activity) => (
               <ActivityRow
                 activity={activity}
@@ -138,14 +138,14 @@ function ActivityRow({
 }: ActivityRowProps) {
   return (
     <li className="py-4">
-      <p className="text-sm text-slate-700">
-        <span className="font-semibold text-slate-950">
+      <p className="text-sm text-foreground">
+        <span className="font-semibold text-foreground">
           {activity.actorName}
         </span>{" "}
         {formatAction(activity.action)}
       </p>
 
-      <p className="mt-1 text-xs text-slate-500">
+      <p className="mt-1 text-xs text-muted-foreground">
         {formatActivityDate(
           activity.occurredAt,
         )}
@@ -228,7 +228,7 @@ function RealtimeStatusBadge({
     disconnected: {
       label: "Offline",
       className:
-        "border-slate-200 bg-slate-50 text-slate-600",
+        "border-border bg-muted text-muted-foreground",
     },
 
     error: {
