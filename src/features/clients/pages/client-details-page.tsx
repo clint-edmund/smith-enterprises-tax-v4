@@ -67,6 +67,10 @@ import {
   ClientHealthCard,
 } from "@/features/clients/components/client-health-card"
 
+import {
+  ClientProfileProgress,
+} from "@/features/clients/components/client-profile-progress"
+
 const editRoles = [
   "administrator",
   "manager",
@@ -606,10 +610,16 @@ export function ClientDetailsPage() {
         canEdit={canEdit}
       />
 
+      <div className="grid gap-6 lg:grid-cols-2">
       <ClientHealthCard
         client={client}
         clientReturns={clientReturns}
       />
+
+      <ClientProfileProgress
+          client={client}
+        />
+      </div>
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.75fr)]">
         <div className="space-y-6">
