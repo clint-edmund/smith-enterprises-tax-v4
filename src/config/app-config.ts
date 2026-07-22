@@ -18,6 +18,7 @@ export const appConfig = {
     clientDetails: "/clients/:clientId",
     clientEdit: "/clients/:clientId/edit",
     returns: "/returns",
+    documents: "/documents",
     returnNew: "/returns/new",
     returnDetails: "/returns/:returnId",
     returnEdit: "/returns/:returnId/edit",

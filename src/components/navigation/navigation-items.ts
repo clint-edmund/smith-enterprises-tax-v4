@@ -3,6 +3,7 @@ import {
   ChartNoAxesCombined,
   CircleDollarSign,
   FileText,
+  FolderLock,
   LayoutDashboard,
   Settings,
   Users,
@@ -47,6 +48,19 @@ export const navigationItems: NavigationItem[] = [
     label: "Tax Returns",
     path: appConfig.routes.returns,
     icon: FileText,
+    allowedRoles: [
+      "administrator",
+      "manager",
+      "preparer",
+      "reviewer",
+      "receptionist",
+      "read_only",
+    ],
+  },
+  {
+    label: "Documents",
+    path: appConfig.routes.documents,
+    icon: FolderLock,
     allowedRoles: [
       "administrator",
       "manager",

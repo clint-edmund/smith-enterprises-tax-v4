@@ -20,6 +20,7 @@ import { DashboardPage } from "@/features/dashboard/pages/dashboard-page"
 import { NotificationCenterPage, } from "@/features/notifications/pages/notification-center-page"
 import { PaymentsPage } from "@/features/payments/pages/payments-page"
 import { ReportsPage } from "@/features/reports/pages/reports-page"
+import { DocumentsPage } from "@/features/documents/pages/documents-page"
 import { ReturnsPage } from "@/features/returns/pages/returns-page"
 import { SettingsPage } from "@/features/settings/pages/settings-page"
 import { ClientDetailsPage } from "@/features/clients/pages/client-details-page"
@@ -109,6 +110,10 @@ export const appRouter =
                     appConfig.routes.returns,
                   element:
                     <ReturnsPage />,
+                },
+                {
+                  path: appConfig.routes.documents,
+                  element: <DocumentsPage />,
                 },
                 {
                   path: appConfig.routes.returnNew,
