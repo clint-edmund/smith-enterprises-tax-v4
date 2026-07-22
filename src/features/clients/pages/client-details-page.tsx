@@ -74,6 +74,9 @@ import {
 import {
   ClientSmartAlerts,
 } from "@/features/clients/components/client-smart-alerts"
+import {
+  ClientTaxSeasonTimeline,
+} from "@/features/clients/components/client-tax-season-timeline"
 
 const editRoles = [
   "administrator",
@@ -627,6 +630,10 @@ export function ClientDetailsPage() {
 
       <ClientSmartAlerts
         client={client}
+        clientReturns={clientReturns}
+      />
+
+      <ClientTaxSeasonTimeline
         clientReturns={clientReturns}
       />
 
