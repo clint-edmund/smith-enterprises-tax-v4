@@ -77,6 +77,9 @@ import {
 import {
   ClientTaxSeasonTimeline,
 } from "@/features/clients/components/client-tax-season-timeline"
+import {
+  ClientCommunicationCenter,
+} from "@/features/clients/components/client-communication-center"
 
 const editRoles = [
   "administrator",
@@ -635,6 +638,10 @@ export function ClientDetailsPage() {
 
       <ClientTaxSeasonTimeline
         clientReturns={clientReturns}
+      />
+
+      <ClientCommunicationCenter
+        client={client}
       />
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.75fr)]">
