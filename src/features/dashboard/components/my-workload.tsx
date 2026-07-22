@@ -54,13 +54,13 @@ const workloadItems = [
 
 export function MyWorkload({ workload }: MyWorkloadProps) {
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+    <section className="rounded-2xl border border-brand-200 bg-white p-6 shadow-[0_10px_30px_rgba(33,31,28,0.06)]">
       <div>
-        <p className="text-sm font-semibold uppercase tracking-wide text-blue-700">
+        <p className="text-sm font-semibold uppercase tracking-wide text-brand-800">
           Personal Queue
         </p>
-        <h2 className="mt-1 text-xl font-bold text-slate-950">My Workload</h2>
-        <p className="mt-2 text-sm text-slate-600">
+        <h2 className="mt-1 text-xl font-bold text-brand-950">My Workload</h2>
+        <p className="mt-2 text-sm text-brand-600">
           Open a focused return list without rebuilding filters manually.
         </p>
       </div>
@@ -73,22 +73,22 @@ export function MyWorkload({ workload }: MyWorkloadProps) {
             <Link
               key={item.key}
               to={item.href}
-              className="group rounded-xl border border-slate-200 p-4 transition hover:border-blue-300 hover:bg-blue-50/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
+              className="group rounded-xl border border-brand-200 p-4 transition hover:border-brand-400 hover:bg-brand-100/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2"
             >
               <div className="flex items-center justify-between gap-3">
-                <div className="flex size-9 items-center justify-center rounded-lg bg-slate-100 text-slate-700 transition group-hover:bg-blue-100 group-hover:text-blue-700">
+                <div className="flex size-9 items-center justify-center rounded-lg bg-brand-100 text-brand-700 transition group-hover:bg-brand-200 group-hover:text-brand-800">
                   <Icon className="size-5" aria-hidden="true" />
                 </div>
 
-                <span className="text-2xl font-bold text-slate-950">
+                <span className="text-2xl font-bold text-brand-950">
                   {formatNumber(workload[item.key])}
                 </span>
               </div>
 
-              <p className="mt-3 text-sm font-semibold text-slate-900">
+              <p className="mt-3 text-sm font-semibold text-brand-900">
                 {item.label}
               </p>
-              <p className="mt-1 text-xs leading-5 text-slate-500">
+              <p className="mt-1 text-xs leading-5 text-brand-500">
                 {item.description}
               </p>
             </Link>

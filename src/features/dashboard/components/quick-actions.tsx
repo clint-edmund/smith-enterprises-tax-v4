@@ -41,13 +41,13 @@ export function QuickActions({
     paymentRoles.includes(role)
 
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+    <section className="rounded-2xl border border-brand-200 bg-white p-5 shadow-[0_10px_30px_rgba(33,31,28,0.06)]">
       <header>
-        <h2 className="font-bold text-slate-950">
+        <h2 className="font-bold text-brand-950">
           Quick actions
         </h2>
 
-        <p className="mt-1 text-sm text-slate-500">
+        <p className="mt-1 text-sm text-brand-500">
           Start common staff tasks
         </p>
       </header>
@@ -56,19 +56,19 @@ export function QuickActions({
         {canManageRecords && (
           <Link
             to={appConfig.routes.clientNew}
-            className="flex items-center gap-3 rounded-xl border border-slate-200 p-4 transition hover:border-blue-300 hover:bg-blue-50"
+            className="flex items-center gap-3 rounded-xl border border-brand-200 p-4 transition hover:border-brand-400 hover:bg-brand-100"
           >
             <UserPlus
-              className="size-5 text-blue-700"
+              className="size-5 text-brand-700 transition group-hover:text-brand-950"
               aria-hidden="true"
             />
 
             <div>
-              <p className="text-sm font-semibold text-slate-900">
+              <p className="text-sm font-semibold text-brand-900">
                 Add a new client
               </p>
 
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-brand-500">
                 Create a taxpayer client record
               </p>
             </div>
@@ -78,19 +78,19 @@ export function QuickActions({
         {canManageRecords && (
           <Link
             to={appConfig.routes.returnNew}
-            className="flex items-center gap-3 rounded-xl border border-slate-200 p-4 transition hover:border-blue-300 hover:bg-blue-50"
+            className="flex items-center gap-3 rounded-xl border border-brand-200 p-4 transition hover:border-brand-400 hover:bg-brand-100"
           >
             <FilePlus2
-              className="size-5 text-blue-700"
+              className="size-5 text-brand-700 transition group-hover:text-brand-950"
               aria-hidden="true"
             />
 
             <div>
-              <p className="text-sm font-semibold text-slate-900">
+              <p className="text-sm font-semibold text-brand-900">
                 Create a tax return
               </p>
 
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-brand-500">
                 Start a client return workflow
               </p>
             </div>
@@ -100,19 +100,19 @@ export function QuickActions({
         {canManagePayments && (
           <Link
             to={appConfig.routes.payments}
-            className="flex items-center gap-3 rounded-xl border border-slate-200 p-4 transition hover:border-blue-300 hover:bg-blue-50"
+            className="flex items-center gap-3 rounded-xl border border-brand-200 p-4 transition hover:border-brand-400 hover:bg-brand-100"
           >
             <CircleDollarSign
-              className="size-5 text-blue-700"
+              className="size-5 text-brand-700 transition group-hover:text-brand-950"
               aria-hidden="true"
             />
 
             <div>
-              <p className="text-sm font-semibold text-slate-900">
+              <p className="text-sm font-semibold text-brand-900">
                 Record a payment
               </p>
 
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-brand-500">
                 Open payment management
               </p>
             </div>
@@ -121,7 +121,7 @@ export function QuickActions({
 
         {!canManageRecords &&
           !canManagePayments && (
-            <div className="rounded-xl bg-slate-100 p-4 text-sm text-slate-600">
+            <div className="rounded-xl bg-brand-100 p-4 text-sm text-brand-600">
               Your role currently provides
               read-only access.
             </div>
