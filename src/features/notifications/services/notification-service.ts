@@ -31,7 +31,8 @@ function mapNotificationRow(
     priority:
       row.priority as NotificationPriority,
 
-    isRead: row.is_read,
+    isRead:
+      row.is_read,
 
     isArchived:
       row.is_archived,
@@ -112,10 +113,6 @@ Promise<AppNotification[]> {
       "recipient_user_id",
       userId,
     )
-    .is(
-      "deleted_at",
-      null,
-    )
     .or(
       `expires_at.is.null,expires_at.gt.${new Date().toISOString()}`,
     )
@@ -125,7 +122,7 @@ Promise<AppNotification[]> {
         ascending: false,
       },
     )
-    .limit(100)
+    .limit(250)
 
   if (error) {
     throw new Error(
@@ -312,6 +309,103 @@ export async function restoreNotifications(
     )
     .is(
       "deleted_at",
+      null,
+    )
+
+  if (error) {
+    throw new Error(
+      error.message,
+    )
+  }
+}
+
+export async function softDeleteNotifications(
+  notificationIds: string[],
+): Promise<void> {
+  const normalizedIds =
+    normalizeNotificationIds(
+      notificationIds,
+    )
+
+  if (
+    normalizedIds.length === 0
+  ) {
+    throw new Error(
+      "At least one notification identifier is required.",
+    )
+  }
+
+  const userId =
+    await getAuthenticatedUserId()
+
+  const deletedAt =
+    new Date().toISOString()
+
+  const {
+    error,
+  } = await supabase
+    .from("notifications")
+    .update({
+      deleted_at:
+        deletedAt,
+    })
+    .eq(
+      "recipient_user_id",
+      userId,
+    )
+    .in(
+      "id",
+      normalizedIds,
+    )
+    .is(
+      "deleted_at",
+      null,
+    )
+
+  if (error) {
+    throw new Error(
+      error.message,
+    )
+  }
+}
+
+export async function restoreDeletedNotifications(
+  notificationIds: string[],
+): Promise<void> {
+  const normalizedIds =
+    normalizeNotificationIds(
+      notificationIds,
+    )
+
+  if (
+    normalizedIds.length === 0
+  ) {
+    throw new Error(
+      "At least one notification identifier is required.",
+    )
+  }
+
+  const userId =
+    await getAuthenticatedUserId()
+
+  const {
+    error,
+  } = await supabase
+    .from("notifications")
+    .update({
+      deleted_at: null,
+    })
+    .eq(
+      "recipient_user_id",
+      userId,
+    )
+    .in(
+      "id",
+      normalizedIds,
+    )
+    .not(
+      "deleted_at",
+      "is",
       null,
     )
 

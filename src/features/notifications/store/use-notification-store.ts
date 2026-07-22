@@ -7,7 +7,9 @@ import {
   clearNotifications,
   markAllNotificationsRead,
   markNotificationRead,
+  restoreDeletedNotifications,
   restoreNotifications,
+  softDeleteNotifications,
 } from "../services/notification-service"
 
 import type {
@@ -22,21 +24,18 @@ interface NotificationState {
   isUpdating: boolean
 
   setNotifications: (
-    notifications:
-      AppNotification[],
+    notifications: AppNotification[],
   ) => void
 
   addNotification: (
-    notification:
-      AppNotification,
+    notification: AppNotification,
   ) => void
 
   markRead: (
     id: string,
   ) => Promise<void>
 
-  markAllRead: () =>
-    Promise<void>
+  markAllRead: () => Promise<void>
 
   archiveSelected: (
     ids: string[],
@@ -46,13 +45,19 @@ interface NotificationState {
     ids: string[],
   ) => Promise<void>
 
-  clearAll: () =>
-    Promise<void>
+  deleteSelected: (
+    ids: string[],
+  ) => Promise<void>
+
+  restoreDeletedSelected: (
+    ids: string[],
+  ) => Promise<void>
+
+  clearAll: () => Promise<void>
 }
 
 function calculateUnreadCount(
-  notifications:
-    AppNotification[],
+  notifications: AppNotification[],
 ): number {
   return notifications.filter(
     (notification) =>
@@ -68,9 +73,7 @@ function normalizeNotificationIds(
   return Array.from(
     new Set(
       ids
-        .map((id) =>
-          id.trim(),
-        )
+        .map((id) => id.trim())
         .filter(Boolean),
     ),
   )
@@ -129,7 +132,9 @@ export const useNotificationStore =
         })
       },
 
-      markRead: async (id) => {
+      markRead: async (
+        id,
+      ) => {
         const normalizedId =
           id.trim()
 
@@ -225,10 +230,8 @@ export const useNotificationStore =
               state.notifications.map(
                 (notification) => {
                   if (
-                    notification
-                      .isArchived ||
-                    notification
-                      .deletedAt
+                    notification.isArchived ||
+                    notification.deletedAt
                   ) {
                     return notification
                   }
@@ -280,20 +283,16 @@ export const useNotificationStore =
           normalizedIds.filter(
             (notificationId) => {
               const notification =
-                currentState
-                  .notifications
-                  .find(
-                    (item) =>
-                      item.id ===
-                      notificationId,
-                  )
+                currentState.notifications.find(
+                  (item) =>
+                    item.id ===
+                    notificationId,
+                )
 
               return Boolean(
                 notification &&
-                !notification
-                  .isArchived &&
-                !notification
-                  .deletedAt,
+                !notification.isArchived &&
+                !notification.deletedAt,
               )
             },
           )
@@ -316,10 +315,10 @@ export const useNotificationStore =
           const archivedAt =
             new Date().toISOString()
 
-          set((state) => {
-            const archivedIdSet =
-              new Set(activeIds)
+          const archivedIdSet =
+            new Set(activeIds)
 
+          set((state) => {
             const notifications =
               state.notifications.map(
                 (notification) =>
@@ -329,8 +328,7 @@ export const useNotificationStore =
                     ? {
                         ...notification,
 
-                        isArchived:
-                          true,
+                        isArchived: true,
 
                         archivedAt,
                       }
@@ -376,20 +374,16 @@ export const useNotificationStore =
           normalizedIds.filter(
             (notificationId) => {
               const notification =
-                currentState
-                  .notifications
-                  .find(
-                    (item) =>
-                      item.id ===
-                      notificationId,
-                  )
+                currentState.notifications.find(
+                  (item) =>
+                    item.id ===
+                    notificationId,
+                )
 
               return Boolean(
                 notification &&
-                notification
-                  .isArchived &&
-                !notification
-                  .deletedAt,
+                notification.isArchived &&
+                !notification.deletedAt,
               )
             },
           )
@@ -422,8 +416,7 @@ export const useNotificationStore =
                     ? {
                         ...notification,
 
-                        isArchived:
-                          false,
+                        isArchived: false,
 
                         archivedAt:
                           undefined,
@@ -447,14 +440,197 @@ export const useNotificationStore =
         }
       },
 
-      clearAll: async () => {
+      deleteSelected: async (
+        ids,
+      ) => {
+        const normalizedIds =
+          normalizeNotificationIds(
+            ids,
+          )
+
         const currentState =
           get()
 
         if (
-          currentState
-            .notifications
-            .length === 0 ||
+          normalizedIds.length ===
+            0 ||
+          currentState.isUpdating
+        ) {
+          return
+        }
+
+        const deletableIds =
+          normalizedIds.filter(
+            (notificationId) => {
+              const notification =
+                currentState.notifications.find(
+                  (item) =>
+                    item.id ===
+                    notificationId,
+                )
+
+              return Boolean(
+                notification &&
+                !notification.deletedAt,
+              )
+            },
+          )
+
+        if (
+          deletableIds.length ===
+            0
+        ) {
+          return
+        }
+
+        set({
+          isUpdating: true,
+        })
+
+        try {
+          await softDeleteNotifications(
+            deletableIds,
+          )
+
+          const deletedAt =
+            new Date().toISOString()
+
+          const deletedIdSet =
+            new Set(deletableIds)
+
+          set((state) => {
+            const notifications =
+              state.notifications.map(
+                (notification) =>
+                  deletedIdSet.has(
+                    notification.id,
+                  )
+                    ? {
+                        ...notification,
+
+                        deletedAt,
+                      }
+                    : notification,
+              )
+
+            return {
+              notifications,
+
+              unreadCount:
+                calculateUnreadCount(
+                  notifications,
+                ),
+            }
+          })
+        } finally {
+          set({
+            isUpdating: false,
+          })
+        }
+      },
+
+      restoreDeletedSelected:
+        async (
+          ids,
+        ) => {
+          const normalizedIds =
+            normalizeNotificationIds(
+              ids,
+            )
+
+          const currentState =
+            get()
+
+          if (
+            normalizedIds.length ===
+              0 ||
+            currentState.isUpdating
+          ) {
+            return
+          }
+
+          const deletedIds =
+            normalizedIds.filter(
+              (notificationId) => {
+                const notification =
+                  currentState
+                    .notifications
+                    .find(
+                      (item) =>
+                        item.id ===
+                        notificationId,
+                    )
+
+                return Boolean(
+                  notification
+                    ?.deletedAt,
+                )
+              },
+            )
+
+          if (
+            deletedIds.length ===
+              0
+          ) {
+            return
+          }
+
+          set({
+            isUpdating: true,
+          })
+
+          try {
+            await restoreDeletedNotifications(
+              deletedIds,
+            )
+
+            const restoredIdSet =
+              new Set(deletedIds)
+
+            set((state) => {
+              const notifications =
+                state.notifications.map(
+                  (notification) =>
+                    restoredIdSet.has(
+                      notification.id,
+                    )
+                      ? {
+                          ...notification,
+
+                          deletedAt:
+                            undefined,
+                        }
+                      : notification,
+                )
+
+              return {
+                notifications,
+
+                unreadCount:
+                  calculateUnreadCount(
+                    notifications,
+                  ),
+              }
+            })
+          } finally {
+            set({
+              isUpdating: false,
+            })
+          }
+        },
+
+      clearAll: async () => {
+        const currentState =
+          get()
+
+        const hasActiveNotifications =
+          currentState.notifications.some(
+            (notification) =>
+              !notification.deletedAt,
+          )
+
+        if (
+          !hasActiveNotifications ||
           currentState.isUpdating
         ) {
           return
@@ -467,10 +643,27 @@ export const useNotificationStore =
         try {
           await clearNotifications()
 
-          set({
-            notifications: [],
+          const deletedAt =
+            new Date().toISOString()
 
-            unreadCount: 0,
+          set((state) => {
+            const notifications =
+              state.notifications.map(
+                (notification) =>
+                  notification.deletedAt
+                    ? notification
+                    : {
+                        ...notification,
+
+                        deletedAt,
+                      },
+              )
+
+            return {
+              notifications,
+
+              unreadCount: 0,
+            }
           })
         } finally {
           set({
