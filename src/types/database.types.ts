@@ -321,6 +321,84 @@ export type Database = {
         }
         Relationships: []
       }
+      notification_preferences: {
+        Row: {
+          assignment_notifications: boolean
+          auto_mark_read: boolean
+          badge_counter: boolean
+          browser_notifications: boolean
+          client_notifications: boolean
+          created_at: string
+          daily_digest: boolean
+          desktop_toasts: boolean
+          email_notifications: boolean
+          high_priority_notifications: boolean
+          id: string
+          notification_sound: boolean
+          payment_notifications: boolean
+          quiet_hours_enabled: boolean
+          quiet_hours_end: string | null
+          quiet_hours_start: string | null
+          retention_days: number
+          return_notifications: boolean
+          security_notifications: boolean
+          system_notifications: boolean
+          updated_at: string
+          user_id: string
+          weekly_digest: boolean
+        }
+        Insert: {
+          assignment_notifications?: boolean
+          auto_mark_read?: boolean
+          badge_counter?: boolean
+          browser_notifications?: boolean
+          client_notifications?: boolean
+          created_at?: string
+          daily_digest?: boolean
+          desktop_toasts?: boolean
+          email_notifications?: boolean
+          high_priority_notifications?: boolean
+          id?: string
+          notification_sound?: boolean
+          payment_notifications?: boolean
+          quiet_hours_enabled?: boolean
+          quiet_hours_end?: string | null
+          quiet_hours_start?: string | null
+          retention_days?: number
+          return_notifications?: boolean
+          security_notifications?: boolean
+          system_notifications?: boolean
+          updated_at?: string
+          user_id: string
+          weekly_digest?: boolean
+        }
+        Update: {
+          assignment_notifications?: boolean
+          auto_mark_read?: boolean
+          badge_counter?: boolean
+          browser_notifications?: boolean
+          client_notifications?: boolean
+          created_at?: string
+          daily_digest?: boolean
+          desktop_toasts?: boolean
+          email_notifications?: boolean
+          high_priority_notifications?: boolean
+          id?: string
+          notification_sound?: boolean
+          payment_notifications?: boolean
+          quiet_hours_enabled?: boolean
+          quiet_hours_end?: string | null
+          quiet_hours_start?: string | null
+          retention_days?: number
+          return_notifications?: boolean
+          security_notifications?: boolean
+          system_notifications?: boolean
+          updated_at?: string
+          user_id?: string
+          weekly_digest?: boolean
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           action_url: string | null
