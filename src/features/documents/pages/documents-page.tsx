@@ -20,6 +20,10 @@ import { DocumentStatCard } from "@/features/documents/components/document-stat-
 
 import { getDocumentMetrics } from "@/features/documents/services/document-metrics-service";
 
+import { DocumentActivityTimeline } from "@/features/documents/components/document-activity-timeline";
+
+import { useDocumentActivity } from "@/features/documents/hooks/use-document-activity";
+
 export function DocumentsPage() {
   const [searchText, setSearchText] = useState("");
 
@@ -40,6 +44,14 @@ export function DocumentsPage() {
     favorites: 0,
     missingRequired: 0,
   });
+
+  const {
+    activities,
+    isLoading: isActivityLoading,
+    isRefreshing: isActivityRefreshing,
+    errorMessage: activityErrorMessage,
+    refresh: refreshActivity,
+  } = useDocumentActivity(selectedClient?.id ?? null, 12);
 
   useEffect(() => {
     let isCurrentSearch = true;
@@ -333,10 +345,26 @@ export function DocumentsPage() {
             />
           </div>
 
-          <DocumentWorkspace
-            clientId={selectedClient.id}
-            title={`${formatClientName(selectedClient)} Documents`}
-          />
+          <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_380px]">
+            <div className="min-w-0">
+              <DocumentWorkspace
+                clientId={selectedClient.id}
+                title={`${formatClientName(selectedClient)} Documents`}
+              />
+            </div>
+
+            <div className="xl:sticky xl:top-6">
+              <DocumentActivityTimeline
+                activities={activities}
+                isLoading={isActivityLoading}
+                isRefreshing={isActivityRefreshing}
+                errorMessage={activityErrorMessage}
+                onRefresh={() => {
+                  void refreshActivity();
+                }}
+              />
+            </div>
+          </div>
         </section>
       ) : (
         <section className="rounded-2xl border border-dashed border-slate-300 bg-white p-12 text-center">
