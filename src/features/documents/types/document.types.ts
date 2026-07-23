@@ -18,15 +18,11 @@ export const documentCategories = [
   "tax_return",
   "supporting_document",
   "miscellaneous",
-] as const
+] as const;
 
-export type DocumentCategory =
-  (typeof documentCategories)[number]
+export type DocumentCategory = (typeof documentCategories)[number];
 
-export const documentCategoryLabels: Record<
-  DocumentCategory,
-  string
-> = {
+export const documentCategoryLabels: Record<DocumentCategory, string> = {
   w2: "W-2",
   "1099": "1099",
   k1: "K-1",
@@ -46,7 +42,7 @@ export const documentCategoryLabels: Record<
   tax_return: "Tax Return",
   supporting_document: "Supporting Document",
   miscellaneous: "Miscellaneous",
-}
+};
 
 export const documentStatuses = [
   "uploaded",
@@ -54,86 +50,84 @@ export const documentStatuses = [
   "accepted",
   "rejected",
   "archived",
-] as const
+] as const;
 
-export type DocumentStatus =
-  (typeof documentStatuses)[number]
+export type DocumentStatus = (typeof documentStatuses)[number];
 
 /**
  * A category record returned from the
  * document_categories database table.
  */
 export interface DocumentCategoryRecord {
-  id: string
-  code: DocumentCategory
-  name: string
-  description: string | null
-  displayOrder: number
-  isActive: boolean
-  createdAt: string
-  updatedAt: string
+  id: string;
+  code: DocumentCategory;
+  name: string;
+  description: string | null;
+  displayOrder: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface ClientDocument {
-  id: string
-  clientId: string
-  taxReturnId: string | null
-  category: DocumentCategory
-  status: DocumentStatus
-  originalFileName: string
-  storageBucket: string
-  storagePath: string
-  mimeType: string
-  sizeBytes: number
-  description: string | null
-  uploadedBy: string
-  uploadedByName: string | null
-  createdAt: string
-  updatedAt: string
-  archivedAt: string | null
+  id: string;
+  clientId: string;
+  taxReturnId: string | null;
+  category: DocumentCategory;
+  status: DocumentStatus;
+  originalFileName: string;
+  storageBucket: string;
+  storagePath: string;
+  mimeType: string;
+  sizeBytes: number;
+  description: string | null;
+  uploadedBy: string;
+  uploadedByName: string | null;
+  createdAt: string;
+  updatedAt: string;
+  archivedAt: string | null;
+  isFavorite: boolean;
 }
 
-export type ClientDocumentListItem =
-  ClientDocument
+export type ClientDocumentListItem = ClientDocument;
 
 export interface UploadDocumentRequest {
-  clientId: string
-  taxReturnId?: string | null
-  category: DocumentCategory
-  description?: string | null
-  file: File
+  clientId: string;
+  taxReturnId?: string | null;
+  category: DocumentCategory;
+  description?: string | null;
+  file: File;
 }
 
 /**
  * Retains compatibility with the newer name.
  */
-export type UploadClientDocumentInput =
-  UploadDocumentRequest
+export type UploadClientDocumentInput = UploadDocumentRequest;
 
 export interface UpdateClientDocumentInput {
-  documentId: string
-  category?: DocumentCategory
-  status?: DocumentStatus
-  description?: string | null
-  originalFileName?: string
+  documentId: string;
+  category?: DocumentCategory;
+  status?: DocumentStatus;
+  description?: string | null;
+  originalFileName?: string;
 }
 
 export interface ClientDocumentFilters {
-  clientId: string
-  taxReturnId?: string | null
-  category?: DocumentCategory
-  status?: DocumentStatus
-  includeArchived?: boolean
+  clientId: string;
+  taxReturnId?: string | null;
+  category?: DocumentCategory;
+  status?: DocumentStatus;
+  includeArchived?: boolean;
 }
 
 export interface DocumentUploadResult {
-  document: ClientDocument
-  storagePath: string
+  document: ClientDocument;
+  storagePath: string;
 }
 
 export interface DocumentDownloadResult {
-  signedUrl: string
-  expiresAt: string
+  signedUrl: string;
+  expiresAt: string;
 }
 
 export const documentAccessActions = [
@@ -145,36 +139,29 @@ export const documentAccessActions = [
   "status_changed",
   "deleted",
   "restored",
-] as const
+] as const;
 
-export type DocumentAccessAction =
-  (typeof documentAccessActions)[number]
+export type DocumentAccessAction = (typeof documentAccessActions)[number];
 
 export interface DocumentAccessLog {
-  id: number
-  documentId: string
-  actorId: string | null
-  action: DocumentAccessAction
-  occurredAt: string
-  details: Record<string, unknown>
+  id: number;
+  documentId: string;
+  actorId: string | null;
+  action: DocumentAccessAction;
+  occurredAt: string;
+  details: Record<string, unknown>;
 }
 
 export interface DocumentUploadValidation {
-  isValid: boolean
-  errorMessage: string | null
+  isValid: boolean;
+  errorMessage: string | null;
 }
 
-export type DocumentValidationResult =
-  DocumentUploadValidation
+export type DocumentValidationResult = DocumentUploadValidation;
 
 export interface DocumentUploadProgress {
-  fileName: string
-  progress: number
-  status:
-    | "waiting"
-    | "uploading"
-    | "completed"
-    | "failed"
-  errorMessage?: string
+  fileName: string;
+  progress: number;
+  status: "waiting" | "uploading" | "completed" | "failed";
+  errorMessage?: string;
 }
-
