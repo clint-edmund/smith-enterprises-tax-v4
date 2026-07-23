@@ -1,4 +1,12 @@
-import { FolderLock, Search, User } from "lucide-react";
+import {
+  Archive,
+  FileText,
+  FolderLock,
+  Search,
+  Star,
+  TriangleAlert,
+  User,
+} from "lucide-react";
 
 import { useEffect, useState } from "react";
 
@@ -7,6 +15,10 @@ import { DocumentWorkspace } from "@/features/documents/components/document-work
 import { searchClients } from "@/features/clients/services/client-service";
 
 import type { ClientListItem } from "@/features/clients/types/client.types";
+
+import { DocumentStatCard } from "@/features/documents/components/document-stat-card";
+
+import { getDocumentMetrics } from "@/features/documents/services/document-metrics-service";
 
 export function DocumentsPage() {
   const [searchText, setSearchText] = useState("");
@@ -19,32 +31,102 @@ export function DocumentsPage() {
 
   const [isSearching, setIsSearching] = useState(false);
 
-  useEffect(() => {
-    const timeoutId = window.setTimeout(async () => {
-      if (searchText.trim().length < 2) {
-        setClients([]);
-        return;
-      }
+  const [searchError, setSearchError] = useState<string | null>(null);
 
+  const [documentStats, setDocumentStats] = useState({
+    total: 0,
+    active: 0,
+    archived: 0,
+    favorites: 0,
+    missingRequired: 0,
+  });
+
+  useEffect(() => {
+    let isCurrentSearch = true;
+
+    const normalizedSearch = searchText.trim();
+
+    if (normalizedSearch.length < 2) {
+      setClients([]);
+      setSearchError(null);
+      setIsSearching(false);
+
+      return () => {
+        isCurrentSearch = false;
+      };
+    }
+
+    const timeoutId = window.setTimeout(async () => {
       setIsSearching(true);
+      setSearchError(null);
+      setClients([]);
 
       try {
-        const results = await searchClients(searchText, "all");
+        const results = await searchClients(normalizedSearch, "all");
 
-        setClients(results);
+        if (isCurrentSearch) {
+          setClients(results);
+        }
+      } catch (error) {
+        console.error("Unable to search clients:", error);
+
+        if (isCurrentSearch) {
+          setClients([]);
+          setSearchError("We could not search for clients. Please try again.");
+        }
       } finally {
-        setIsSearching(false);
+        if (isCurrentSearch) {
+          setIsSearching(false);
+        }
       }
     }, 300);
 
     return () => {
+      isCurrentSearch = false;
       window.clearTimeout(timeoutId);
     };
   }, [searchText]);
+
+  useEffect(() => {
+    if (!selectedClient) {
+      setDocumentStats({
+        total: 0,
+        active: 0,
+        archived: 0,
+        favorites: 0,
+        missingRequired: 0,
+      });
+
+      return;
+    }
+
+    const clientId = selectedClient.id;
+    let cancelled = false;
+
+    async function loadMetrics() {
+      try {
+        const metrics = await getDocumentMetrics(clientId);
+
+        if (!cancelled) {
+          setDocumentStats(metrics);
+        }
+      } catch (error) {
+        console.error("Unable to load document metrics", error);
+      }
+    }
+
+    void loadMetrics();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedClient]);
+
   function handleClientSelected(client: ClientListItem) {
     setSelectedClient(client);
     setSearchText("");
     setClients([]);
+    setSearchError(null);
   }
 
   function formatClientName(client: ClientListItem) {
@@ -110,6 +192,19 @@ export function DocumentsPage() {
           </p>
         ) : null}
 
+        {searchError ? (
+          <div
+            role="alert"
+            className="mt-4 rounded-xl border border-red-200 bg-red-50 p-4"
+          >
+            <p className="font-semibold text-red-900">
+              Client search unavailable
+            </p>
+
+            <p className="mt-1 text-sm text-red-700">{searchError}</p>
+          </div>
+        ) : null}
+
         {isSearching ? (
           <div className="mt-4 rounded-xl border border-dashed border-slate-300 p-5 text-center text-sm text-slate-600">
             Searching clients...
@@ -117,6 +212,7 @@ export function DocumentsPage() {
         ) : null}
 
         {!isSearching &&
+        !searchError &&
         searchText.trim().length >= 2 &&
         clients.length === 0 ? (
           <div className="mt-4 rounded-xl border border-dashed border-slate-300 p-5 text-center">
@@ -209,6 +305,32 @@ export function DocumentsPage() {
                 Change Client
               </button>
             </div>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            <DocumentStatCard
+              label="Documents"
+              value={documentStats.total}
+              icon={<FileText className="size-6" />}
+            />
+
+            <DocumentStatCard
+              label="Favorites"
+              value={documentStats.favorites}
+              icon={<Star className="size-6" />}
+            />
+
+            <DocumentStatCard
+              label="Archived"
+              value={documentStats.archived}
+              icon={<Archive className="size-6" />}
+            />
+
+            <DocumentStatCard
+              label="Missing Required"
+              value={documentStats.missingRequired}
+              icon={<TriangleAlert className="size-6" />}
+            />
           </div>
 
           <DocumentWorkspace
