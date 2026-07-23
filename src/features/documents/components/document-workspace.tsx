@@ -11,12 +11,14 @@ interface DocumentWorkspaceProps {
   clientId: string;
   taxReturnId?: string | null;
   title?: string;
+  onDocumentsChanged?: () => void;
 }
 
 export function DocumentWorkspace({
   clientId,
   taxReturnId = null,
   title = "Documents",
+  onDocumentsChanged,
 }: DocumentWorkspaceProps) {
   const [documents, setDocuments] = useState<ClientDocument[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -40,20 +42,39 @@ export function DocumentWorkspace({
   }, [clientId, taxReturnId]);
 
   useEffect(() => {
-    void loadDocuments()
-  }, [loadDocuments])
+    void loadDocuments();
+  }, [loadDocuments]);
 
   function handleUploaded(document: ClientDocument) {
     setDocuments((current) => [
       document,
       ...current.filter((item) => item.id !== document.id),
     ]);
+
+    onDocumentsChanged?.();
   }
 
   function handleArchived(documentId: string) {
     setDocuments((current) =>
       current.filter((document) => document.id !== documentId),
     );
+
+    onDocumentsChanged?.();
+  }
+
+  function handleFavoriteChanged(documentId: string) {
+    setDocuments((current) =>
+      current.map((document) =>
+        document.id === documentId
+          ? {
+              ...document,
+              isFavorite: !document.isFavorite,
+            }
+          : document,
+      ),
+    );
+
+    onDocumentsChanged?.();
   }
 
   return (
@@ -116,7 +137,11 @@ export function DocumentWorkspace({
 
       {!errorMessage && !isLoading ? (
         <div className="mt-5">
-          <DocumentLibrary documents={documents} onArchived={handleArchived} />
+          <DocumentLibrary
+            documents={documents}
+            onArchived={handleArchived}
+            onFavoriteChanged={handleFavoriteChanged}
+          />
         </div>
       ) : null}
     </section>

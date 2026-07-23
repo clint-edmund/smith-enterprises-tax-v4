@@ -8,7 +8,7 @@ import {
   User,
 } from "lucide-react";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { DocumentWorkspace } from "@/features/documents/components/document-workspace";
 
@@ -99,7 +99,7 @@ export function DocumentsPage() {
     };
   }, [searchText]);
 
-  useEffect(() => {
+  const loadMetrics = useCallback(async () => {
     if (!selectedClient) {
       setDocumentStats({
         total: 0,
@@ -112,27 +112,18 @@ export function DocumentsPage() {
       return;
     }
 
-    const clientId = selectedClient.id;
-    let cancelled = false;
+    try {
+      const metrics = await getDocumentMetrics(selectedClient.id);
 
-    async function loadMetrics() {
-      try {
-        const metrics = await getDocumentMetrics(clientId);
-
-        if (!cancelled) {
-          setDocumentStats(metrics);
-        }
-      } catch (error) {
-        console.error("Unable to load document metrics", error);
-      }
+      setDocumentStats(metrics);
+    } catch (error) {
+      console.error("Unable to load document metrics", error);
     }
-
-    void loadMetrics();
-
-    return () => {
-      cancelled = true;
-    };
   }, [selectedClient]);
+
+  useEffect(() => {
+    void loadMetrics();
+  }, [loadMetrics]);
 
   function handleClientSelected(client: ClientListItem) {
     setSelectedClient(client);
@@ -350,6 +341,9 @@ export function DocumentsPage() {
               <DocumentWorkspace
                 clientId={selectedClient.id}
                 title={`${formatClientName(selectedClient)} Documents`}
+                onDocumentsChanged={() => {
+                  void loadMetrics();
+                }}
               />
             </div>
 

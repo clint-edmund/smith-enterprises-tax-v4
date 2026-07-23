@@ -32,8 +32,7 @@ export async function getDocumentMetrics(
     active: documents.length - archived,
     archived,
 
-    // Next phase
-    favorites: 0,
+    favorites: documents.filter((document) => document.isFavorite).length,
 
     // Next phase
     missingRequired: 0,

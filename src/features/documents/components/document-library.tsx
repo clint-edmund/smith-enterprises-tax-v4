@@ -7,602 +7,388 @@ import {
   SearchX,
   Square,
   X,
-} from "lucide-react"
-import {
-  useEffect,
-  useMemo,
-  useState,
-} from "react"
+} from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 
-import {
-  DocumentCategoryGroup,
-} from "@/features/documents/components/document-category-group"
-import {
-  DocumentPreviewModal,
-} from "@/features/documents/components/document-preview-modal"
-import {
-  DocumentSearchBar,
-} from "@/features/documents/components/document-search-bar"
-import {
-  useDocumentFavorites,
-} from "@/features/documents/hooks/use-document-favorites"
+import { DocumentCategoryGroup } from "@/features/documents/components/document-category-group";
+import { DocumentPreviewModal } from "@/features/documents/components/document-preview-modal";
+import { DocumentSearchBar } from "@/features/documents/components/document-search-bar";
+import { useDocumentFavorites } from "@/features/documents/hooks/use-document-favorites";
 import {
   archiveClientDocument,
   createDocumentDownloadUrl,
-} from "@/features/documents/services/document-service"
+} from "@/features/documents/services/document-service";
 import type {
   ClientDocument,
   DocumentCategory,
-} from "@/features/documents/types/document.types"
-import {
-  documentCategories,
-} from "@/features/documents/types/document.types"
-import {
-  documentCategoryLabels,
-} from "@/features/documents/utils/document-utils"
+} from "@/features/documents/types/document.types";
+import { documentCategories } from "@/features/documents/types/document.types";
+import { documentCategoryLabels } from "@/features/documents/utils/document-utils";
 
 interface DocumentLibraryProps {
-  documents: ClientDocument[]
-  onArchived: (
-    documentId: string,
-  ) => void
+  documents: ClientDocument[];
+
+  onArchived: (documentId: string) => void;
+
+  onFavoriteChanged: (documentId: string) => void;
 }
 
-type BulkAction =
-  | "download"
-  | "archive"
-  | null
+type BulkAction = "download" | "archive" | null;
 
 interface BulkActionFailure {
-  documentName: string
-  message: string
+  documentName: string;
+  message: string;
 }
 
-function matchesSearch(
-  document: ClientDocument,
-  searchValue: string,
-): boolean {
-  const normalizedSearch =
-    searchValue.trim().toLowerCase()
+function matchesSearch(document: ClientDocument, searchValue: string): boolean {
+  const normalizedSearch = searchValue.trim().toLowerCase();
 
   if (!normalizedSearch) {
-    return true
+    return true;
   }
 
   return [
     document.originalFileName,
     document.description,
     document.uploadedByName,
-    documentCategoryLabels[
-      document.category
-    ],
-  ].some(
-    (value) =>
-      value
-        ?.toLowerCase()
-        .includes(normalizedSearch) ??
-      false,
-  )
+    documentCategoryLabels[document.category],
+  ].some((value) => value?.toLowerCase().includes(normalizedSearch) ?? false);
 }
 
-function triggerDownload(
-  url: string,
-  fileName: string,
-) {
-  const anchor =
-    window.document.createElement("a")
+function triggerDownload(url: string, fileName: string) {
+  const anchor = window.document.createElement("a");
 
-  anchor.href = url
-  anchor.download = fileName
-  anchor.rel = "noreferrer"
-  anchor.style.display = "none"
+  anchor.href = url;
+  anchor.download = fileName;
+  anchor.rel = "noreferrer";
+  anchor.style.display = "none";
 
-  window.document.body.appendChild(
-    anchor,
-  )
+  window.document.body.appendChild(anchor);
 
-  anchor.click()
-  anchor.remove()
+  anchor.click();
+  anchor.remove();
 }
 
 export function DocumentLibrary({
   documents,
   onArchived,
+  onFavoriteChanged,
 }: DocumentLibraryProps) {
-  const [
-    searchValue,
-    setSearchValue,
-  ] = useState("")
+  const [searchValue, setSearchValue] = useState("");
 
-  const [
-    showFavoritesOnly,
-    setShowFavoritesOnly,
-  ] = useState(false)
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
 
-  const [
-    previewDocumentId,
-    setPreviewDocumentId,
-  ] = useState<string | null>(null)
+  const [previewDocumentId, setPreviewDocumentId] = useState<string | null>(
+    null,
+  );
 
-  const [
-    selectedDocumentIds,
-    setSelectedDocumentIds,
-  ] = useState<Set<string>>(
+  const [selectedDocumentIds, setSelectedDocumentIds] = useState<Set<string>>(
     () => new Set(),
-  )
+  );
 
-  const [
-    bulkAction,
-    setBulkAction,
-  ] = useState<BulkAction>(null)
+  const [bulkAction, setBulkAction] = useState<BulkAction>(null);
 
-  const [
-    bulkMessage,
-    setBulkMessage,
-  ] = useState<string | null>(null)
+  const [bulkMessage, setBulkMessage] = useState<string | null>(null);
 
-  const [
-    bulkFailures,
-    setBulkFailures,
-  ] = useState<
-    BulkActionFailure[]
-  >([])
+  const [bulkFailures, setBulkFailures] = useState<BulkActionFailure[]>([]);
 
-  const {
-    isFavorite,
-    toggleFavorite,
-  } = useDocumentFavorites()
+  const { isFavorite, toggleFavorite } = useDocumentFavorites({
+    isFavorite: (documentId) =>
+      documents.find((d) => d.id === documentId)?.isFavorite ?? false,
+
+    onFavoriteChanged,
+  });
 
   const filteredDocuments = useMemo(
     () =>
       documents.filter(
         (document) =>
-          matchesSearch(
-            document,
-            searchValue,
-          ) &&
-          (
-            !showFavoritesOnly ||
-            isFavorite(document.id)
-          ),
+          matchesSearch(document, searchValue) &&
+          (!showFavoritesOnly || isFavorite(document.id)),
       ),
-    [
-      documents,
-      isFavorite,
-      searchValue,
-      showFavoritesOnly,
-    ],
-  )
+    [documents, isFavorite, searchValue, showFavoritesOnly],
+  );
 
   const groupedDocuments = useMemo(
     () =>
       documentCategories
         .map((category) => ({
           category,
-          documents:
-            filteredDocuments.filter(
-              (document) =>
-                document.category ===
-                category,
-            ),
+          documents: filteredDocuments.filter(
+            (document) => document.category === category,
+          ),
         }))
         .filter(
           (
             group,
           ): group is {
-            category: DocumentCategory
-            documents: ClientDocument[]
-          } =>
-            group.documents.length > 0,
+            category: DocumentCategory;
+            documents: ClientDocument[];
+          } => group.documents.length > 0,
         ),
     [filteredDocuments],
-  )
+  );
 
-  const navigationDocuments =
-    useMemo(
-      () =>
-        groupedDocuments.flatMap(
-          (group) => group.documents,
-        ),
-      [groupedDocuments],
-    )
+  const navigationDocuments = useMemo(
+    () => groupedDocuments.flatMap((group) => group.documents),
+    [groupedDocuments],
+  );
 
-  const selectedDocuments =
-    useMemo(
-      () =>
-        documents.filter(
-          (document) =>
-            selectedDocumentIds.has(
-              document.id,
-            ),
-        ),
-      [
-        documents,
-        selectedDocumentIds,
-      ],
-    )
+  const selectedDocuments = useMemo(
+    () => documents.filter((document) => selectedDocumentIds.has(document.id)),
+    [documents, selectedDocumentIds],
+  );
 
-  const filteredDocumentIds =
-    useMemo(
-      () =>
-        filteredDocuments.map(
-          (document) => document.id,
-        ),
-      [filteredDocuments],
-    )
+  const filteredDocumentIds = useMemo(
+    () => filteredDocuments.map((document) => document.id),
+    [filteredDocuments],
+  );
 
   const allFilteredSelected =
     filteredDocumentIds.length > 0 &&
-    filteredDocumentIds.every(
-      (documentId) =>
-        selectedDocumentIds.has(
-          documentId,
-        ),
-    )
+    filteredDocumentIds.every((documentId) =>
+      selectedDocumentIds.has(documentId),
+    );
 
-  const someFilteredSelected =
-    filteredDocumentIds.some(
-      (documentId) =>
-        selectedDocumentIds.has(
-          documentId,
-        ),
-    )
+  const someFilteredSelected = filteredDocumentIds.some((documentId) =>
+    selectedDocumentIds.has(documentId),
+  );
 
-  const previewDocument =
-    useMemo(
-      () =>
-        navigationDocuments.find(
-          (document) =>
-            document.id ===
-            previewDocumentId,
-        ) ?? null,
-      [
-        navigationDocuments,
-        previewDocumentId,
-      ],
-    )
+  const previewDocument = useMemo(
+    () =>
+      navigationDocuments.find(
+        (document) => document.id === previewDocumentId,
+      ) ?? null,
+    [navigationDocuments, previewDocumentId],
+  );
 
-  const previewIndex =
-    previewDocument
-      ? navigationDocuments.findIndex(
-          (document) =>
-            document.id ===
-            previewDocument.id,
-        )
-      : -1
+  const previewIndex = previewDocument
+    ? navigationDocuments.findIndex(
+        (document) => document.id === previewDocument.id,
+      )
+    : -1;
 
-  const hasPrevious =
-    previewIndex > 0
+  const hasPrevious = previewIndex > 0;
 
   const hasNext =
-    previewIndex >= 0 &&
-    previewIndex <
-      navigationDocuments.length - 1
+    previewIndex >= 0 && previewIndex < navigationDocuments.length - 1;
 
   useEffect(() => {
-    const currentDocumentIds =
-      new Set(
-        documents.map(
-          (document) => document.id,
-        ),
-      )
+    const currentDocumentIds = new Set(
+      documents.map((document) => document.id),
+    );
 
-    setSelectedDocumentIds(
-      (current) => {
-        const next = new Set(
-          [...current].filter(
-            (documentId) =>
-              currentDocumentIds.has(
-                documentId,
-              ),
-          ),
-        )
+    setSelectedDocumentIds((current) => {
+      const next = new Set(
+        [...current].filter((documentId) => currentDocumentIds.has(documentId)),
+      );
 
-        if (
-          next.size === current.size
-        ) {
-          return current
-        }
+      if (next.size === current.size) {
+        return current;
+      }
 
-        return next
-      },
-    )
-  }, [documents])
+      return next;
+    });
+  }, [documents]);
 
   function clearBulkFeedback() {
-    setBulkMessage(null)
-    setBulkFailures([])
+    setBulkMessage(null);
+    setBulkFailures([]);
   }
 
-  function handlePreview(
-    document: ClientDocument,
-  ) {
-    setPreviewDocumentId(
-      document.id,
-    )
+  function handlePreview(document: ClientDocument) {
+    setPreviewDocumentId(document.id);
   }
 
   function handlePrevious() {
     if (!hasPrevious) {
-      return
+      return;
     }
 
-    setPreviewDocumentId(
-      navigationDocuments[
-        previewIndex - 1
-      ].id,
-    )
+    setPreviewDocumentId(navigationDocuments[previewIndex - 1].id);
   }
 
   function handleNext() {
     if (!hasNext) {
-      return
+      return;
     }
 
-    setPreviewDocumentId(
-      navigationDocuments[
-        previewIndex + 1
-      ].id,
-    )
+    setPreviewDocumentId(navigationDocuments[previewIndex + 1].id);
   }
 
-  function handleSelectionChange(
-    documentId: string,
-    selected: boolean,
-  ) {
-    clearBulkFeedback()
+  function handleSelectionChange(documentId: string, selected: boolean) {
+    clearBulkFeedback();
 
-    setSelectedDocumentIds(
-      (current) => {
-        const next =
-          new Set(current)
+    setSelectedDocumentIds((current) => {
+      const next = new Set(current);
 
-        if (selected) {
-          next.add(documentId)
-        } else {
-          next.delete(documentId)
-        }
+      if (selected) {
+        next.add(documentId);
+      } else {
+        next.delete(documentId);
+      }
 
-        return next
-      },
-    )
+      return next;
+    });
   }
 
   function handleSelectAllFiltered() {
-    clearBulkFeedback()
+    clearBulkFeedback();
 
-    setSelectedDocumentIds(
-      (current) => {
-        const next =
-          new Set(current)
+    setSelectedDocumentIds((current) => {
+      const next = new Set(current);
 
-        filteredDocumentIds.forEach(
-          (documentId) =>
-            next.add(documentId),
-        )
+      filteredDocumentIds.forEach((documentId) => next.add(documentId));
 
-        return next
-      },
-    )
+      return next;
+    });
   }
 
   function handleClearFilteredSelection() {
-    clearBulkFeedback()
+    clearBulkFeedback();
 
-    setSelectedDocumentIds(
-      (current) => {
-        const next =
-          new Set(current)
+    setSelectedDocumentIds((current) => {
+      const next = new Set(current);
 
-        filteredDocumentIds.forEach(
-          (documentId) =>
-            next.delete(documentId),
-        )
+      filteredDocumentIds.forEach((documentId) => next.delete(documentId));
 
-        return next
-      },
-    )
+      return next;
+    });
   }
 
   function handleClearAllSelection() {
-    clearBulkFeedback()
-    setSelectedDocumentIds(
-      new Set(),
-    )
+    clearBulkFeedback();
+    setSelectedDocumentIds(new Set());
   }
 
-  function handleArchived(
-    documentId: string,
-  ) {
-    if (
-      previewDocumentId ===
-      documentId
-    ) {
-      setPreviewDocumentId(null)
+  function handleArchived(documentId: string) {
+    if (previewDocumentId === documentId) {
+      setPreviewDocumentId(null);
     }
 
-    setSelectedDocumentIds(
-      (current) => {
-        const next =
-          new Set(current)
+    setSelectedDocumentIds((current) => {
+      const next = new Set(current);
 
-        next.delete(documentId)
+      next.delete(documentId);
 
-        return next
-      },
-    )
+      return next;
+    });
 
-    onArchived(documentId)
+    onArchived(documentId);
   }
 
   async function handleBulkDownload() {
-    if (
-      selectedDocuments.length === 0
-    ) {
-      return
+    if (selectedDocuments.length === 0) {
+      return;
     }
 
-    setBulkAction("download")
-    clearBulkFeedback()
+    setBulkAction("download");
+    clearBulkFeedback();
 
-    const failures:
-      BulkActionFailure[] = []
+    const failures: BulkActionFailure[] = [];
 
-    let downloadedCount = 0
+    let downloadedCount = 0;
 
-    for (
-      const document
-      of selectedDocuments
-    ) {
+    for (const document of selectedDocuments) {
       try {
-        const url =
-          await createDocumentDownloadUrl(
-            document,
-          )
+        const url = await createDocumentDownloadUrl(document);
 
-        triggerDownload(
-          url,
-          document.originalFileName,
-        )
+        triggerDownload(url, document.originalFileName);
 
-        downloadedCount += 1
+        downloadedCount += 1;
 
-        await new Promise<void>(
-          (resolve) => {
-            window.setTimeout(
-              resolve,
-              250,
-            )
-          },
-        )
+        await new Promise<void>((resolve) => {
+          window.setTimeout(resolve, 250);
+        });
       } catch (error) {
         failures.push({
-          documentName:
-            document.originalFileName,
-          message:
-            error instanceof Error
-              ? error.message
-              : "Download failed.",
-        })
+          documentName: document.originalFileName,
+          message: error instanceof Error ? error.message : "Download failed.",
+        });
       }
     }
 
-    setBulkFailures(failures)
+    setBulkFailures(failures);
 
     if (failures.length === 0) {
       setBulkMessage(
         `${downloadedCount} ${
-          downloadedCount === 1
-            ? "document was"
-            : "documents were"
+          downloadedCount === 1 ? "document was" : "documents were"
         } prepared for download.`,
-      )
+      );
     } else {
       setBulkMessage(
         `${downloadedCount} of ${selectedDocuments.length} documents were prepared for download.`,
-      )
+      );
     }
 
-    setBulkAction(null)
+    setBulkAction(null);
   }
 
   async function handleBulkArchive() {
-    if (
-      selectedDocuments.length === 0
-    ) {
-      return
+    if (selectedDocuments.length === 0) {
+      return;
     }
 
-    const confirmed =
-      window.confirm(
-        `Archive ${
-          selectedDocuments.length
-        } selected ${
-          selectedDocuments.length === 1
-            ? "document"
-            : "documents"
-        }?`,
-      )
+    const confirmed = window.confirm(
+      `Archive ${selectedDocuments.length} selected ${
+        selectedDocuments.length === 1 ? "document" : "documents"
+      }?`,
+    );
 
     if (!confirmed) {
-      return
+      return;
     }
 
-    setBulkAction("archive")
-    clearBulkFeedback()
+    setBulkAction("archive");
+    clearBulkFeedback();
 
-    const failures:
-      BulkActionFailure[] = []
+    const failures: BulkActionFailure[] = [];
 
-    const archivedIds:
-      string[] = []
+    const archivedIds: string[] = [];
 
-    for (
-      const document
-      of selectedDocuments
-    ) {
+    for (const document of selectedDocuments) {
       try {
-        await archiveClientDocument(
-          document.id,
-        )
+        await archiveClientDocument(document.id);
 
-        archivedIds.push(
-          document.id,
-        )
+        archivedIds.push(document.id);
 
-        onArchived(document.id)
+        onArchived(document.id);
       } catch (error) {
         failures.push({
-          documentName:
-            document.originalFileName,
-          message:
-            error instanceof Error
-              ? error.message
-              : "Archive failed.",
-        })
+          documentName: document.originalFileName,
+          message: error instanceof Error ? error.message : "Archive failed.",
+        });
       }
     }
 
-    if (
-      previewDocumentId &&
-      archivedIds.includes(
-        previewDocumentId,
-      )
-    ) {
-      setPreviewDocumentId(null)
+    if (previewDocumentId && archivedIds.includes(previewDocumentId)) {
+      setPreviewDocumentId(null);
     }
 
-    setSelectedDocumentIds(
-      (current) => {
-        const next =
-          new Set(current)
+    setSelectedDocumentIds((current) => {
+      const next = new Set(current);
 
-        archivedIds.forEach(
-          (documentId) =>
-            next.delete(documentId),
-        )
+      archivedIds.forEach((documentId) => next.delete(documentId));
 
-        return next
-      },
-    )
+      return next;
+    });
 
-    setBulkFailures(failures)
+    setBulkFailures(failures);
 
     if (failures.length === 0) {
       setBulkMessage(
         `${archivedIds.length} ${
-          archivedIds.length === 1
-            ? "document was"
-            : "documents were"
+          archivedIds.length === 1 ? "document was" : "documents were"
         } archived.`,
-      )
+      );
     } else {
       setBulkMessage(
         `${archivedIds.length} of ${selectedDocuments.length} documents were archived.`,
-      )
+      );
     }
 
-    setBulkAction(null)
+    setBulkAction(null);
   }
 
   if (documents.length === 0) {
@@ -615,48 +401,33 @@ export function DocumentLibrary({
         </h3>
 
         <p className="mt-1 text-sm text-slate-600">
-          Use the upload area above
-          to add the first document.
+          Use the upload area above to add the first document.
         </p>
       </div>
-    )
+    );
   }
 
-  const selectionDisabled =
-    bulkAction !== null
+  const selectionDisabled = bulkAction !== null;
 
   return (
     <>
       <DocumentSearchBar
-        onFavoritesChange={
-          setShowFavoritesOnly
-        }
-        onSearchChange={
-          setSearchValue
-        }
-        resultCount={
-          filteredDocuments.length
-        }
+        onFavoritesChange={setShowFavoritesOnly}
+        onSearchChange={setSearchValue}
+        resultCount={filteredDocuments.length}
         searchValue={searchValue}
-        showFavoritesOnly={
-          showFavoritesOnly
-        }
+        showFavoritesOnly={showFavoritesOnly}
       />
 
-      {filteredDocuments.length >
-      0 ? (
+      {filteredDocuments.length > 0 ? (
         <div className="mt-4 rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex flex-wrap items-center gap-2">
               {allFilteredSelected ? (
                 <button
                   className="inline-flex items-center gap-2 rounded-lg border border-blue-300 bg-blue-50 px-3 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-100 disabled:opacity-50"
-                  disabled={
-                    selectionDisabled
-                  }
-                  onClick={
-                    handleClearFilteredSelection
-                  }
+                  disabled={selectionDisabled}
+                  onClick={handleClearFilteredSelection}
                   type="button"
                 >
                   <CheckSquare2 className="size-4" />
@@ -665,12 +436,8 @@ export function DocumentLibrary({
               ) : (
                 <button
                   className="inline-flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-50"
-                  disabled={
-                    selectionDisabled
-                  }
-                  onClick={
-                    handleSelectAllFiltered
-                  }
+                  disabled={selectionDisabled}
+                  onClick={handleSelectAllFiltered}
                   type="button"
                 >
                   <Square className="size-4" />
@@ -679,23 +446,14 @@ export function DocumentLibrary({
               )}
 
               <span className="text-sm font-semibold text-slate-700">
-                {
-                  selectedDocuments.length
-                }{" "}
-                selected
+                {selectedDocuments.length} selected
               </span>
 
-              {someFilteredSelected ||
-              selectedDocuments.length >
-                0 ? (
+              {someFilteredSelected || selectedDocuments.length > 0 ? (
                 <button
                   className="inline-flex items-center gap-1 rounded-lg px-2 py-2 text-sm font-semibold text-slate-500 hover:bg-slate-100 hover:text-slate-900 disabled:opacity-50"
-                  disabled={
-                    selectionDisabled
-                  }
-                  onClick={
-                    handleClearAllSelection
-                  }
+                  disabled={selectionDisabled}
+                  onClick={handleClearAllSelection}
                   type="button"
                 >
                   <X className="size-4" />
@@ -707,54 +465,30 @@ export function DocumentLibrary({
             <div className="flex flex-wrap gap-2">
               <button
                 className="inline-flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
-                disabled={
-                  selectedDocuments.length ===
-                    0 ||
-                  selectionDisabled
-                }
-                onClick={() =>
-                  void handleBulkDownload()
-                }
+                disabled={selectedDocuments.length === 0 || selectionDisabled}
+                onClick={() => void handleBulkDownload()}
                 type="button"
               >
-                {bulkAction ===
-                "download" ? (
+                {bulkAction === "download" ? (
                   <LoaderCircle className="size-4 animate-spin" />
                 ) : (
                   <Download className="size-4" />
                 )}
-
-                Download (
-                {
-                  selectedDocuments.length
-                }
-                )
+                Download ({selectedDocuments.length})
               </button>
 
               <button
                 className="inline-flex items-center gap-2 rounded-lg border border-red-300 px-3 py-2 text-sm font-semibold text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
-                disabled={
-                  selectedDocuments.length ===
-                    0 ||
-                  selectionDisabled
-                }
-                onClick={() =>
-                  void handleBulkArchive()
-                }
+                disabled={selectedDocuments.length === 0 || selectionDisabled}
+                onClick={() => void handleBulkArchive()}
                 type="button"
               >
-                {bulkAction ===
-                "archive" ? (
+                {bulkAction === "archive" ? (
                   <LoaderCircle className="size-4 animate-spin" />
                 ) : (
                   <Archive className="size-4" />
                 )}
-
-                Archive (
-                {
-                  selectedDocuments.length
-                }
-                )
+                Archive ({selectedDocuments.length})
               </button>
             </div>
           </div>
@@ -774,26 +508,17 @@ export function DocumentLibrary({
           </p>
 
           <ul className="mt-2 space-y-1 text-sm text-red-700">
-            {bulkFailures.map(
-              (failure) => (
-                <li
-                  key={`${failure.documentName}-${failure.message}`}
-                >
-                  <span className="font-semibold">
-                    {
-                      failure.documentName
-                    }
-                  </span>
-                  : {failure.message}
-                </li>
-              ),
-            )}
+            {bulkFailures.map((failure) => (
+              <li key={`${failure.documentName}-${failure.message}`}>
+                <span className="font-semibold">{failure.documentName}</span>:{" "}
+                {failure.message}
+              </li>
+            ))}
           </ul>
         </div>
       ) : null}
 
-      {filteredDocuments.length ===
-      0 ? (
+      {filteredDocuments.length === 0 ? (
         <div className="mt-4 rounded-xl border border-dashed border-slate-300 bg-slate-50 p-8 text-center">
           <SearchX className="mx-auto size-8 text-slate-400" />
 
@@ -802,53 +527,25 @@ export function DocumentLibrary({
           </h3>
 
           <p className="mt-1 text-sm text-slate-600">
-            Clear the search or
-            favorites filter to see
-            more documents.
+            Clear the search or favorites filter to see more documents.
           </p>
         </div>
       ) : (
         <div className="mt-4 space-y-4">
-          {groupedDocuments.map(
-            (group) => (
-              <DocumentCategoryGroup
-                category={
-                  group.category
-                }
-                documents={
-                  group.documents
-                }
-                isFavorite={
-                  isFavorite
-                }
-                isSelected={(
-                  documentId,
-                ) =>
-                  selectedDocumentIds.has(
-                    documentId,
-                  )
-                }
-                key={
-                  group.category
-                }
-                onArchived={
-                  handleArchived
-                }
-                onPreview={
-                  handlePreview
-                }
-                onSelectionChange={
-                  handleSelectionChange
-                }
-                onToggleFavorite={
-                  toggleFavorite
-                }
-                selectionDisabled={
-                  selectionDisabled
-                }
-              />
-            ),
-          )}
+          {groupedDocuments.map((group) => (
+            <DocumentCategoryGroup
+              category={group.category}
+              documents={group.documents}
+              isFavorite={isFavorite}
+              isSelected={(documentId) => selectedDocumentIds.has(documentId)}
+              key={group.category}
+              onArchived={handleArchived}
+              onPreview={handlePreview}
+              onSelectionChange={handleSelectionChange}
+              onToggleFavorite={toggleFavorite}
+              selectionDisabled={selectionDisabled}
+            />
+          ))}
         </div>
       )}
 
@@ -856,12 +553,10 @@ export function DocumentLibrary({
         document={previewDocument}
         hasNext={hasNext}
         hasPrevious={hasPrevious}
-        onClose={() =>
-          setPreviewDocumentId(null)
-        }
+        onClose={() => setPreviewDocumentId(null)}
         onNext={handleNext}
         onPrevious={handlePrevious}
       />
     </>
-  )
+  );
 }
