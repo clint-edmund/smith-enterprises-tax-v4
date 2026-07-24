@@ -11,6 +11,8 @@ import {
   validateDocumentFile,
 } from "@/features/documents/utils/document-utils";
 
+import { logDocumentActivity } from "@/features/documents/services/document-activity-service";
+
 interface DocumentDatabaseRow {
   id: string;
   client_id: string;
@@ -192,5 +194,22 @@ export async function toggleClientDocumentFavorite(
     );
   }
 
-  return mapDocumentRow(row as DocumentDatabaseRow);
+  const document = mapDocumentRow(row as DocumentDatabaseRow);
+
+  await logDocumentActivity({
+    documentId: document.id,
+    clientId: document.clientId,
+    action: document.isFavorite
+      ? "document_favorite_added"
+      : "document_favorite_removed",
+    details: document.isFavorite
+      ? `Marked "${document.originalFileName}" as a favorite.`
+      : `Removed "${document.originalFileName}" from favorites.`,
+    metadata: {
+      fileName: document.originalFileName,
+      isFavorite: document.isFavorite,
+    },
+  });
+
+  return document;
 }

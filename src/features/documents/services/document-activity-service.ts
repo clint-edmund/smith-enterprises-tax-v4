@@ -1,6 +1,9 @@
 import { supabase } from "@/services/supabase";
 
-import type { DocumentActivity } from "@/features/documents/types/document-activity.types";
+import type {
+  DocumentActivity,
+  LogDocumentActivityInput,
+} from "@/features/documents/types/document-activity.types";
 
 interface DocumentActivityDatabaseRow {
   id: string | number;
@@ -79,4 +82,37 @@ export async function listClientDocumentActivity(
   return ((data ?? []) as DocumentActivityDatabaseRow[]).map(
     mapDocumentActivity,
   );
+  
+}
+
+export async function logDocumentActivity(
+  input: LogDocumentActivityInput,
+): Promise<void> {
+  const {
+    documentId,
+    clientId,
+    performedBy = null,
+    action,
+    details = null,
+    metadata = {},
+  } = input
+
+  const {
+    error,
+  } = await supabase
+    .from("document_activity")
+    .insert({
+      document_id: documentId,
+      client_id: clientId,
+      performed_by: performedBy,
+      action,
+      details,
+      metadata,
+    })
+
+  if (error) {
+    throw new Error(
+      `Unable to log document activity: ${error.message}`,
+    )
+  }
 }

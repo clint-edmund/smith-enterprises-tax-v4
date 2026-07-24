@@ -3,8 +3,9 @@ import { useCallback } from "react";
 import { toggleClientDocumentFavorite } from "@/features/documents/services/document-service";
 
 interface UseDocumentFavoritesOptions {
-  isFavorite: (documentId: string) => boolean;
-  onFavoriteChanged: (documentId: string) => void;
+  isFavorite: (documentId: string) => boolean
+
+  onFavoriteChanged: (documentId: string) => void
 }
 
 export function useDocumentFavorites({

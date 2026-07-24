@@ -91,6 +91,7 @@ export type Database = {
           created_at: string
           description: string | null
           id: string
+          is_favorite: boolean
           mime_type: string
           original_file_name: string
           size_bytes: number
@@ -108,6 +109,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          is_favorite?: boolean
           mime_type: string
           original_file_name: string
           size_bytes: number
@@ -125,6 +127,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          is_favorite?: boolean
           mime_type?: string
           original_file_name?: string
           size_bytes?: number
@@ -284,6 +287,61 @@ export type Database = {
             columns: ["document_id"]
             isOneToOne: false
             referencedRelation: "client_documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      document_activity: {
+        Row: {
+          action: string
+          client_id: string
+          created_at: string
+          details: string | null
+          document_id: string
+          id: string
+          metadata: Json
+          performed_by: string | null
+        }
+        Insert: {
+          action: string
+          client_id: string
+          created_at?: string
+          details?: string | null
+          document_id: string
+          id?: string
+          metadata?: Json
+          performed_by?: string | null
+        }
+        Update: {
+          action?: string
+          client_id?: string
+          created_at?: string
+          details?: string | null
+          document_id?: string
+          id?: string
+          metadata?: Json
+          performed_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_activity_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "document_activity_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "client_documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "document_activity_performed_by_fkey"
+            columns: ["performed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -1264,6 +1322,7 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      current_actor_id: { Args: never; Returns: string }
       current_user_can_manage_records: { Args: never; Returns: boolean }
       current_user_is_active: { Args: never; Returns: boolean }
       current_user_is_admin: { Args: never; Returns: boolean }
@@ -1277,6 +1336,19 @@ export type Database = {
           old_record: Database["public"]["Tables"]["tax_returns"]["Row"]
         }
         Returns: string
+      }
+      get_client_document_activity: {
+        Args: { requested_client_id: string; requested_limit?: number }
+        Returns: {
+          action: string
+          actor_name: string
+          description: string
+          document_name: string
+          entity_id: string
+          entity_type: string
+          id: number
+          occurred_at: string
+        }[]
       }
       get_client_tax_returns: {
         Args: { requested_client_id: string }
@@ -1595,6 +1667,7 @@ export type Database = {
           created_at: string
           description: string
           id: string
+          is_favorite: boolean
           mime_type: string
           original_file_name: string
           size_bytes: number
@@ -1652,6 +1725,7 @@ export type Database = {
           created_at: string
           description: string | null
           id: string
+          is_favorite: boolean
           mime_type: string
           original_file_name: string
           size_bytes: number
@@ -1724,6 +1798,33 @@ export type Database = {
           tax_year: number
           updated_at: string
         }[]
+      }
+      toggle_client_document_favorite: {
+        Args: { requested_document_id: string }
+        Returns: {
+          archived_at: string | null
+          category: string
+          client_id: string
+          created_at: string
+          description: string | null
+          id: string
+          is_favorite: boolean
+          mime_type: string
+          original_file_name: string
+          size_bytes: number
+          status: string
+          storage_bucket: string
+          storage_path: string
+          tax_return_id: string | null
+          updated_at: string
+          uploaded_by: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "client_documents"
+          isOneToOne: false
+          isSetofReturn: true
+        }
       }
       update_client_record: {
         Args: {
