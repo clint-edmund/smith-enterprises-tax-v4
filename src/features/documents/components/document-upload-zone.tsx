@@ -199,12 +199,12 @@ export function DocumentUploadZone({
           {duplicateCount > 0 ? (
             <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
               <p className="font-semibold">
-                {duplicateCount} possible duplicate
+                {duplicateCount} exact duplicate
                 {duplicateCount === 1 ? "" : "s"} detected
               </p>
 
               <p className="mt-1 text-xs text-amber-800">
-                Review each warning before uploading.
+                The SHA-256 fingerprint matches another document. Review each warning before uploading.
               </p>
             </div>
           ) : null}
@@ -220,7 +220,8 @@ export function DocumentUploadZone({
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="flex min-w-0 items-start gap-3">
-                  {item.state === "checking" ||
+                  {item.state === "hashing" ||
+                  item.state === "checking" ||
                   item.state === "uploading" ? (
                     <LoaderCircle className="mt-0.5 size-5 shrink-0 animate-spin text-blue-700" />
                   ) : null}
@@ -274,7 +275,7 @@ export function DocumentUploadZone({
                         {item.duplicateDocuments.map(
                           (document) => (
                             <p key={document.id}>
-                              Existing:{" "}
+                              Exact match:{" "}
                               <span className="font-semibold">
                                 {document.originalFileName}
                               </span>
@@ -368,7 +369,7 @@ export function DocumentUploadZone({
 
           {duplicateCount > 0 ? (
             <p className="text-right text-xs text-amber-800">
-              Resolve all duplicate warnings before uploading.
+              Resolve all exact duplicate warnings before uploading.
             </p>
           ) : null}
         </div>

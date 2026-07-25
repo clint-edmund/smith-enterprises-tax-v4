@@ -1,17 +1,25 @@
 import { useCallback, useState } from "react"
 
 import {
-  findPotentialDocumentDuplicates,
+  findExactDocumentDuplicates,
   uploadClientDocument,
   type DocumentDuplicateCandidate,
+  type ExactDocumentDuplicate,
 } from "@/features/documents/services/document-service"
 import type {
   ClientDocument,
   DocumentCategory,
 } from "@/features/documents/types/document.types"
-import { validateDocumentFile } from "@/features/documents/utils/document-utils"
+import {
+  calculateDocumentSha256,
+  SHA_256_ALGORITHM,
+} from "@/features/documents/utils/document-hash"
+import {
+  validateDocumentFile,
+} from "@/features/documents/utils/document-utils"
 
 export type DocumentUploadState =
+  | "hashing"
   | "checking"
   | "queued"
   | "duplicate"
@@ -23,9 +31,10 @@ export type DocumentUploadState =
 export interface DocumentUploadItem {
   id: string
   file: File
+  fileHash: string | null
   state: DocumentUploadState
   errorMessage: string | null
-  duplicateDocuments: ClientDocument[]
+  duplicateDocuments: ExactDocumentDuplicate[]
 }
 
 interface UseDocumentUploadOptions {
@@ -36,17 +45,6 @@ interface UseDocumentUploadOptions {
   onUploaded?: (document: ClientDocument) => void
 }
 
-function createFileSignature(
-  file: File,
-  category: DocumentCategory,
-): string {
-  return [
-    file.name.trim().toLocaleLowerCase(),
-    file.size,
-    category,
-  ].join("::")
-}
-
 export function useDocumentUpload({
   clientId,
   taxReturnId = null,
@@ -54,172 +52,244 @@ export function useDocumentUpload({
   description,
   onUploaded,
 }: UseDocumentUploadOptions) {
-  const [items, setItems] = useState<DocumentUploadItem[]>([])
-  const [isUploading, setIsUploading] = useState(false)
-  const [isCheckingDuplicates, setIsCheckingDuplicates] = useState(false)
+  const [items, setItems] =
+    useState<DocumentUploadItem[]>([])
+  const [isUploading, setIsUploading] =
+    useState(false)
+  const [
+    isCheckingDuplicates,
+    setIsCheckingDuplicates,
+  ] = useState(false)
 
-  const addFiles = useCallback(async (files: File[]) => {
-    if (files.length === 0) {
-      return
-    }
-
-    const nextItems = files.map<DocumentUploadItem>((file) => {
-      const validation = validateDocumentFile(file)
-
-      return {
-        id: crypto.randomUUID(),
-        file,
-        state: validation.isValid ? "checking" : "error",
-        errorMessage: validation.errorMessage,
-        duplicateDocuments: [],
+  const addFiles = useCallback(
+    async (files: File[]) => {
+      if (files.length === 0) {
+        return
       }
-    })
 
-    setItems((current) => [...current, ...nextItems])
-
-    const validItems = nextItems.filter(
-      (item) => item.state === "checking",
-    )
-
-    if (validItems.length === 0) {
-      return
-    }
-
-    setIsCheckingDuplicates(true)
-
-    try {
-      const candidates: DocumentDuplicateCandidate[] =
-        validItems.map((item) => ({
-          id: item.id,
-          fileName: item.file.name,
-          sizeBytes: item.file.size,
-          category,
-        }))
-
-      const matches = await findPotentialDocumentDuplicates(
-        clientId,
-        taxReturnId,
-        candidates,
-      )
-
-      const matchesByCandidate = new Map(
-        matches.map((match) => [
-          match.candidateId,
-          match.documents,
-        ]),
-      )
-
-      setItems((current) => {
-        const existingSignatures = new Set(
-          current
-            .filter(
-              (item) =>
-                !validItems.some(
-                  (validItem) => validItem.id === item.id,
-                ) &&
-                item.state !== "error" &&
-                item.state !== "skipped",
-            )
-            .map((item) => createFileSignature(item.file, category)),
-        )
-
-        return current.map((item) => {
-          const validItem = validItems.find(
-            (candidate) => candidate.id === item.id,
-          )
-
-          if (!validItem) {
-            return item
-          }
-
-          const databaseMatches =
-            matchesByCandidate.get(item.id) ?? []
-          const signature = createFileSignature(
-            item.file,
-            category,
-          )
-          const duplicateInQueue =
-            existingSignatures.has(signature)
-
-          existingSignatures.add(signature)
-
-          if (
-            databaseMatches.length > 0 ||
-            duplicateInQueue
-          ) {
-            return {
-              ...item,
-              state: "duplicate",
-              errorMessage: duplicateInQueue
-                ? "Another matching file is already in this upload queue."
-                : "A matching document already exists for this client.",
-              duplicateDocuments: databaseMatches,
-            }
-          }
+      const nextItems = files.map<DocumentUploadItem>(
+        (file) => {
+          const validation =
+            validateDocumentFile(file)
 
           return {
-            ...item,
-            state: "queued",
-            errorMessage: null,
+            id: crypto.randomUUID(),
+            file,
+            fileHash: null,
+            state: validation.isValid
+              ? "hashing"
+              : "error",
+            errorMessage:
+              validation.errorMessage,
             duplicateDocuments: [],
           }
+        },
+      )
+
+      setItems((current) => [
+        ...current,
+        ...nextItems,
+      ])
+
+      const validItems = nextItems.filter(
+        (item) => item.state === "hashing",
+      )
+
+      if (validItems.length === 0) {
+        return
+      }
+
+      setIsCheckingDuplicates(true)
+
+      try {
+        const hashedItems = await Promise.all(
+          validItems.map(async (item) => ({
+            ...item,
+            fileHash:
+              await calculateDocumentSha256(
+                item.file,
+              ),
+          })),
+        )
+
+        setItems((current) =>
+          current.map((item) => {
+            const hashedItem =
+              hashedItems.find(
+                (candidate) =>
+                  candidate.id === item.id,
+              )
+
+            return hashedItem
+              ? {
+                  ...item,
+                  fileHash:
+                    hashedItem.fileHash,
+                  state: "checking",
+                }
+              : item
+          }),
+        )
+
+        const candidates:
+          DocumentDuplicateCandidate[] =
+          hashedItems.map((item) => ({
+            id: item.id,
+            fileHash: item.fileHash,
+          }))
+
+        const matches =
+          await findExactDocumentDuplicates(
+            clientId,
+            taxReturnId,
+            candidates,
+          )
+
+        const matchesByCandidate = new Map(
+          matches.map((match) => [
+            match.candidateId,
+            match.documents,
+          ]),
+        )
+
+        setItems((current) => {
+          const existingHashes = new Set(
+            current
+              .filter(
+                (item) =>
+                  !hashedItems.some(
+                    (hashedItem) =>
+                      hashedItem.id ===
+                      item.id,
+                  ) &&
+                  item.fileHash !== null &&
+                  item.state !== "error" &&
+                  item.state !== "skipped",
+              )
+              .map((item) => item.fileHash),
+          )
+
+          return current.map((item) => {
+            const hashedItem =
+              hashedItems.find(
+                (candidate) =>
+                  candidate.id === item.id,
+              )
+
+            if (!hashedItem) {
+              return item
+            }
+
+            const databaseMatches =
+              matchesByCandidate.get(
+                item.id,
+              ) ?? []
+            const duplicateInQueue =
+              existingHashes.has(
+                hashedItem.fileHash,
+              )
+
+            existingHashes.add(
+              hashedItem.fileHash,
+            )
+
+            if (
+              databaseMatches.length > 0 ||
+              duplicateInQueue
+            ) {
+              return {
+                ...item,
+                fileHash:
+                  hashedItem.fileHash,
+                state: "duplicate",
+                errorMessage:
+                  duplicateInQueue
+                    ? "An exact copy is already in this upload queue."
+                    : "An exact copy of this document already exists for this client.",
+                duplicateDocuments:
+                  databaseMatches,
+              }
+            }
+
+            return {
+              ...item,
+              fileHash:
+                hashedItem.fileHash,
+              state: "queued",
+              errorMessage: null,
+              duplicateDocuments: [],
+            }
+          })
         })
-      })
-    } catch (error) {
+      } catch (error) {
+        setItems((current) =>
+          current.map((item) =>
+            validItems.some(
+              (candidate) =>
+                candidate.id === item.id,
+            )
+              ? {
+                  ...item,
+                  state: "error",
+                  errorMessage:
+                    error instanceof Error
+                      ? error.message
+                      : "The document fingerprint could not be created.",
+                }
+              : item,
+          ),
+        )
+      } finally {
+        setIsCheckingDuplicates(false)
+      }
+    },
+    [clientId, taxReturnId],
+  )
+
+  const removeItem = useCallback(
+    (itemId: string) => {
+      setItems((current) =>
+        current.filter(
+          (item) => item.id !== itemId,
+        ),
+      )
+    },
+    [],
+  )
+
+  const keepDuplicate = useCallback(
+    (itemId: string) => {
       setItems((current) =>
         current.map((item) =>
-          validItems.some(
-            (candidate) => candidate.id === item.id,
-          )
+          item.id === itemId
             ? {
                 ...item,
-                state: "error",
-                errorMessage:
-                  error instanceof Error
-                    ? `Duplicate check failed: ${error.message}`
-                    : "Duplicate check failed.",
+                state: "queued",
+                errorMessage: null,
               }
             : item,
         ),
       )
-    } finally {
-      setIsCheckingDuplicates(false)
-    }
-  }, [category, clientId, taxReturnId])
+    },
+    [],
+  )
 
-  const removeItem = useCallback((itemId: string) => {
-    setItems((current) =>
-      current.filter((item) => item.id !== itemId),
-    )
-  }, [])
-
-  const keepDuplicate = useCallback((itemId: string) => {
-    setItems((current) =>
-      current.map((item) =>
-        item.id === itemId
-          ? {
-              ...item,
-              state: "queued",
-              errorMessage: null,
-            }
-          : item,
-      ),
-    )
-  }, [])
-
-  const skipDuplicate = useCallback((itemId: string) => {
-    setItems((current) =>
-      current.map((item) =>
-        item.id === itemId
-          ? {
-              ...item,
-              state: "skipped",
-              errorMessage: null,
-            }
-          : item,
-      ),
-    )
-  }, [])
+  const skipDuplicate = useCallback(
+    (itemId: string) => {
+      setItems((current) =>
+        current.map((item) =>
+          item.id === itemId
+            ? {
+                ...item,
+                state: "skipped",
+                errorMessage: null,
+              }
+            : item,
+        ),
+      )
+    },
+    [],
+  )
 
   const clearCompleted = useCallback(() => {
     setItems((current) =>
@@ -233,7 +303,9 @@ export function useDocumentUpload({
 
   const uploadQueued = useCallback(async () => {
     const queuedItems = items.filter(
-      (item) => item.state === "queued",
+      (item) =>
+        item.state === "queued" &&
+        item.fileHash !== null,
     )
 
     if (queuedItems.length === 0) {
@@ -257,13 +329,17 @@ export function useDocumentUpload({
         )
 
         try {
-          const document = await uploadClientDocument({
-            clientId,
-            taxReturnId,
-            category,
-            description,
-            file: item.file,
-          })
+          const document =
+            await uploadClientDocument({
+              clientId,
+              taxReturnId,
+              category,
+              description,
+              file: item.file,
+              fileHash: item.fileHash ?? undefined,
+              hashAlgorithm:
+                SHA_256_ALGORITHM,
+            })
 
           setItems((current) =>
             current.map((candidate) =>

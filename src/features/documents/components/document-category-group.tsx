@@ -36,6 +36,9 @@ interface DocumentCategoryGroupProps {
     documentId: string,
     selected: boolean,
   ) => void
+  onShowVersions: (
+    document: ClientDocument,
+  ) => void
   onToggleFavorite: (
     documentId: string,
   ) => void
@@ -50,6 +53,7 @@ export function DocumentCategoryGroup({
   onArchived,
   onPreview,
   onSelectionChange,
+  onShowVersions,
   onToggleFavorite,
 }: DocumentCategoryGroupProps) {
   const [
@@ -118,6 +122,9 @@ export function DocumentCategoryGroup({
                 onPreview={onPreview}
                 onSelectionChange={
                   onSelectionChange
+                }
+                onShowVersions={
+                  onShowVersions
                 }
                 onToggleFavorite={
                   onToggleFavorite

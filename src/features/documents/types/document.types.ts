@@ -80,6 +80,8 @@ export interface ClientDocument {
   storagePath: string;
   mimeType: string;
   sizeBytes: number;
+  fileHash: string | null;
+  hashAlgorithm: string;
   description: string | null;
   uploadedBy: string;
   uploadedByName: string | null;
@@ -87,6 +89,11 @@ export interface ClientDocument {
   updatedAt: string;
   archivedAt: string | null;
   isFavorite: boolean;
+  versionGroupId: string;
+  versionNumber: number;
+  isCurrentVersion: boolean;
+  previousVersionId: string | null;
+  versionNotes: string | null;
 }
 
 export type ClientDocumentListItem = ClientDocument;
@@ -97,6 +104,16 @@ export interface UploadDocumentRequest {
   category: DocumentCategory;
   description?: string | null;
   file: File;
+  fileHash?: string;
+  hashAlgorithm?: string;
+}
+
+export interface UploadDocumentVersionRequest {
+  document: ClientDocument;
+  file: File;
+  versionNotes?: string | null;
+  fileHash?: string;
+  hashAlgorithm?: string;
 }
 
 /**

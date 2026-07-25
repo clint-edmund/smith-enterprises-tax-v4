@@ -39,6 +39,8 @@ function isDocumentAccessAction(value: string): value is DocumentAccessAction {
 export function mapDocumentCategory(
   row: DocumentCategoryRow,
 ): DocumentCategoryRecord {
+
+
   return {
     id: row.id,
     code: row.code as DocumentCategory,
@@ -51,10 +53,20 @@ export function mapDocumentCategory(
   };
 }
 
+type VersionedClientDocumentRow = ClientDocumentRow & {
+  version_group_id?: string | null;
+  version_number?: number | null;
+  is_current_version?: boolean | null;
+  previous_version_id?: string | null;
+  version_notes?: string | null;
+};
+
 export function mapClientDocument(row: ClientDocumentRow): ClientDocument {
   if (!isDocumentStatus(row.status)) {
     throw new Error(`Unsupported document status: ${row.status}`);
   }
+
+  const versionedRow = row as VersionedClientDocumentRow;
 
   return {
     id: row.id,
@@ -67,6 +79,8 @@ export function mapClientDocument(row: ClientDocumentRow): ClientDocument {
     storagePath: row.storage_path,
     mimeType: row.mime_type,
     sizeBytes: Number(row.size_bytes),
+    fileHash: row.file_hash ?? null,
+    hashAlgorithm: row.hash_algorithm ?? "SHA-256",
     description: row.description,
     uploadedBy: row.uploaded_by,
     uploadedByName: row.uploaded_by_name ?? null,
@@ -74,6 +88,11 @@ export function mapClientDocument(row: ClientDocumentRow): ClientDocument {
     updatedAt: row.updated_at,
     archivedAt: row.archived_at ?? null,
     isFavorite: row.is_favorite ?? false,
+    versionGroupId: versionedRow.version_group_id ?? row.id,
+    versionNumber: Number(versionedRow.version_number ?? 1),
+    isCurrentVersion: versionedRow.is_current_version ?? true,
+    previousVersionId: versionedRow.previous_version_id ?? null,
+    versionNotes: versionedRow.version_notes ?? null,
   };
 }
 

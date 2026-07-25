@@ -3,6 +3,7 @@ import {
   Download,
   Eye,
   FileCheck2,
+  History,
   LoaderCircle,
   Star,
 } from "lucide-react"
@@ -36,6 +37,9 @@ interface DocumentCardProps {
     documentId: string,
     selected: boolean,
   ) => void
+  onShowVersions: (
+    document: ClientDocument,
+  ) => void
   onToggleFavorite: (
     documentId: string,
   ) => void
@@ -49,6 +53,7 @@ export function DocumentCard({
   onArchived,
   onPreview,
   onSelectionChange,
+  onShowVersions,
   onToggleFavorite,
 }: DocumentCardProps) {
   const [
@@ -209,6 +214,16 @@ export function DocumentCard({
           )}
         </span>
 
+        <span className="rounded-full bg-violet-50 px-2.5 py-1 text-xs font-semibold text-violet-700">
+          Version {document.versionNumber}
+        </span>
+
+        {document.isCurrentVersion ? (
+          <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
+            Current version
+          </span>
+        ) : null}
+
         {canPreviewDocument(
           document,
         ) ? (
@@ -251,6 +266,18 @@ export function DocumentCard({
         >
           <Eye className="size-4" />
           Preview
+        </button>
+
+        <button
+          className="inline-flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+          disabled={action !== null}
+          onClick={() =>
+            onShowVersions(document)
+          }
+          type="button"
+        >
+          <History className="size-4" />
+          Versions
         </button>
 
         <button

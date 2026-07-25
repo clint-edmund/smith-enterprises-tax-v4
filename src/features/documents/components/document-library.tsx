@@ -12,6 +12,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import { DocumentCategoryGroup } from "@/features/documents/components/document-category-group";
 import { DocumentPreviewModal } from "@/features/documents/components/document-preview-modal";
+import { DocumentVersionHistoryModal } from "@/features/documents/components/document-version-history-modal";
 import { DocumentSearchBar } from "@/features/documents/components/document-search-bar";
 import { useDocumentFavorites } from "@/features/documents/hooks/use-document-favorites";
 import {
@@ -33,6 +34,8 @@ interface DocumentLibraryProps {
   onFavoriteChanged: (documentId: string) => void;
 
   onActivityLogged?: () => void;
+
+  onVersionChanged: () => void | Promise<void>;
 }
 
 type BulkAction = "download" | "archive" | null;
@@ -76,6 +79,7 @@ export function DocumentLibrary({
   onArchived,
   onFavoriteChanged,
   onActivityLogged,
+  onVersionChanged,
 }: DocumentLibraryProps) {
   const [searchValue, setSearchValue] = useState("");
 
@@ -84,6 +88,9 @@ export function DocumentLibrary({
   const [previewDocumentId, setPreviewDocumentId] = useState<string | null>(
     null,
   );
+
+  const [versionDocument, setVersionDocument] =
+    useState<ClientDocument | null>(null);
 
   const [selectedDocumentIds, setSelectedDocumentIds] = useState<Set<string>>(
     () => new Set(),
@@ -545,12 +552,19 @@ export function DocumentLibrary({
               onArchived={handleArchived}
               onPreview={handlePreview}
               onSelectionChange={handleSelectionChange}
+              onShowVersions={setVersionDocument}
               onToggleFavorite={toggleFavorite}
               selectionDisabled={selectionDisabled}
             />
           ))}
         </div>
       )}
+
+      <DocumentVersionHistoryModal
+        document={versionDocument}
+        onClose={() => setVersionDocument(null)}
+        onVersionChanged={onVersionChanged}
+      />
 
       <DocumentPreviewModal
         document={previewDocument}

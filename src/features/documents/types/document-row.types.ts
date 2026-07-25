@@ -20,6 +20,8 @@ export interface ClientDocumentRow {
   storage_path: string;
   mime_type: string;
   size_bytes: number;
+  file_hash: string | null
+  hash_algorithm: string | null
   description: string | null;
   uploaded_by: string;
   uploaded_by_name: string | null;
