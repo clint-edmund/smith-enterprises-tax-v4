@@ -344,6 +344,9 @@ export function DocumentsPage() {
                 onDocumentsChanged={() => {
                   void loadMetrics();
                 }}
+                onActivityChanged={() => {
+                  void refreshActivity();
+                }}
               />
             </div>
 

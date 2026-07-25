@@ -1,13 +1,10 @@
 import { FolderLock, RefreshCw } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
-import { DocumentActivityTimeline } from "@/features/documents/components/document-activity-timeline";
 import { DocumentLibrary } from "@/features/documents/components/document-library";
 import { DocumentUploadZone } from "@/features/documents/components/document-upload-zone";
 import { RequiredDocumentsPanel } from "@/features/documents/components/required-documents-panel";
-import { listClientDocumentActivity } from "@/features/documents/services/document-activity-service";
 import { listClientDocuments } from "@/features/documents/services/document-service";
-import type { DocumentActivity } from "@/features/documents/types/document-activity.types";
 import type { ClientDocument } from "@/features/documents/types/document.types";
 
 interface DocumentWorkspaceProps {
@@ -15,6 +12,7 @@ interface DocumentWorkspaceProps {
   taxReturnId?: string | null;
   title?: string;
   onDocumentsChanged?: () => void;
+  onActivityChanged?: () => void;
 }
 
 export function DocumentWorkspace({
@@ -22,16 +20,11 @@ export function DocumentWorkspace({
   taxReturnId = null,
   title = "Documents",
   onDocumentsChanged,
+  onActivityChanged,
 }: DocumentWorkspaceProps) {
   const [documents, setDocuments] = useState<ClientDocument[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
-  const [activities, setActivities] = useState<DocumentActivity[]>([]);
-  const [isActivityLoading, setIsActivityLoading] = useState(true);
-  const [isActivityRefreshing, setIsActivityRefreshing] = useState(false);
-  const [activityErrorMessage, setActivityErrorMessage] =
-    useState<string | null>(null);
 
   const loadDocuments = useCallback(async () => {
     setIsLoading(true);
@@ -50,38 +43,9 @@ export function DocumentWorkspace({
     }
   }, [clientId, taxReturnId]);
 
-  const loadActivity = useCallback(
-    async (refresh = false) => {
-      if (refresh) {
-        setIsActivityRefreshing(true);
-      } else {
-        setIsActivityLoading(true);
-      }
-
-      setActivityErrorMessage(null);
-
-      try {
-        const results = await listClientDocumentActivity(clientId, 15);
-
-        setActivities(results);
-      } catch (error) {
-        setActivityErrorMessage(
-          error instanceof Error
-            ? error.message
-            : "Unable to load activity.",
-        );
-      } finally {
-        setIsActivityLoading(false);
-        setIsActivityRefreshing(false);
-      }
-    },
-    [clientId],
-  );
-
   useEffect(() => {
     void loadDocuments();
-    void loadActivity();
-  }, [loadActivity, loadDocuments]);
+  }, [loadDocuments]);
 
   function handleUploaded(document: ClientDocument) {
     setDocuments((current) => [
@@ -90,7 +54,7 @@ export function DocumentWorkspace({
     ]);
 
     onDocumentsChanged?.();
-    void loadActivity(true);
+    onActivityChanged?.();
   }
 
   function handleArchived(documentId: string) {
@@ -99,7 +63,7 @@ export function DocumentWorkspace({
     );
 
     onDocumentsChanged?.();
-    void loadActivity(true);
+    onActivityChanged?.();
   }
 
   function handleFavoriteChanged(documentId: string) {
@@ -115,12 +79,12 @@ export function DocumentWorkspace({
     );
 
     onDocumentsChanged?.();
-    void loadActivity(true);
+    onActivityChanged?.();
   }
 
   function handleRefresh() {
     void loadDocuments();
-    void loadActivity(true);
+    onActivityChanged?.();
   }
 
   return (
@@ -143,13 +107,13 @@ export function DocumentWorkspace({
 
         <button
           className="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-60"
-          disabled={isLoading || isActivityRefreshing}
+          disabled={isLoading}
           onClick={handleRefresh}
           type="button"
         >
           <RefreshCw
             className={`size-4 ${
-              isLoading || isActivityRefreshing ? "animate-spin" : ""
+              isLoading ? "animate-spin" : ""
             }`}
           />
           Refresh
@@ -189,21 +153,13 @@ export function DocumentWorkspace({
         <div className="mt-5">
           <DocumentLibrary
             documents={documents}
+            onActivityLogged={onActivityChanged}
             onArchived={handleArchived}
             onFavoriteChanged={handleFavoriteChanged}
           />
         </div>
       ) : null}
 
-      <div className="mt-6">
-        <DocumentActivityTimeline
-          activities={activities}
-          errorMessage={activityErrorMessage}
-          isLoading={isActivityLoading}
-          isRefreshing={isActivityRefreshing}
-          onRefresh={() => void loadActivity(true)}
-        />
-      </div>
     </section>
   );
 }

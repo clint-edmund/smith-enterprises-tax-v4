@@ -21,6 +21,9 @@ import {
 } from "react"
 
 import {
+  logDocumentActivity,
+} from "@/features/documents/services/document-activity-service"
+import {
   createDocumentDownloadUrl,
 } from "@/features/documents/services/document-service"
 import type {
@@ -38,6 +41,7 @@ interface DocumentPreviewModalProps {
   document: ClientDocument | null
   hasNext?: boolean
   hasPrevious?: boolean
+  onActivityLogged?: () => void
   onClose: () => void
   onNext?: () => void
   onPrevious?: () => void
@@ -50,6 +54,10 @@ type PdfViewMode =
 const MIN_IMAGE_ZOOM = 25
 const MAX_IMAGE_ZOOM = 300
 const IMAGE_ZOOM_STEP = 25
+const VIEW_LOG_DEDUPE_WINDOW_MS = 3000
+
+const recentDocumentViewLogs =
+  new Map<string, number>()
 
 function formatDocumentDate(
   value: string,
@@ -67,6 +75,7 @@ export function DocumentPreviewModal({
   document,
   hasNext = false,
   hasPrevious = false,
+  onActivityLogged,
   onClose,
   onNext,
   onPrevious,
@@ -121,7 +130,59 @@ export function DocumentPreviewModal({
 
         if (!isCancelled) {
           setSignedUrl(url)
-        }
+
+          const now = Date.now()
+
+          const lastLoggedAt =
+            recentDocumentViewLogs.get(
+              selectedDocument.id,
+            )
+
+          const wasRecentlyLogged =
+            lastLoggedAt !== undefined &&
+            now - lastLoggedAt <
+              VIEW_LOG_DEDUPE_WINDOW_MS
+
+          if (!wasRecentlyLogged) {
+            recentDocumentViewLogs.set(
+              selectedDocument.id,
+              now,
+            )
+
+            try {
+              await logDocumentActivity({
+                documentId: selectedDocument.id,
+                clientId: selectedDocument.clientId,
+                action: "document_viewed",
+                details: `Viewed "${selectedDocument.originalFileName}".`,
+                metadata: {
+                  fileName:
+                    selectedDocument.originalFileName,
+                  mimeType:
+                    selectedDocument.mimeType,
+                },
+              })
+              if (!isCancelled) {
+                onActivityLogged?.()
+              }
+            } catch (activityError) {
+              recentDocumentViewLogs.delete(
+                selectedDocument.id,
+              )
+
+              console.error(
+                "Document preview activity could not be logged.",
+                activityError,
+              )
+
+              alert(
+                activityError instanceof Error
+                  ? activityError.message
+                  : String(activityError),
+              )
+            }
+          }
+          }
       } catch (error) {
         if (!isCancelled) {
           setErrorMessage(
@@ -142,7 +203,11 @@ export function DocumentPreviewModal({
     return () => {
       isCancelled = true
     }
-  }, [document, resetViewer])
+  }, [
+    document,
+    onActivityLogged,
+    resetViewer,
+  ])
 
   useEffect(() => {
     if (!document) {

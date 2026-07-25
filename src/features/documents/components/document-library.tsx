@@ -31,6 +31,8 @@ interface DocumentLibraryProps {
   onArchived: (documentId: string) => void;
 
   onFavoriteChanged: (documentId: string) => void;
+
+  onActivityLogged?: () => void;
 }
 
 type BulkAction = "download" | "archive" | null;
@@ -73,6 +75,7 @@ export function DocumentLibrary({
   documents,
   onArchived,
   onFavoriteChanged,
+  onActivityLogged,
 }: DocumentLibraryProps) {
   const [searchValue, setSearchValue] = useState("");
 
@@ -553,6 +556,7 @@ export function DocumentLibrary({
         document={previewDocument}
         hasNext={hasNext}
         hasPrevious={hasPrevious}
+        onActivityLogged={onActivityLogged}
         onClose={() => setPreviewDocumentId(null)}
         onNext={handleNext}
         onPrevious={handlePrevious}

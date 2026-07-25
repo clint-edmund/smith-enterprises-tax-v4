@@ -23,17 +23,6 @@ export interface LogDocumentActivityInput {
   clientId: string
   performedBy?: string | null
   action: DocumentActivityAction
-  description?: string | null
-  metadata?: Record<
-    string,
-    string | number | boolean | null
-  >
-}
-export interface LogDocumentActivityInput {
-  documentId: string
-  clientId: string
-  performedBy?: string | null
-  action: DocumentActivityAction
   details?: string | null
   metadata?: Record<
     string,

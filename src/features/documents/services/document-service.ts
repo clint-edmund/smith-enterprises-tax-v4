@@ -97,6 +97,57 @@ export async function listClientDocuments(
   return ((data ?? []) as DocumentDatabaseRow[]).map(mapDocumentRow);
 }
 
+
+export interface DocumentDuplicateCandidate {
+  id: string;
+  fileName: string;
+  sizeBytes: number;
+  category: DocumentCategory;
+}
+
+export interface DocumentDuplicateMatch {
+  candidateId: string;
+  documents: ClientDocument[];
+}
+
+function normalizeDuplicateFileName(fileName: string): string {
+  return fileName.trim().toLocaleLowerCase();
+}
+
+export async function findPotentialDocumentDuplicates(
+  clientId: string,
+  taxReturnId: string | null,
+  candidates: DocumentDuplicateCandidate[],
+): Promise<DocumentDuplicateMatch[]> {
+  if (candidates.length === 0) {
+    return [];
+  }
+
+  const existingDocuments = await listClientDocuments(
+    clientId,
+    taxReturnId,
+  );
+
+  return candidates.map((candidate) => {
+    const normalizedCandidateName =
+      normalizeDuplicateFileName(candidate.fileName);
+
+    const documents = existingDocuments.filter((document) => {
+      return (
+        normalizeDuplicateFileName(document.originalFileName) ===
+          normalizedCandidateName &&
+        document.sizeBytes === candidate.sizeBytes &&
+        document.category === candidate.category
+      );
+    });
+
+    return {
+      candidateId: candidate.id,
+      documents,
+    };
+  });
+}
+
 export async function uploadClientDocument(
   request: UploadDocumentRequest,
 ): Promise<ClientDocument> {
@@ -148,7 +199,23 @@ export async function uploadClientDocument(
     );
   }
 
-  return mapDocumentRow(row as DocumentDatabaseRow);
+  const document =
+    mapDocumentRow(
+      row as DocumentDatabaseRow,
+    )
+
+  await logDocumentActivity({
+    documentId: document.id,
+    clientId: document.clientId,
+    action: "document_uploaded",
+    details: `Uploaded "${document.originalFileName}".`,
+    metadata: {
+      fileName: document.originalFileName,
+      category: document.category,
+    },
+  })
+
+  return document
 }
 
 export async function createDocumentDownloadUrl(
