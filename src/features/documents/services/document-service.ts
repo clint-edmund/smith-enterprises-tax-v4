@@ -2,10 +2,11 @@ import { logDocumentActivity } from "@/features/documents/services/document-acti
 import type {
   ClientDocument,
   DocumentCategory,
+  DocumentReviewStatus,
   DocumentStatus,
   UploadDocumentRequest,
   UploadDocumentVersionRequest,
-} from "@/features/documents/types/document.types" 
+} from "@/features/documents/types/document.types"
 import {
   calculateDocumentSha256,
   SHA_256_ALGORITHM,
@@ -42,6 +43,13 @@ interface DocumentDatabaseRow {
   is_current_version?: boolean | null
   previous_version_id?: string | null
   version_notes?: string | null
+  review_status?: DocumentReviewStatus | null
+  review_requested_by?: string | null
+  review_requested_at?: string | null
+  reviewed_by?: string | null
+  reviewed_by_name?: string | null
+  reviewed_at?: string | null
+  review_comments?: string | null
 }
 
 interface DocumentHashMatchRow {
@@ -60,7 +68,11 @@ type DocumentRpcName =
   | "toggle_client_document_favorite"
   | "create_document_version"
   | "list_document_versions"
-  | "restore_document_version" 
+  | "restore_document_version"
+  | "request_document_review"
+  | "approve_document"
+  | "request_document_changes"
+  | "reset_document_review" 
 
 type DocumentRpc = (
   functionName: DocumentRpcName,
@@ -102,6 +114,13 @@ function mapDocumentRow(
     isCurrentVersion: document.is_current_version ?? true,
     previousVersionId: document.previous_version_id ?? null,
     versionNotes: document.version_notes ?? null,
+    reviewStatus: document.review_status ?? "draft",
+    reviewRequestedBy: document.review_requested_by ?? null,
+    reviewRequestedAt: document.review_requested_at ?? null,
+    reviewedBy: document.reviewed_by ?? null,
+    reviewedByName: document.reviewed_by_name ?? null,
+    reviewedAt: document.reviewed_at ?? null,
+    reviewComments: document.review_comments ?? null,
   }
 }
 
@@ -505,6 +524,190 @@ export async function toggleClientDocumentFavorite(
     metadata: {
       fileName: document.originalFileName,
       isFavorite: document.isFavorite,
+    },
+  })
+
+  return document
+}
+export async function requestDocumentReview(
+  documentId: string,
+): Promise<ClientDocument> {
+  const { data, error } = await documentRpc(
+    "request_document_review",
+    {
+      p_document_id: documentId,
+    },
+  )
+
+  if (error) {
+    throw new Error(error.message)
+  }
+
+  const row = Array.isArray(data) ? data[0] : data
+
+  if (!row) {
+    throw new Error(
+      "The document was submitted for review, but the updated record was not returned.",
+    )
+  }
+
+  const document = mapDocumentRow(
+    row as DocumentDatabaseRow,
+  )
+
+  await logDocumentActivity({
+    documentId: document.id,
+    clientId: document.clientId,
+    action: "document_review_requested",
+    details:
+      `Submitted "${document.originalFileName}" for review.`,
+    metadata: {
+      reviewStatus: document.reviewStatus,
+      reviewRequestedAt: document.reviewRequestedAt,
+    },
+  })
+
+  return document
+}
+
+export async function approveDocument(
+  documentId: string,
+  reviewerName: string,
+  comments?: string | null,
+): Promise<ClientDocument> {
+  const { data, error } = await documentRpc(
+    "approve_document",
+    {
+      p_document_id: documentId,
+      p_reviewer_name: reviewerName.trim(),
+      p_comments: comments?.trim() || null,
+    },
+  )
+
+  if (error) {
+    throw new Error(error.message)
+  }
+
+  const row = Array.isArray(data) ? data[0] : data
+
+  if (!row) {
+    throw new Error(
+      "The document was approved, but the updated record was not returned.",
+    )
+  }
+
+  const document = mapDocumentRow(
+    row as DocumentDatabaseRow,
+  )
+
+  await logDocumentActivity({
+    documentId: document.id,
+    clientId: document.clientId,
+    action: "document_approved",
+    details:
+      `Approved "${document.originalFileName}".`,
+    metadata: {
+      reviewStatus: document.reviewStatus,
+      reviewedBy: document.reviewedBy,
+      reviewedByName: document.reviewedByName,
+      reviewedAt: document.reviewedAt,
+      reviewComments: document.reviewComments,
+    },
+  })
+
+  return document
+}
+
+export async function requestDocumentChanges(
+  documentId: string,
+  reviewerName: string,
+  comments: string,
+): Promise<ClientDocument> {
+  const normalizedComments = comments.trim()
+
+  if (!normalizedComments) {
+    throw new Error(
+      "Review comments are required when requesting changes.",
+    )
+  }
+
+  const { data, error } = await documentRpc(
+    "request_document_changes",
+    {
+      p_document_id: documentId,
+      p_reviewer_name: reviewerName.trim(),
+      p_comments: normalizedComments,
+    },
+  )
+
+  if (error) {
+    throw new Error(error.message)
+  }
+
+  const row = Array.isArray(data) ? data[0] : data
+
+  if (!row) {
+    throw new Error(
+      "Changes were requested, but the updated document record was not returned.",
+    )
+  }
+
+  const document = mapDocumentRow(
+    row as DocumentDatabaseRow,
+  )
+
+  await logDocumentActivity({
+    documentId: document.id,
+    clientId: document.clientId,
+    action: "document_changes_requested",
+    details:
+      `Requested changes for "${document.originalFileName}".`,
+    metadata: {
+      reviewStatus: document.reviewStatus,
+      reviewedBy: document.reviewedBy,
+      reviewedByName: document.reviewedByName,
+      reviewedAt: document.reviewedAt,
+      reviewComments: document.reviewComments,
+    },
+  })
+
+  return document
+}
+
+export async function resetDocumentReview(
+  documentId: string,
+): Promise<ClientDocument> {
+  const { data, error } = await documentRpc(
+    "reset_document_review",
+    {
+      p_document_id: documentId,
+    },
+  )
+
+  if (error) {
+    throw new Error(error.message)
+  }
+
+  const row = Array.isArray(data) ? data[0] : data
+
+  if (!row) {
+    throw new Error(
+      "The document review state was reset, but the updated record was not returned.",
+    )
+  }
+
+  const document = mapDocumentRow(
+    row as DocumentDatabaseRow,
+  )
+
+  await logDocumentActivity({
+    documentId: document.id,
+    clientId: document.clientId,
+    action: "document_review_reset",
+    details:
+      `Reset the review status for "${document.originalFileName}".`,
+    metadata: {
+      reviewStatus: document.reviewStatus,
     },
   })
 

@@ -35,6 +35,8 @@ interface DocumentLibraryProps {
 
   onActivityLogged?: () => void;
 
+  onReviewChanged: () => void | Promise<void>;
+
   onVersionChanged: () => void | Promise<void>;
 }
 
@@ -79,6 +81,7 @@ export function DocumentLibrary({
   onArchived,
   onFavoriteChanged,
   onActivityLogged,
+  onReviewChanged,
   onVersionChanged,
 }: DocumentLibraryProps) {
   const [searchValue, setSearchValue] = useState("");
@@ -551,6 +554,7 @@ export function DocumentLibrary({
               key={group.category}
               onArchived={handleArchived}
               onPreview={handlePreview}
+              onReviewChanged={onReviewChanged}
               onSelectionChange={handleSelectionChange}
               onShowVersions={setVersionDocument}
               onToggleFavorite={toggleFavorite}

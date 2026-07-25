@@ -59,6 +59,20 @@ type VersionedClientDocumentRow = ClientDocumentRow & {
   is_current_version?: boolean | null;
   previous_version_id?: string | null;
   version_notes?: string | null;
+
+  review_status?:
+    | "draft"
+    | "pending_review"
+    | "approved"
+    | "needs_changes"
+    | null;
+
+  review_requested_by?: string | null;
+  review_requested_at?: string | null;
+  reviewed_by?: string | null;
+  reviewed_by_name?: string | null;
+  reviewed_at?: string | null;
+  review_comments?: string | null;
 };
 
 export function mapClientDocument(row: ClientDocumentRow): ClientDocument {
@@ -93,6 +107,13 @@ export function mapClientDocument(row: ClientDocumentRow): ClientDocument {
     isCurrentVersion: versionedRow.is_current_version ?? true,
     previousVersionId: versionedRow.previous_version_id ?? null,
     versionNotes: versionedRow.version_notes ?? null,
+    reviewStatus: versionedRow.review_status ?? "draft",
+    reviewRequestedBy: versionedRow.review_requested_by ?? null,
+    reviewRequestedAt: versionedRow.review_requested_at ?? null,
+    reviewedBy: versionedRow.reviewed_by ?? null,
+    reviewedByName: versionedRow.reviewed_by_name ?? null,
+    reviewedAt: versionedRow.reviewed_at ?? null,
+    reviewComments: versionedRow.review_comments ?? null,
   };
 }
 

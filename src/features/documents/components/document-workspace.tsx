@@ -88,6 +88,12 @@ export function DocumentWorkspace({
     onActivityChanged?.();
   }
 
+  async function handleReviewChanged() {
+    await loadDocuments();
+    onDocumentsChanged?.();
+    onActivityChanged?.();
+  }
+
   function handleRefresh() {
     void loadDocuments();
     onActivityChanged?.();
@@ -162,6 +168,7 @@ export function DocumentWorkspace({
             onActivityLogged={onActivityChanged}
             onArchived={handleArchived}
             onFavoriteChanged={handleFavoriteChanged}
+            onReviewChanged={handleReviewChanged}
             onVersionChanged={handleVersionChanged}
           />
         </div>

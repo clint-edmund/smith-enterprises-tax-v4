@@ -58,6 +58,17 @@ export type DocumentStatus = (typeof documentStatuses)[number];
  * A category record returned from the
  * document_categories database table.
  */
+
+export const documentReviewStatuses = [
+  "draft",
+  "pending_review",
+  "approved",
+  "needs_changes",
+] as const
+
+export type DocumentReviewStatus =
+  (typeof documentReviewStatuses)[number]
+
 export interface DocumentCategoryRecord {
   id: string;
   code: DocumentCategory;
@@ -94,6 +105,13 @@ export interface ClientDocument {
   isCurrentVersion: boolean;
   previousVersionId: string | null;
   versionNotes: string | null;
+  reviewStatus: DocumentReviewStatus
+  reviewRequestedBy: string | null
+  reviewRequestedAt: string | null
+  reviewedBy: string | null
+  reviewedByName: string | null
+  reviewedAt: string | null
+  reviewComments: string | null
 }
 
 export type ClientDocumentListItem = ClientDocument;
