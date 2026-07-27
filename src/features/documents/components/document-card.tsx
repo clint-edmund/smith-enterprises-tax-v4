@@ -180,6 +180,10 @@ async function handleReviewerAssignment(
       document.reviewStatus === "needs_changes"
     )
 
+  const canAssignReviewer =
+    submitterRoles.has(currentRole) &&
+    document.reviewStatus === "pending_review"
+
   const canReview =
     reviewerRoles.has(currentRole) &&
     document.reviewStatus === "pending_review"
@@ -471,6 +475,28 @@ async function handleReviewerAssignment(
           </p>
         ) : null}
 
+        {document.reviewStatus === "pending_review" &&
+        document.assignedReviewerName ? (
+          <div className="mt-3 rounded-lg border border-indigo-200 bg-indigo-50 p-3">
+            <p className="text-xs font-bold uppercase tracking-wide text-indigo-700">
+              Assigned Reviewer
+            </p>
+
+            <p className="mt-1 text-sm font-semibold text-indigo-950">
+              {document.assignedReviewerName}
+            </p>
+
+            {document.reviewDueAt ? (
+              <p className="mt-1 text-xs text-indigo-700">
+                Due{" "}
+                {new Date(
+                  document.reviewDueAt,
+                ).toLocaleString()}
+              </p>
+            ) : null}
+          </div>
+        ) : null}
+
         {errorMessage ? (
           <p className="mt-3 rounded-lg bg-red-50 p-2 text-xs text-red-700">
             {errorMessage}
@@ -527,7 +553,10 @@ async function handleReviewerAssignment(
           </button>
         </div>
 
-        {canSubmitForReview || canReview || canResetReview ? (
+        {canSubmitForReview ||
+        canAssignReviewer ||
+        canReview ||
+        canResetReview ? (
           <div className="mt-3 border-t border-slate-200 pt-3">
             <p className="mb-2 text-xs font-bold uppercase tracking-wide text-slate-500">
               Review Actions
@@ -550,20 +579,26 @@ async function handleReviewerAssignment(
                 </button>
               ) : null}
 
+              {canAssignReviewer ? (
+                <button
+                  className="inline-flex items-center gap-2 rounded-lg border border-indigo-300 bg-indigo-50 px-3 py-2 text-sm font-semibold text-indigo-700 hover:bg-indigo-100 disabled:opacity-50"
+                  disabled={isBusy}
+                  onClick={() => {
+                    setReviewerAssignmentError(null)
+                    setIsReviewerDialogOpen(true)
+                  }}
+                  type="button"
+                >
+                  <UserRoundCheck className="size-4" />
+
+                  {document.assignedReviewerId
+                    ? "Change Reviewer"
+                    : "Assign Reviewer"}
+                </button>
+              ) : null}
+
               {canReview ? (
                 <>
-                  <button
-                    className="inline-flex items-center gap-2 rounded-lg border border-indigo-300 bg-indigo-50 px-3 py-2 text-sm font-semibold text-indigo-700 hover:bg-indigo-100 disabled:opacity-50"
-                    disabled={isBusy}
-                    onClick={() =>
-                      setIsReviewerDialogOpen(true)
-                    }
-                    type="button"
-                  >
-                    <UserRoundCheck className="size-4" />
-
-                    Assign Reviewer
-                  </button>
                   <button
                     className="inline-flex items-center gap-2 rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-700 hover:bg-emerald-100 disabled:opacity-50"
                     disabled={isBusy}
@@ -575,6 +610,7 @@ async function handleReviewerAssignment(
                     ) : (
                       <CheckCircle2 className="size-4" />
                     )}
+
                     Approve
                   </button>
 
@@ -646,12 +682,17 @@ async function handleReviewerAssignment(
               </button>
             </div>
 
-            <label className="mt-5 block">
+            <label
+              className="mt-5 block"
+              htmlFor="review-comments"
+            >
               <span className="text-sm font-semibold text-slate-800">
                 Reviewer comments
               </span>
 
               <textarea
+                id="review-comments"
+                name="reviewComments"
                 className="mt-2 min-h-32 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                 disabled={isBusy}
                 onChange={(event) =>
