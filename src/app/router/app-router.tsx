@@ -21,6 +21,7 @@ import { NotificationCenterPage, } from "@/features/notifications/pages/notifica
 import { PaymentsPage } from "@/features/payments/pages/payments-page"
 import { ReportsPage } from "@/features/reports/pages/reports-page"
 import { DocumentsPage } from "@/features/documents/pages/documents-page"
+import { ReviewQueuePage } from "@/features/documents/pages/review-queue-page"
 import { ReturnsPage } from "@/features/returns/pages/returns-page"
 import { SettingsPage } from "@/features/settings/pages/settings-page"
 import { ClientDetailsPage } from "@/features/clients/pages/client-details-page"
@@ -114,6 +115,10 @@ export const appRouter =
                 {
                   path: appConfig.routes.documents,
                   element: <DocumentsPage />,
+                },
+                {
+                  path: appConfig.routes.reviewQueue,
+                  element: <ReviewQueuePage />,
                 },
                 {
                   path: appConfig.routes.returnNew,

@@ -1329,11 +1329,7 @@ export type Database = {
         }
       }
       approve_document: {
-        Args: {
-          p_comments?: string
-          p_document_id: string
-          p_reviewer_name: string
-        }
+        Args: { p_comments?: string; p_document_id: string }
         Returns: {
           archived_at: string | null
           assigned_reviewer_id: string | null
@@ -1938,6 +1934,8 @@ export type Database = {
       list_client_documents: {
         Args: { requested_client_id: string; requested_tax_return_id?: string }
         Returns: {
+          assigned_reviewer_id: string
+          assigned_reviewer_name: string
           category: string
           client_id: string
           created_at: string
@@ -1950,6 +1948,14 @@ export type Database = {
           mime_type: string
           original_file_name: string
           previous_version_id: string
+          review_comments: string
+          review_due_at: string
+          review_requested_at: string
+          review_requested_by: string
+          review_status: string
+          reviewed_at: string
+          reviewed_by: string
+          reviewed_by_name: string
           size_bytes: number
           status: string
           storage_bucket: string
@@ -1999,6 +2005,32 @@ export type Database = {
           version_group_id: string
           version_notes: string
           version_number: number
+        }[]
+      }
+      list_my_assigned_document_reviews: {
+        Args: never
+        Returns: {
+          assigned_reviewer_id: string
+          assigned_reviewer_name: string
+          category: string
+          client_id: string
+          client_name: string
+          client_number: number
+          created_at: string
+          days_until_due: number
+          document_id: string
+          original_file_name: string
+          priority_code: string
+          return_type: string
+          review_due_at: string
+          review_requested_at: string
+          review_requested_by: string
+          review_requested_by_name: string
+          review_status: string
+          tax_return_id: string
+          tax_year: number
+          uploaded_by: string
+          uploaded_by_name: string
         }[]
       }
       list_my_document_notifications: {
@@ -2104,11 +2136,7 @@ export type Database = {
         }
       }
       request_document_changes: {
-        Args: {
-          p_comments: string
-          p_document_id: string
-          p_reviewer_name: string
-        }
+        Args: { p_comments: string; p_document_id: string }
         Returns: {
           archived_at: string | null
           assigned_reviewer_id: string | null
