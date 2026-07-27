@@ -69,6 +69,29 @@ export const documentReviewStatuses = [
 export type DocumentReviewStatus =
   (typeof documentReviewStatuses)[number]
 
+
+export const documentReviewerRoles = [
+  "administrator",
+  "manager",
+  "reviewer",
+] as const
+
+export type DocumentReviewerRole =
+  (typeof documentReviewerRoles)[number]
+
+export interface DocumentReviewer {
+  id: string
+  displayName: string
+  email: string
+  role: DocumentReviewerRole
+}
+
+export interface AssignDocumentReviewRequest {
+  documentId: string
+  reviewerId: string
+  reviewDueAt?: string | null
+}
+
 export interface DocumentCategoryRecord {
   id: string;
   code: DocumentCategory;
@@ -112,6 +135,9 @@ export interface ClientDocument {
   reviewedByName: string | null
   reviewedAt: string | null
   reviewComments: string | null
+  assignedReviewerId: string | null
+  assignedReviewerName: string | null
+  reviewDueAt: string | null
 }
 
 export type ClientDocumentListItem = ClientDocument;

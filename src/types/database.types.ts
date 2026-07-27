@@ -86,14 +86,28 @@ export type Database = {
       client_documents: {
         Row: {
           archived_at: string | null
+          assigned_reviewer_id: string | null
+          assigned_reviewer_name: string | null
           category: string
           client_id: string
           created_at: string
           description: string | null
+          file_hash: string | null
+          hash_algorithm: string
           id: string
+          is_current_version: boolean
           is_favorite: boolean
           mime_type: string
           original_file_name: string
+          previous_version_id: string | null
+          review_comments: string | null
+          review_due_at: string | null
+          review_requested_at: string | null
+          review_requested_by: string | null
+          review_status: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          reviewed_by_name: string | null
           size_bytes: number
           status: string
           storage_bucket: string
@@ -101,17 +115,34 @@ export type Database = {
           tax_return_id: string | null
           updated_at: string
           uploaded_by: string
+          version_group_id: string
+          version_notes: string | null
+          version_number: number
         }
         Insert: {
           archived_at?: string | null
+          assigned_reviewer_id?: string | null
+          assigned_reviewer_name?: string | null
           category?: string
           client_id: string
           created_at?: string
           description?: string | null
+          file_hash?: string | null
+          hash_algorithm?: string
           id?: string
+          is_current_version?: boolean
           is_favorite?: boolean
           mime_type: string
           original_file_name: string
+          previous_version_id?: string | null
+          review_comments?: string | null
+          review_due_at?: string | null
+          review_requested_at?: string | null
+          review_requested_by?: string | null
+          review_status?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          reviewed_by_name?: string | null
           size_bytes: number
           status?: string
           storage_bucket: string
@@ -119,17 +150,34 @@ export type Database = {
           tax_return_id?: string | null
           updated_at?: string
           uploaded_by: string
+          version_group_id: string
+          version_notes?: string | null
+          version_number?: number
         }
         Update: {
           archived_at?: string | null
+          assigned_reviewer_id?: string | null
+          assigned_reviewer_name?: string | null
           category?: string
           client_id?: string
           created_at?: string
           description?: string | null
+          file_hash?: string | null
+          hash_algorithm?: string
           id?: string
+          is_current_version?: boolean
           is_favorite?: boolean
           mime_type?: string
           original_file_name?: string
+          previous_version_id?: string | null
+          review_comments?: string | null
+          review_due_at?: string | null
+          review_requested_at?: string | null
+          review_requested_by?: string | null
+          review_status?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          reviewed_by_name?: string | null
           size_bytes?: number
           status?: string
           storage_bucket?: string
@@ -137,13 +185,30 @@ export type Database = {
           tax_return_id?: string | null
           updated_at?: string
           uploaded_by?: string
+          version_group_id?: string
+          version_notes?: string | null
+          version_number?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "client_documents_assigned_reviewer_id_fkey"
+            columns: ["assigned_reviewer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "client_documents_client_id_fkey"
             columns: ["client_id"]
             isOneToOne: false
             referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_documents_previous_version_id_fkey"
+            columns: ["previous_version_id"]
+            isOneToOne: false
+            referencedRelation: "client_documents"
             referencedColumns: ["id"]
           },
           {
@@ -158,6 +223,13 @@ export type Database = {
             columns: ["uploaded_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_documents_version_group_id_fkey"
+            columns: ["version_group_id"]
+            isOneToOne: false
+            referencedRelation: "client_documents"
             referencedColumns: ["id"]
           },
         ]
@@ -378,6 +450,90 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      document_notifications: {
+        Row: {
+          actor_user_id: string | null
+          archived_at: string | null
+          client_id: string | null
+          created_at: string
+          document_id: string | null
+          id: string
+          message: string
+          metadata: Json
+          notification_type: string
+          read_at: string | null
+          recipient_user_id: string
+          tax_return_id: string | null
+          title: string
+        }
+        Insert: {
+          actor_user_id?: string | null
+          archived_at?: string | null
+          client_id?: string | null
+          created_at?: string
+          document_id?: string | null
+          id?: string
+          message: string
+          metadata?: Json
+          notification_type: string
+          read_at?: string | null
+          recipient_user_id: string
+          tax_return_id?: string | null
+          title: string
+        }
+        Update: {
+          actor_user_id?: string | null
+          archived_at?: string | null
+          client_id?: string | null
+          created_at?: string
+          document_id?: string | null
+          id?: string
+          message?: string
+          metadata?: Json
+          notification_type?: string
+          read_at?: string | null
+          recipient_user_id?: string
+          tax_return_id?: string | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_notifications_actor_user_id_fkey"
+            columns: ["actor_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "document_notifications_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "document_notifications_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "client_documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "document_notifications_recipient_user_id_fkey"
+            columns: ["recipient_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "document_notifications_tax_return_id_fkey"
+            columns: ["tax_return_id"]
+            isOneToOne: false
+            referencedRelation: "tax_returns"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       document_types: {
         Row: {
@@ -1172,6 +1328,54 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      approve_document: {
+        Args: {
+          p_comments?: string
+          p_document_id: string
+          p_reviewer_name: string
+        }
+        Returns: {
+          archived_at: string | null
+          assigned_reviewer_id: string | null
+          assigned_reviewer_name: string | null
+          category: string
+          client_id: string
+          created_at: string
+          description: string | null
+          file_hash: string | null
+          hash_algorithm: string
+          id: string
+          is_current_version: boolean
+          is_favorite: boolean
+          mime_type: string
+          original_file_name: string
+          previous_version_id: string | null
+          review_comments: string | null
+          review_due_at: string | null
+          review_requested_at: string | null
+          review_requested_by: string | null
+          review_status: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          reviewed_by_name: string | null
+          size_bytes: number
+          status: string
+          storage_bucket: string
+          storage_path: string
+          tax_return_id: string | null
+          updated_at: string
+          uploaded_by: string
+          version_group_id: string
+          version_notes: string | null
+          version_number: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "client_documents"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       archive_client_document: {
         Args: { requested_document_id: string }
         Returns: undefined
@@ -1251,6 +1455,60 @@ export type Database = {
           to: "clients"
           isOneToOne: true
           isSetofReturn: false
+        }
+      }
+      create_document_version: {
+        Args: {
+          requested_document_id: string
+          requested_file_hash?: string
+          requested_hash_algorithm?: string
+          requested_mime_type: string
+          requested_original_file_name: string
+          requested_size_bytes: number
+          requested_storage_bucket: string
+          requested_storage_path: string
+          requested_version_notes?: string
+        }
+        Returns: {
+          archived_at: string | null
+          assigned_reviewer_id: string | null
+          assigned_reviewer_name: string | null
+          category: string
+          client_id: string
+          created_at: string
+          description: string | null
+          file_hash: string | null
+          hash_algorithm: string
+          id: string
+          is_current_version: boolean
+          is_favorite: boolean
+          mime_type: string
+          original_file_name: string
+          previous_version_id: string | null
+          review_comments: string | null
+          review_due_at: string | null
+          review_requested_at: string | null
+          review_requested_by: string | null
+          review_status: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          reviewed_by_name: string | null
+          size_bytes: number
+          status: string
+          storage_bucket: string
+          storage_path: string
+          tax_return_id: string | null
+          updated_at: string
+          uploaded_by: string
+          version_group_id: string
+          version_notes: string | null
+          version_number: number
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "client_documents"
+          isOneToOne: false
+          isSetofReturn: true
         }
       }
       create_tax_return_record: {
@@ -1337,6 +1595,20 @@ export type Database = {
         }
         Returns: string
       }
+      find_matching_document_hash: {
+        Args: {
+          requested_client_id: string
+          requested_file_hash: string
+          requested_tax_return_id: string
+        }
+        Returns: {
+          category: string
+          created_at: string
+          id: string
+          original_file_name: string
+          size_bytes: number
+        }[]
+      }
       get_client_document_activity: {
         Args: { requested_client_id: string; requested_limit?: number }
         Returns: {
@@ -1346,7 +1618,7 @@ export type Database = {
           document_name: string
           entity_id: string
           entity_type: string
-          id: number
+          id: string
           occurred_at: string
         }[]
       }
@@ -1556,6 +1828,10 @@ export type Database = {
           workflow_signature_pending: number
         }[]
       }
+      get_my_unread_document_notification_count: {
+        Args: never
+        Returns: number
+      }
       get_recent_dashboard_activity: {
         Args: { requested_limit?: number }
         Returns: {
@@ -1666,10 +1942,14 @@ export type Database = {
           client_id: string
           created_at: string
           description: string
+          file_hash: string
+          hash_algorithm: string
           id: string
+          is_current_version: boolean
           is_favorite: boolean
           mime_type: string
           original_file_name: string
+          previous_version_id: string
           size_bytes: number
           status: string
           storage_bucket: string
@@ -1678,6 +1958,62 @@ export type Database = {
           updated_at: string
           uploaded_by: string
           uploaded_by_name: string
+          version_group_id: string
+          version_notes: string
+          version_number: number
+        }[]
+      }
+      list_document_reviewers: {
+        Args: never
+        Returns: {
+          display_name: string
+          email: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+        }[]
+      }
+      list_document_versions: {
+        Args: { requested_document_id: string }
+        Returns: {
+          archived_at: string
+          category: string
+          client_id: string
+          created_at: string
+          description: string
+          file_hash: string
+          hash_algorithm: string
+          id: string
+          is_current_version: boolean
+          is_favorite: boolean
+          mime_type: string
+          original_file_name: string
+          previous_version_id: string
+          size_bytes: number
+          status: string
+          storage_bucket: string
+          storage_path: string
+          tax_return_id: string
+          updated_at: string
+          uploaded_by: string
+          uploaded_by_name: string
+          version_group_id: string
+          version_notes: string
+          version_number: number
+        }[]
+      }
+      list_my_document_notifications: {
+        Args: { p_limit?: number }
+        Returns: {
+          client_id: string
+          created_at: string
+          document_id: string
+          id: string
+          message: string
+          metadata: Json
+          notification_type: string
+          read_at: string
+          tax_return_id: string
+          title: string
         }[]
       }
       list_required_documents: {
@@ -1702,6 +2038,11 @@ export type Database = {
           updated_at: string
         }[]
       }
+      mark_all_document_notifications_read: { Args: never; Returns: number }
+      mark_document_notification_read: {
+        Args: { p_notification_id: string }
+        Returns: undefined
+      }
       record_security_event: {
         Args: { requested_action: string; requested_metadata?: Json }
         Returns: number
@@ -1711,6 +2052,8 @@ export type Database = {
           requested_category: string
           requested_client_id: string
           requested_description?: string
+          requested_file_hash?: string
+          requested_hash_algorithm?: string
           requested_mime_type: string
           requested_original_file_name: string
           requested_size_bytes: number
@@ -1720,14 +2063,28 @@ export type Database = {
         }
         Returns: {
           archived_at: string | null
+          assigned_reviewer_id: string | null
+          assigned_reviewer_name: string | null
           category: string
           client_id: string
           created_at: string
           description: string | null
+          file_hash: string | null
+          hash_algorithm: string
           id: string
+          is_current_version: boolean
           is_favorite: boolean
           mime_type: string
           original_file_name: string
+          previous_version_id: string | null
+          review_comments: string | null
+          review_due_at: string | null
+          review_requested_at: string | null
+          review_requested_by: string | null
+          review_status: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          reviewed_by_name: string | null
           size_bytes: number
           status: string
           storage_bucket: string
@@ -1735,6 +2092,237 @@ export type Database = {
           tax_return_id: string | null
           updated_at: string
           uploaded_by: string
+          version_group_id: string
+          version_notes: string | null
+          version_number: number
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "client_documents"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      request_document_changes: {
+        Args: {
+          p_comments: string
+          p_document_id: string
+          p_reviewer_name: string
+        }
+        Returns: {
+          archived_at: string | null
+          assigned_reviewer_id: string | null
+          assigned_reviewer_name: string | null
+          category: string
+          client_id: string
+          created_at: string
+          description: string | null
+          file_hash: string | null
+          hash_algorithm: string
+          id: string
+          is_current_version: boolean
+          is_favorite: boolean
+          mime_type: string
+          original_file_name: string
+          previous_version_id: string | null
+          review_comments: string | null
+          review_due_at: string | null
+          review_requested_at: string | null
+          review_requested_by: string | null
+          review_status: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          reviewed_by_name: string | null
+          size_bytes: number
+          status: string
+          storage_bucket: string
+          storage_path: string
+          tax_return_id: string | null
+          updated_at: string
+          uploaded_by: string
+          version_group_id: string
+          version_notes: string | null
+          version_number: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "client_documents"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      request_document_review: {
+        Args: { p_document_id: string }
+        Returns: {
+          archived_at: string | null
+          assigned_reviewer_id: string | null
+          assigned_reviewer_name: string | null
+          category: string
+          client_id: string
+          created_at: string
+          description: string | null
+          file_hash: string | null
+          hash_algorithm: string
+          id: string
+          is_current_version: boolean
+          is_favorite: boolean
+          mime_type: string
+          original_file_name: string
+          previous_version_id: string | null
+          review_comments: string | null
+          review_due_at: string | null
+          review_requested_at: string | null
+          review_requested_by: string | null
+          review_status: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          reviewed_by_name: string | null
+          size_bytes: number
+          status: string
+          storage_bucket: string
+          storage_path: string
+          tax_return_id: string | null
+          updated_at: string
+          uploaded_by: string
+          version_group_id: string
+          version_notes: string | null
+          version_number: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "client_documents"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      request_document_review_assignment: {
+        Args: {
+          p_document_id: string
+          p_review_due_at?: string
+          p_reviewer_id: string
+        }
+        Returns: {
+          archived_at: string | null
+          assigned_reviewer_id: string | null
+          assigned_reviewer_name: string | null
+          category: string
+          client_id: string
+          created_at: string
+          description: string | null
+          file_hash: string | null
+          hash_algorithm: string
+          id: string
+          is_current_version: boolean
+          is_favorite: boolean
+          mime_type: string
+          original_file_name: string
+          previous_version_id: string | null
+          review_comments: string | null
+          review_due_at: string | null
+          review_requested_at: string | null
+          review_requested_by: string | null
+          review_status: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          reviewed_by_name: string | null
+          size_bytes: number
+          status: string
+          storage_bucket: string
+          storage_path: string
+          tax_return_id: string | null
+          updated_at: string
+          uploaded_by: string
+          version_group_id: string
+          version_notes: string | null
+          version_number: number
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "client_documents"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      reset_document_review: {
+        Args: { p_document_id: string }
+        Returns: {
+          archived_at: string | null
+          assigned_reviewer_id: string | null
+          assigned_reviewer_name: string | null
+          category: string
+          client_id: string
+          created_at: string
+          description: string | null
+          file_hash: string | null
+          hash_algorithm: string
+          id: string
+          is_current_version: boolean
+          is_favorite: boolean
+          mime_type: string
+          original_file_name: string
+          previous_version_id: string | null
+          review_comments: string | null
+          review_due_at: string | null
+          review_requested_at: string | null
+          review_requested_by: string | null
+          review_status: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          reviewed_by_name: string | null
+          size_bytes: number
+          status: string
+          storage_bucket: string
+          storage_path: string
+          tax_return_id: string | null
+          updated_at: string
+          uploaded_by: string
+          version_group_id: string
+          version_notes: string | null
+          version_number: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "client_documents"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      restore_document_version: {
+        Args: { requested_document_id: string }
+        Returns: {
+          archived_at: string | null
+          assigned_reviewer_id: string | null
+          assigned_reviewer_name: string | null
+          category: string
+          client_id: string
+          created_at: string
+          description: string | null
+          file_hash: string | null
+          hash_algorithm: string
+          id: string
+          is_current_version: boolean
+          is_favorite: boolean
+          mime_type: string
+          original_file_name: string
+          previous_version_id: string | null
+          review_comments: string | null
+          review_due_at: string | null
+          review_requested_at: string | null
+          review_requested_by: string | null
+          review_status: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          reviewed_by_name: string | null
+          size_bytes: number
+          status: string
+          storage_bucket: string
+          storage_path: string
+          tax_return_id: string | null
+          updated_at: string
+          uploaded_by: string
+          version_group_id: string
+          version_notes: string | null
+          version_number: number
         }[]
         SetofOptions: {
           from: "*"
@@ -1803,14 +2391,28 @@ export type Database = {
         Args: { requested_document_id: string }
         Returns: {
           archived_at: string | null
+          assigned_reviewer_id: string | null
+          assigned_reviewer_name: string | null
           category: string
           client_id: string
           created_at: string
           description: string | null
+          file_hash: string | null
+          hash_algorithm: string
           id: string
+          is_current_version: boolean
           is_favorite: boolean
           mime_type: string
           original_file_name: string
+          previous_version_id: string | null
+          review_comments: string | null
+          review_due_at: string | null
+          review_requested_at: string | null
+          review_requested_by: string | null
+          review_status: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          reviewed_by_name: string | null
           size_bytes: number
           status: string
           storage_bucket: string
@@ -1818,6 +2420,9 @@ export type Database = {
           tax_return_id: string | null
           updated_at: string
           uploaded_by: string
+          version_group_id: string
+          version_notes: string | null
+          version_number: number
         }[]
         SetofOptions: {
           from: "*"

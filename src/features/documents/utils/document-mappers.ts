@@ -13,6 +13,7 @@ import type {
   DocumentCategoryRow,
 } from "@/features/documents/types/document-row.types";
 
+
 function isDocumentStatus(value: string): value is DocumentStatus {
   return [
     "uploaded",
@@ -73,6 +74,9 @@ type VersionedClientDocumentRow = ClientDocumentRow & {
   reviewed_by_name?: string | null;
   reviewed_at?: string | null;
   review_comments?: string | null;
+  assigned_reviewer_id?: string | null;
+  assigned_reviewer_name?: string | null;
+  review_due_at?: string | null;
 };
 
 export function mapClientDocument(row: ClientDocumentRow): ClientDocument {
@@ -114,6 +118,12 @@ export function mapClientDocument(row: ClientDocumentRow): ClientDocument {
     reviewedByName: versionedRow.reviewed_by_name ?? null,
     reviewedAt: versionedRow.reviewed_at ?? null,
     reviewComments: versionedRow.review_comments ?? null,
+    assignedReviewerId:
+      versionedRow.assigned_reviewer_id ?? null,
+    assignedReviewerName:
+      versionedRow.assigned_reviewer_name ?? null,
+    reviewDueAt:
+      versionedRow.review_due_at ?? null,
   };
 }
 

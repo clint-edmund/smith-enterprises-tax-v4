@@ -1,7 +1,10 @@
 import { logDocumentActivity } from "@/features/documents/services/document-activity-service"
 import type {
+  AssignDocumentReviewRequest,
   ClientDocument,
   DocumentCategory,
+  DocumentReviewer,
+  DocumentReviewerRole,
   DocumentReviewStatus,
   DocumentStatus,
   UploadDocumentRequest,
@@ -50,6 +53,17 @@ interface DocumentDatabaseRow {
   reviewed_by_name?: string | null
   reviewed_at?: string | null
   review_comments?: string | null
+  assigned_reviewer_id?: string | null
+  assigned_reviewer_name?: string | null
+  review_due_at?: string | null
+}
+
+
+interface DocumentReviewerRow {
+  id: string
+  display_name: string
+  email: string
+  role: DocumentReviewerRole
 }
 
 interface DocumentHashMatchRow {
@@ -72,7 +86,9 @@ type DocumentRpcName =
   | "request_document_review"
   | "approve_document"
   | "request_document_changes"
-  | "reset_document_review" 
+  | "reset_document_review"
+  | "list_document_reviewers"
+  | "request_document_review_assignment"
 
 type DocumentRpc = (
   functionName: DocumentRpcName,
@@ -121,6 +137,12 @@ function mapDocumentRow(
     reviewedByName: document.reviewed_by_name ?? null,
     reviewedAt: document.reviewed_at ?? null,
     reviewComments: document.review_comments ?? null,
+    assignedReviewerId:
+      document.assigned_reviewer_id ?? null,
+    assignedReviewerName:
+      document.assigned_reviewer_name ?? null,
+    reviewDueAt:
+      document.review_due_at ?? null,
   }
 }
 
@@ -713,3 +735,94 @@ export async function resetDocumentReview(
 
   return document
 }
+
+export async function listDocumentReviewers():
+Promise<DocumentReviewer[]> {
+  const { data, error } = await documentRpc(
+    "list_document_reviewers",
+  )
+
+  if (error) {
+    throw new Error(error.message)
+  }
+
+  return ((data ?? []) as DocumentReviewerRow[]).map(
+    (reviewer) => ({
+      id: reviewer.id,
+      displayName: reviewer.display_name,
+      email: reviewer.email,
+      role: reviewer.role,
+    }),
+  )
+}
+
+export async function assignDocumentReview(
+  request: AssignDocumentReviewRequest,
+): Promise<ClientDocument> {
+  const normalizedDocumentId =
+    request.documentId.trim()
+  const normalizedReviewerId =
+    request.reviewerId.trim()
+
+  if (!normalizedDocumentId) {
+    throw new Error(
+      "A document identifier is required.",
+    )
+  }
+
+  if (!normalizedReviewerId) {
+    throw new Error(
+      "Select a reviewer before submitting the document.",
+    )
+  }
+
+  const { data, error } = await documentRpc(
+    "request_document_review_assignment",
+    {
+      p_document_id: normalizedDocumentId,
+      p_reviewer_id: normalizedReviewerId,
+      p_review_due_at:
+        request.reviewDueAt?.trim() || null,
+    },
+  )
+
+  if (error) {
+    throw new Error(error.message)
+  }
+
+  const row = Array.isArray(data)
+    ? data[0]
+    : data
+
+  if (!row) {
+    throw new Error(
+      "The document was assigned for review, but the updated record was not returned.",
+    )
+  }
+
+  const document = mapDocumentRow(
+    row as DocumentDatabaseRow,
+  )
+
+  await logDocumentActivity({
+    documentId: document.id,
+    clientId: document.clientId,
+    action: "document_review_assigned",
+    details:
+      `Assigned "${document.originalFileName}" to ${document.assignedReviewerName ?? "a reviewer"}.`,
+    metadata: {
+      reviewStatus: document.reviewStatus,
+      reviewRequestedAt:
+        document.reviewRequestedAt,
+      assignedReviewerId:
+        document.assignedReviewerId,
+      assignedReviewerName:
+        document.assignedReviewerName,
+      reviewDueAt:
+        document.reviewDueAt,
+    },
+  })
+
+  return document
+}
+

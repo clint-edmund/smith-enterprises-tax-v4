@@ -10,6 +10,7 @@ import {
   RotateCcw,
   Send,
   Star,
+  UserRoundCheck,
   X,
 } from "lucide-react"
 import { useMemo, useState } from "react"
@@ -26,12 +27,21 @@ import {
 import type {
   ClientDocument,
   DocumentReviewStatus,
+  DocumentReviewer,
 } from "@/features/documents/types/document.types"
 import {
   canPreviewDocument,
   documentCategoryLabels,
   formatDocumentSize,
 } from "@/features/documents/utils/document-utils"
+
+import {
+  ReviewerAssignmentDialog,
+} from "@/features/documents/components/reviewer-assignment-dialog"
+
+import {
+  assignDocumentReview,
+} from "@/features/documents/services/document-service"
 
 interface DocumentCardProps {
   document: ClientDocument
@@ -56,6 +66,7 @@ type DocumentAction =
   | "approve"
   | "request_changes"
   | "reset_review"
+  | "assign_reviewer"
   | null
 
 const reviewStatusLabels: Record<DocumentReviewStatus, string> = {
@@ -101,6 +112,16 @@ export function DocumentCard({
 }: DocumentCardProps) {
   const { profile } = useAuth()
   const [action, setAction] = useState<DocumentAction>(null)
+  const [
+    isReviewerDialogOpen,
+    setIsReviewerDialogOpen,
+  ] = useState(false)
+
+  const [
+    reviewerAssignmentError,
+    setReviewerAssignmentError,
+  ] =
+    useState<string | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [isChangesDialogOpen, setIsChangesDialogOpen] = useState(false)
   const [changeComments, setChangeComments] = useState("")
@@ -108,19 +129,49 @@ export function DocumentCard({
   const currentRole = String(profile?.role ?? "").toLowerCase()
 
   const reviewerName = useMemo(() => {
-    if (!profile) {
-      return "Unknown reviewer"
-    }
+  if (!profile) {
+    return "Unknown reviewer"
+  }
 
-    return (
-      profile.displayName?.trim() ||
-      [profile.firstName, profile.lastName]
-        .filter(Boolean)
-        .join(" ")
-        .trim() ||
-      profile.email
+  return (
+    profile.displayName?.trim() ||
+    [profile.firstName, profile.lastName]
+      .filter(Boolean)
+      .join(" ")
+      .trim() ||
+    profile.email
+  )
+}, [profile])
+
+async function handleReviewerAssignment(
+  request: {
+    reviewer: DocumentReviewer
+    dueAt: string | null
+  }
+  ) {
+    setAction("assign_reviewer")
+    setReviewerAssignmentError(null)
+
+  try {
+    await assignDocumentReview({
+      documentId: document.id,
+      reviewerId: request.reviewer.id,
+      reviewDueAt: request.dueAt,
+    })
+
+    setIsReviewerDialogOpen(false)
+
+    await onReviewChanged()
+  } catch (error) {
+    setReviewerAssignmentError(
+      error instanceof Error
+        ? error.message
+        : "Unable to assign reviewer.",
     )
-  }, [profile])
+  } finally {
+    setAction(null)
+  }
+}
 
   const canSubmitForReview =
     submitterRoles.has(currentRole) &&
@@ -142,7 +193,7 @@ export function DocumentCard({
   async function runReviewAction(
     nextAction: Exclude<
       DocumentAction,
-      "download" | "archive" | null
+      "download" | "archive" | "assign_reviewer" |null
     >,
     operation: () => Promise<ClientDocument>,
   ) {
@@ -502,6 +553,18 @@ export function DocumentCard({
               {canReview ? (
                 <>
                   <button
+                    className="inline-flex items-center gap-2 rounded-lg border border-indigo-300 bg-indigo-50 px-3 py-2 text-sm font-semibold text-indigo-700 hover:bg-indigo-100 disabled:opacity-50"
+                    disabled={isBusy}
+                    onClick={() =>
+                      setIsReviewerDialogOpen(true)
+                    }
+                    type="button"
+                  >
+                    <UserRoundCheck className="size-4" />
+
+                    Assign Reviewer
+                  </button>
+                  <button
                     className="inline-flex items-center gap-2 rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-700 hover:bg-emerald-100 disabled:opacity-50"
                     disabled={isBusy}
                     onClick={() => void handleApprove()}
@@ -626,6 +689,17 @@ export function DocumentCard({
           </div>
         </div>
       ) : null}
+
+      <ReviewerAssignmentDialog
+        document={document}
+        errorMessage={reviewerAssignmentError}
+        isOpen={isReviewerDialogOpen}
+        isSaving={action === "assign_reviewer"}
+        onAssign={handleReviewerAssignment}
+        onClose={() =>
+          setIsReviewerDialogOpen(false)
+        }
+      />
     </>
   )
 }
