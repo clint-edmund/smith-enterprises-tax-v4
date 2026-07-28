@@ -2247,6 +2247,18 @@ export type Database = {
           updated_at: string
         }[]
       }
+      log_return_workflow: {
+        Args: {
+          requested_event_data?: Json
+          requested_event_description?: string
+          requested_event_label: string
+          requested_event_type: string
+          requested_is_client_visible?: boolean
+          requested_occurred_at?: string
+          requested_return_id: string
+        }
+        Returns: string
+      }
       mark_all_document_notifications_read: { Args: never; Returns: number }
       mark_document_notification_read: {
         Args: { p_notification_id: string }
