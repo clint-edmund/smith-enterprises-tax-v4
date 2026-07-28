@@ -27,6 +27,14 @@ export const appConfig = {
     reports: "/reports",
     settings: "/settings",
     notificationPreferences: "/settings/notifications",
+    clientHome: "/client",
+    clientLogin: "/client/login",
+    clientRegister: "/client/register",
+    clientDashboard: "/client/dashboard",
+    clientDocuments: "/client/documents",
+    clientMessages: "/client/messages",
+    clientPayments: "/client/payments",
+    clientProfile: "/client/profile",
   },
 } as const
 

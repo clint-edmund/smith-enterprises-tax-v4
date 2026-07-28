@@ -1,6 +1,7 @@
 import {
   createBrowserRouter,
   Navigate,
+  Outlet,
 } from "react-router-dom"
 
 import { AppLayout } from "@/app/layouts/app-layout"
@@ -15,22 +16,34 @@ import { HomePage } from "@/features/auth/pages/home-page"
 import { LoginPage } from "@/features/auth/pages/login-page"
 import { PendingApprovalPage } from "@/features/auth/pages/pending-approval-page"
 import { SecurityAcknowledgmentPage } from "@/features/auth/pages/security-acknowledgment-page"
-import { ClientsPage } from "@/features/clients/pages/clients-page"
-import { DashboardPage } from "@/features/dashboard/pages/dashboard-page"
-import { NotificationCenterPage, } from "@/features/notifications/pages/notification-center-page"
-import { PaymentsPage } from "@/features/payments/pages/payments-page"
-import { ReportsPage } from "@/features/reports/pages/reports-page"
-import { DocumentsPage } from "@/features/documents/pages/documents-page"
-import { ReviewQueuePage } from "@/features/documents/pages/review-queue-page"
-import { ReturnsPage } from "@/features/returns/pages/returns-page"
-import { SettingsPage } from "@/features/settings/pages/settings-page"
+import { ClientPortalGuard } from "@/features/client-portal/guards/client-portal-guard"
+import { ClientPortalLayout } from "@/features/client-portal/layouts/client-portal-layout"
+import { ClientDashboardPage } from "@/features/client-portal/pages/client-dashboard-page"
+import { ClientLoginPage } from "@/features/client-portal/pages/client-login-page"
+import { ClientRegistrationPage } from "@/features/client-portal/pages/client-registration-page"
 import { ClientDetailsPage } from "@/features/clients/pages/client-details-page"
+import { ClientsPage } from "@/features/clients/pages/clients-page"
 import { EditClientPage } from "@/features/clients/pages/edit-client-page"
 import { NewClientPage } from "@/features/clients/pages/new-client-page"
+import { DashboardPage } from "@/features/dashboard/pages/dashboard-page"
+import { DocumentsPage } from "@/features/documents/pages/documents-page"
+import { ReviewQueuePage } from "@/features/documents/pages/review-queue-page"
+import {
+  NotificationCenterPage,
+} from "@/features/notifications/pages/notification-center-page"
+import {
+  NotificationPreferencesPage,
+} from "@/features/notifications/pages/notification-preferences-page"
+import { PaymentsPage } from "@/features/payments/pages/payments-page"
+import { ReportsPage } from "@/features/reports/pages/reports-page"
+import { EditReturnPage } from "@/features/returns/pages/edit-return-page"
 import { NewReturnPage } from "@/features/returns/pages/new-return-page"
 import { ReturnDetailsPage } from "@/features/returns/pages/return-details-page"
-import { EditReturnPage } from "@/features/returns/pages/edit-return-page"
-import { NotificationPreferencesPage } from "@/features/notifications/pages/notification-preferences-page"
+import { ReturnsPage } from "@/features/returns/pages/returns-page"
+import { SettingsPage } from "@/features/settings/pages/settings-page"
+import {
+  ClientAuthProvider,
+} from "@/features/client-portal/providers/client-auth-provider"
 
 export const appRouter =
   createBrowserRouter([
@@ -45,8 +58,7 @@ export const appRouter =
           element: <PublicOnlyRoute />,
           children: [
             {
-              path:
-                appConfig.routes.login,
+              path: appConfig.routes.login,
               element: <LoginPage />,
             },
           ],
@@ -54,13 +66,51 @@ export const appRouter =
       ],
     },
     {
-      path:
-        appConfig.routes.pendingApproval,
+      element: (
+        <ClientAuthProvider>
+          <Outlet />
+        </ClientAuthProvider>
+      ),
+      children: [
+        {
+          path: appConfig.routes.clientHome,
+          element: (
+            <Navigate
+              to={appConfig.routes.clientDashboard}
+              replace
+            />
+          ),
+        },
+        {
+          path: appConfig.routes.clientLogin,
+          element: <ClientLoginPage />,
+        },
+        {
+          path: appConfig.routes.clientRegister,
+          element: <ClientRegistrationPage />,
+        },
+        {
+          element: <ClientPortalGuard />,
+          children: [
+            {
+              element: <ClientPortalLayout />,
+              children: [
+                {
+                  path: appConfig.routes.clientDashboard,
+                  element: <ClientDashboardPage />,
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+    {
+      path: appConfig.routes.pendingApproval,
       element: <PendingApprovalPage />,
     },
     {
-      path:
-        appConfig.routes.accountError,
+      path: appConfig.routes.accountError,
       element: <AccountErrorPage />,
     },
     {
@@ -87,24 +137,34 @@ export const appRouter =
                     <DashboardPage />,
                 },
                 {
-                  path: appConfig.routes.notifications,
-                  element: <NotificationCenterPage />,
+                  path:
+                    appConfig.routes.notifications,
+                  element:
+                    <NotificationCenterPage />,
                 },
                 {
-                  path: appConfig.routes.clients,
-                  element: <ClientsPage />,
-                },
-                {       
-                  path: appConfig.routes.clientNew,
-                  element: <NewClientPage />,
+                  path:
+                    appConfig.routes.clients,
+                  element:
+                    <ClientsPage />,
                 },
                 {
-                  path: appConfig.routes.clientEdit,
-                  element: <EditClientPage />,
+                  path:
+                    appConfig.routes.clientNew,
+                  element:
+                    <NewClientPage />,
                 },
                 {
-                  path: appConfig.routes.clientDetails,
-                  element: <ClientDetailsPage />,
+                  path:
+                    appConfig.routes.clientEdit,
+                  element:
+                    <EditClientPage />,
+                },
+                {
+                  path:
+                    appConfig.routes.clientDetails,
+                  element:
+                    <ClientDetailsPage />,
                 },
                 {
                   path:
@@ -113,24 +173,34 @@ export const appRouter =
                     <ReturnsPage />,
                 },
                 {
-                  path: appConfig.routes.documents,
-                  element: <DocumentsPage />,
+                  path:
+                    appConfig.routes.documents,
+                  element:
+                    <DocumentsPage />,
                 },
                 {
-                  path: appConfig.routes.reviewQueue,
-                  element: <ReviewQueuePage />,
+                  path:
+                    appConfig.routes.reviewQueue,
+                  element:
+                    <ReviewQueuePage />,
                 },
                 {
-                  path: appConfig.routes.returnNew,
-                  element: <NewReturnPage />,
+                  path:
+                    appConfig.routes.returnNew,
+                  element:
+                    <NewReturnPage />,
                 },
                 {
-                  path: appConfig.routes.returnEdit,
-                  element: <EditReturnPage />,
+                  path:
+                    appConfig.routes.returnEdit,
+                  element:
+                    <EditReturnPage />,
                 },
                 {
-                  path: appConfig.routes.returnDetails,
-                  element: <ReturnDetailsPage />,
+                  path:
+                    appConfig.routes.returnDetails,
+                  element:
+                    <ReturnDetailsPage />,
                 },
                 {
                   path:
@@ -148,14 +218,15 @@ export const appRouter =
                   path:
                     appConfig.routes.settings,
                   element:
-                    <SettingsPage />,    
+                    <SettingsPage />,
                 },
                 {
                   path:
-                    appConfig.routes.notificationPreferences,
+                    appConfig.routes
+                      .notificationPreferences,
                   element:
                     <NotificationPreferencesPage />,
-                }
+                },
               ],
             },
           ],

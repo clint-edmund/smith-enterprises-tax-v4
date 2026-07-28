@@ -234,6 +234,53 @@ export type Database = {
           },
         ]
       }
+      client_portal_profiles: {
+        Row: {
+          activated_at: string | null
+          auth_user_id: string
+          client_id: string
+          created_at: string
+          email: string
+          id: string
+          invited_at: string | null
+          last_login_at: string | null
+          portal_status: Database["public"]["Enums"]["client_portal_status"]
+          updated_at: string
+        }
+        Insert: {
+          activated_at?: string | null
+          auth_user_id: string
+          client_id: string
+          created_at?: string
+          email: string
+          id?: string
+          invited_at?: string | null
+          last_login_at?: string | null
+          portal_status?: Database["public"]["Enums"]["client_portal_status"]
+          updated_at?: string
+        }
+        Update: {
+          activated_at?: string | null
+          auth_user_id?: string
+          client_id?: string
+          created_at?: string
+          email?: string
+          id?: string
+          invited_at?: string | null
+          last_login_at?: string | null
+          portal_status?: Database["public"]["Enums"]["client_portal_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_portal_profiles_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: true
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clients: {
         Row: {
           address_line_1: string | null
@@ -1577,6 +1624,9 @@ export type Database = {
         }
       }
       current_actor_id: { Args: never; Returns: string }
+      current_client_id: { Args: never; Returns: string }
+      current_client_portal_is_active: { Args: never; Returns: boolean }
+      current_client_portal_profile_id: { Args: never; Returns: string }
       current_user_can_manage_records: { Args: never; Returns: boolean }
       current_user_is_active: { Args: never; Returns: boolean }
       current_user_is_admin: { Args: never; Returns: boolean }
@@ -1653,6 +1703,27 @@ export type Database = {
           is_active: boolean
           last_name: string
           role: Database["public"]["Enums"]["app_role"]
+        }[]
+      }
+      get_current_client_profile: {
+        Args: never
+        Returns: {
+          activated_at: string
+          auth_user_id: string
+          client_id: string
+          client_number: number
+          created_at: string
+          email: string
+          first_name: string
+          invited_at: string
+          last_login_at: string
+          last_name: string
+          middle_name: string
+          phone: string
+          portal_profile_id: string
+          portal_status: Database["public"]["Enums"]["client_portal_status"]
+          preferred_name: string
+          updated_at: string
         }[]
       }
       get_dashboard_attention_items: {
@@ -2075,6 +2146,7 @@ export type Database = {
         Args: { p_notification_id: string }
         Returns: undefined
       }
+      record_client_portal_login: { Args: never; Returns: undefined }
       record_security_event: {
         Args: { requested_action: string; requested_metadata?: Json }
         Returns: number
@@ -2587,6 +2659,7 @@ export type Database = {
         | "reviewer"
         | "receptionist"
         | "read_only"
+      client_portal_status: "invited" | "active" | "disabled"
       client_status: "active" | "inactive" | "archived"
       filing_status:
         | "single"
@@ -2776,6 +2849,7 @@ export const Constants = {
         "receptionist",
         "read_only",
       ],
+      client_portal_status: ["invited", "active", "disabled"],
       client_status: ["active", "inactive", "archived"],
       filing_status: [
         "single",
