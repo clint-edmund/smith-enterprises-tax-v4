@@ -1050,6 +1050,69 @@ export type Database = {
           },
         ]
       }
+      return_workflow_history: {
+        Row: {
+          actor_user_id: string | null
+          client_id: string
+          created_at: string
+          event_data: Json
+          event_description: string | null
+          event_label: string
+          event_type: string
+          id: string
+          is_client_visible: boolean
+          new_status: string | null
+          occurred_at: string
+          previous_status: string | null
+          tax_return_id: string
+        }
+        Insert: {
+          actor_user_id?: string | null
+          client_id: string
+          created_at?: string
+          event_data?: Json
+          event_description?: string | null
+          event_label: string
+          event_type: string
+          id?: string
+          is_client_visible?: boolean
+          new_status?: string | null
+          occurred_at?: string
+          previous_status?: string | null
+          tax_return_id: string
+        }
+        Update: {
+          actor_user_id?: string | null
+          client_id?: string
+          created_at?: string
+          event_data?: Json
+          event_description?: string | null
+          event_label?: string
+          event_type?: string
+          id?: string
+          is_client_visible?: boolean
+          new_status?: string | null
+          occurred_at?: string
+          previous_status?: string | null
+          tax_return_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "return_workflow_history_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "return_workflow_history_tax_return_id_fkey"
+            columns: ["tax_return_id"]
+            isOneToOne: false
+            referencedRelation: "tax_returns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       security_acknowledgments: {
         Row: {
           accepted_at: string

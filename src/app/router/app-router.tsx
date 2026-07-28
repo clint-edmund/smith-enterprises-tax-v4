@@ -44,6 +44,7 @@ import { SettingsPage } from "@/features/settings/pages/settings-page"
 import {
   ClientAuthProvider,
 } from "@/features/client-portal/providers/client-auth-provider"
+import { ClientReturnsPage } from "@/features/client-portal/pages/client-returns-page"
 
 export const appRouter =
   createBrowserRouter([
@@ -98,6 +99,10 @@ export const appRouter =
                 {
                   path: appConfig.routes.clientDashboard,
                   element: <ClientDashboardPage />,
+                },
+                {
+                  path: "/client/returns",
+                  element: <ClientReturnsPage />,
                 },
               ],
             },
