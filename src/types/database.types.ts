@@ -1668,6 +1668,49 @@ export type Database = {
           occurred_at: string
         }[]
       }
+      get_client_portal_dashboard: {
+        Args: never
+        Returns: {
+          assigned_preparer_name: string
+          client_id: string
+          client_number: number
+          current_return_id: string
+          current_return_status: Database["public"]["Enums"]["return_status"]
+          current_return_type: Database["public"]["Enums"]["return_type"]
+          current_return_updated_at: string
+          current_tax_form: Database["public"]["Enums"]["tax_form_type"]
+          current_tax_year: number
+          discount_amount: number
+          document_count: number
+          first_name: string
+          outstanding_balance: number
+          preferred_name: string
+          preparation_fee: number
+          recent_document_category: string
+          recent_document_id: string
+          recent_document_name: string
+          recent_document_status: string
+          recent_document_uploaded_at: string
+          total_payments: number
+        }[]
+      }
+      get_client_returns: {
+        Args: never
+        Returns: {
+          assigned_preparer_name: string
+          discount_amount: number
+          document_count: number
+          outstanding_balance: number
+          preparation_fee: number
+          return_id: string
+          return_type: Database["public"]["Enums"]["return_type"]
+          status: Database["public"]["Enums"]["return_status"]
+          tax_form: Database["public"]["Enums"]["tax_form_type"]
+          tax_year: number
+          total_payments: number
+          updated_at: string
+        }[]
+      }
       get_client_tax_returns: {
         Args: { requested_client_id: string }
         Returns: {
