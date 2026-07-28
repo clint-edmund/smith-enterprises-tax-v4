@@ -43,6 +43,14 @@ import {
   requestChanges,
 } from "@/features/documents/services/review-actions-service"
 
+import type {
+  DocumentReviewQueueItem,
+} from "@/features/documents/types/review-queue.types"
+
+import {
+  DocumentPreviewPanel,
+} from "@/features/documents/components/review-queue/document-preview-panel"
+
 import { toast } from "sonner"
 
 export function ReviewQueuePage() {
@@ -94,6 +102,14 @@ export function ReviewQueuePage() {
     setHiddenDocumentIds,
   ] = useState<string[]>([])
 
+  const [
+    selectedDocument,
+    setSelectedDocument,
+  ] =
+    useState<DocumentReviewQueueItem | null>(
+      null,
+    )
+
   const filteredItems = useMemo(() => {
     const normalizedSearch = searchTerm
       .trim()
@@ -108,7 +124,13 @@ export function ReviewQueuePage() {
         return false
       }
 
-  // existing filtering logic...
+      const matchesFilter =
+        activeFilter === "all" ||
+        item.priorityCode === activeFilter
+
+      if (!matchesFilter) {
+        return false
+      }
 
       if (!normalizedSearch) {
         return true
@@ -138,6 +160,7 @@ export function ReviewQueuePage() {
     })
   }, [
     activeFilter,
+    hiddenDocumentIds,
     queue.items,
     searchTerm,
   ])
@@ -166,13 +189,18 @@ export function ReviewQueuePage() {
       ])
 
       await approveReview(documentId)
+      setSelectedDocument((current) =>
+        current?.documentId === documentId
+          ? null
+          : current,
+      )
       await refresh()
       setHiddenDocumentIds([])
       toast.success(
         "Document approved successfully.",
       )
     } catch (approveError) {
-      console.error(error)
+      console.error(approveError)
       setHiddenDocumentIds((current) =>
       current.filter(
         (id) => id !== documentId,
@@ -229,7 +257,7 @@ export function ReviewQueuePage() {
       )
       setRequestChangesDocument(null)
     } catch (submitError) {
-      console.error(error)
+      console.error(submitError)
 
       toast.error(
         "Unable to send review comments.",
@@ -387,17 +415,29 @@ export function ReviewQueuePage() {
         }}
       />
 
-      <ReviewQueueTable
-        items={filteredItems}
-        hasActiveFilters={hasActiveFilters}
-        onClearFilters={clearFilters}
-        onApprove={handleApprove}
-        onRequestChanges={handleRequestChanges}
-        activeAction={activeAction}
-        isSubmittingRequest={
-          isSubmittingRequest
-        }
-      />
+      <div className="grid gap-6 xl:grid-cols-[1fr_420px]">
+
+        <ReviewQueueTable
+          items={filteredItems}
+          hasActiveFilters={hasActiveFilters}
+          onClearFilters={clearFilters}
+          onApprove={handleApprove}
+          onRequestChanges={handleRequestChanges}
+          onOpenDocument={(document) => {
+            setSelectedDocument(document)
+          }}
+          activeAction={activeAction}
+          isSubmittingRequest={isSubmittingRequest}
+        />
+
+        <DocumentPreviewPanel
+          document={selectedDocument}
+          onClose={() => {
+            setSelectedDocument(null)
+          }}
+        />
+
+      </div>
 
       <RequestChangesDialog
         isOpen={

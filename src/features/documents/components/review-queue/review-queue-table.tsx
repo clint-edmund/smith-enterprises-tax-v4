@@ -29,6 +29,10 @@ interface ReviewQueueTableProps {
     documentId: string,
   ) => void
 
+  onOpenDocument: (
+    document: DocumentReviewQueueItem,
+  ) => void
+
   activeAction: {
     documentId: string
     action: "approve"
@@ -43,6 +47,7 @@ export function ReviewQueueTable({
   onClearFilters,
   onApprove,
   onRequestChanges,
+  onOpenDocument,
   activeAction,
   isSubmittingRequest,
 }: ReviewQueueTableProps) {
@@ -97,6 +102,7 @@ export function ReviewQueueTable({
                 item={item}
                 onApprove={onApprove}
                 onRequestChanges={onRequestChanges}
+                onOpenDocument={onOpenDocument}
                 activeAction={activeAction}
                 isSubmittingRequest={isSubmittingRequest}
               />
@@ -119,6 +125,10 @@ interface ReviewQueueRowProps {
     documentId: string,
   ) => void
 
+  onOpenDocument: (
+    document: DocumentReviewQueueItem,
+  ) => void
+
   activeAction: {
     documentId: string
     action: "approve"
@@ -131,6 +141,7 @@ function ReviewQueueRow({
   item,
   onApprove,
   onRequestChanges,
+  onOpenDocument,
   activeAction,
   isSubmittingRequest,
 }: ReviewQueueRowProps) {
@@ -220,6 +231,9 @@ function ReviewQueueRow({
         <div className="flex min-w-max flex-wrap gap-2">
           <button
             type="button"
+            onClick={() => {
+              onOpenDocument(item)
+            }}
             className="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
           >
             Open
