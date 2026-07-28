@@ -10,14 +10,13 @@ import {
 } from "lucide-react"
 
 import {
-  approveReview,
-  requestChanges,
-} from "@/features/documents/services/review-actions-service"
-
-import {
   useMemo,
   useState,
 } from "react"
+
+import {
+  RequestChangesDialog,
+} from "@/features/documents/components/review-queue/request-changes-dialog"
 
 import {
   ReviewQueueTable,
@@ -39,6 +38,13 @@ import {
   useReviewQueue,
 } from "@/features/documents/hooks/use-review-queue"
 
+import {
+  approveReview,
+  requestChanges,
+} from "@/features/documents/services/review-actions-service"
+
+import { toast } from "sonner"
+
 export function ReviewQueuePage() {
   const {
     queue,
@@ -55,53 +61,86 @@ export function ReviewQueuePage() {
   const [
     activeFilter,
     setActiveFilter,
-  ] =
-    useState<ReviewQueueFilter>("all")
+  ] = useState<ReviewQueueFilter>("all")
 
-  const filteredItems =
-    useMemo(() => {
-      const normalizedSearch =
-        searchTerm
-          .trim()
-          .toLowerCase()
+  const [
+    requestChangesDocument,
+    setRequestChangesDocument,
+  ] = useState<{
+    id: string
+    name: string
+  } | null>(null)
 
-      return queue.items.filter((item) => {
-        const matchesFilter =
-          activeFilter === "all" ||
-          item.priorityCode === activeFilter
+  const [
+    isSubmittingRequest,
+    setIsSubmittingRequest,
+  ] = useState(false)
 
-        if (!matchesFilter) {
+  const [
+    requestError,
+    setRequestError,
+  ] = useState<string | null>(null)
+
+  const [
+    activeAction,
+    setActiveAction,
+  ] = useState<{
+    documentId: string
+    action: "approve"
+  } | null>(null)
+
+  const [
+    hiddenDocumentIds,
+    setHiddenDocumentIds,
+  ] = useState<string[]>([])
+
+  const filteredItems = useMemo(() => {
+    const normalizedSearch = searchTerm
+      .trim()
+      .toLowerCase()
+
+    return queue.items.filter((item) => {
+      if (
+        hiddenDocumentIds.includes(
+          item.documentId,
+        )
+      ) {
+        return false
+      }
+
+  // existing filtering logic...
+
+      if (!normalizedSearch) {
+        return true
+      }
+
+      const searchableValues = [
+        item.clientName,
+        item.clientNumber,
+        item.originalFileName,
+        item.taxYear?.toString(),
+        item.returnType,
+        item.reviewRequestedByName,
+      ]
+
+      return searchableValues.some((value) => {
+        if (
+          value === null ||
+          value === undefined
+        ) {
           return false
         }
 
-        if (!normalizedSearch) {
-          return true
-        }
-
-        const searchableValues = [
-          item.clientName,
-          item.clientNumber,
-          item.originalFileName,
-          item.taxYear?.toString(),
-          item.returnType,
-          item.reviewRequestedByName,
-        ]
-
-        return searchableValues.some((value) => {
-          if (value === null || value === undefined) {
-            return false
-          }
-
-          return String(value)
-            .toLowerCase()
-            .includes(normalizedSearch)
-        })
+        return String(value)
+          .toLowerCase()
+          .includes(normalizedSearch)
       })
-    }, [
-      activeFilter,
-      queue.items,
-      searchTerm,
-    ])
+    })
+  }, [
+    activeFilter,
+    queue.items,
+    searchTerm,
+  ])
 
   const hasActiveFilters =
     activeFilter !== "all" ||
@@ -110,6 +149,100 @@ export function ReviewQueuePage() {
   function clearFilters() {
     setSearchTerm("")
     setActiveFilter("all")
+  }
+
+  async function handleApprove(
+    documentId: string,
+  ) {
+    try {
+      setActiveAction({
+        documentId,
+        action: "approve",
+      })
+
+      setHiddenDocumentIds((current) => [
+        ...current,
+        documentId,
+      ])
+
+      await approveReview(documentId)
+      await refresh()
+      setHiddenDocumentIds([])
+      toast.success(
+        "Document approved successfully.",
+      )
+    } catch (approveError) {
+      console.error(error)
+      setHiddenDocumentIds((current) =>
+      current.filter(
+        (id) => id !== documentId,
+      ),
+    )
+
+    toast.error(
+      "Unable to approve document.",
+    )
+    } finally {
+      setActiveAction(null)
+    }
+  }
+
+  function handleRequestChanges(
+    documentId: string,
+  ) {
+    const document = queue.items.find(
+      (item) =>
+        item.documentId === documentId,
+    )
+
+    if (!document) {
+      return
+    }
+
+    setRequestError(null)
+    setRequestChangesDocument({
+      id: document.documentId,
+      name: document.originalFileName,
+    })
+  }
+
+  async function submitRequestChanges(
+    comments: string,
+  ) {
+    if (!requestChangesDocument) {
+      return
+    }
+
+    try {
+      setIsSubmittingRequest(true)
+      setRequestError(null)
+
+      await requestChanges(
+        requestChangesDocument.id,
+        comments,
+      )
+
+      await refresh()
+      setHiddenDocumentIds([])
+      toast.success(
+        "Review comments sent.",
+      )
+      setRequestChangesDocument(null)
+    } catch (submitError) {
+      console.error(error)
+
+      toast.error(
+        "Unable to send review comments.",
+      )
+
+      setRequestError(
+        submitError instanceof Error
+          ? submitError.message
+          : "Unable to submit review comments.",
+      )
+    } finally {
+      setIsSubmittingRequest(false)
+    }
   }
 
   if (isLoading) {
@@ -170,43 +303,7 @@ export function ReviewQueuePage() {
       </section>
     )
   }
-    const handleApprove = async (
-  documentId: string,
-) => {
-  try {
-    await approveReview(documentId)
 
-    await refresh()
-  } catch (error) {
-    console.error(error)
-  }
-}
-
-const handleRequestChanges = async (
-  documentId: string,
-) => {
-  const comments = window.prompt(
-    "Enter review comments:",
-  )
-
-  if (
-    !comments ||
-    !comments.trim()
-  ) {
-    return
-  }
-
-  try {
-    await requestChanges(
-      documentId,
-      comments.trim(),
-    )
-
-    await refresh()
-  } catch (error) {
-    console.error(error)
-  }
-}
   return (
     <section className="space-y-6">
       <PageHeader />
@@ -216,9 +313,7 @@ const handleRequestChanges = async (
           label="All Pending"
           value={queue.summary.total}
           icon={ClipboardCheck}
-          isActive={
-            activeFilter === "all"
-          }
+          isActive={activeFilter === "all"}
           onClick={() => {
             setActiveFilter("all")
           }}
@@ -228,9 +323,7 @@ const handleRequestChanges = async (
           label="Overdue"
           value={queue.summary.overdue}
           icon={CalendarX}
-          isActive={
-            activeFilter === "overdue"
-          }
+          isActive={activeFilter === "overdue"}
           onClick={() => {
             setActiveFilter("overdue")
           }}
@@ -240,9 +333,7 @@ const handleRequestChanges = async (
           label="Due Today"
           value={queue.summary.dueToday}
           icon={Clock3}
-          isActive={
-            activeFilter === "due_today"
-          }
+          isActive={activeFilter === "due_today"}
           onClick={() => {
             setActiveFilter("due_today")
           }}
@@ -250,18 +341,13 @@ const handleRequestChanges = async (
 
         <ReviewSummaryCard
           label="This Week"
-          value={
-            queue.summary.dueThisWeek
-          }
+          value={queue.summary.dueThisWeek}
           icon={CalendarDays}
           isActive={
-            activeFilter ===
-            "due_this_week"
+            activeFilter === "due_this_week"
           }
           onClick={() => {
-            setActiveFilter(
-              "due_this_week",
-            )
+            setActiveFilter("due_this_week")
           }}
         />
 
@@ -269,9 +355,7 @@ const handleRequestChanges = async (
           label="Upcoming"
           value={queue.summary.upcoming}
           icon={CalendarClock}
-          isActive={
-            activeFilter === "upcoming"
-          }
+          isActive={activeFilter === "upcoming"}
           onClick={() => {
             setActiveFilter("upcoming")
           }}
@@ -279,18 +363,13 @@ const handleRequestChanges = async (
 
         <ReviewSummaryCard
           label="No Due Date"
-          value={
-            queue.summary.noDueDate
-          }
+          value={queue.summary.noDueDate}
           icon={CalendarX}
           isActive={
-            activeFilter ===
-            "no_due_date"
+            activeFilter === "no_due_date"
           }
           onClick={() => {
-            setActiveFilter(
-              "no_due_date",
-            )
+            setActiveFilter("no_due_date")
           }}
         />
       </div>
@@ -298,15 +377,11 @@ const handleRequestChanges = async (
       <ReviewQueueToolbar
         searchTerm={searchTerm}
         activeFilter={activeFilter}
-        resultCount={
-          filteredItems.length
-        }
+        resultCount={filteredItems.length}
         totalCount={queue.items.length}
         isRefreshing={false}
         onSearchChange={setSearchTerm}
-        onFilterChange={
-          setActiveFilter
-        }
+        onFilterChange={setActiveFilter}
         onRefresh={() => {
           void refresh()
         }}
@@ -318,6 +393,28 @@ const handleRequestChanges = async (
         onClearFilters={clearFilters}
         onApprove={handleApprove}
         onRequestChanges={handleRequestChanges}
+        activeAction={activeAction}
+        isSubmittingRequest={
+          isSubmittingRequest
+        }
+      />
+
+      <RequestChangesDialog
+        isOpen={
+          requestChangesDocument !== null
+        }
+        documentName={
+          requestChangesDocument?.name ?? null
+        }
+        isSubmitting={isSubmittingRequest}
+        errorMessage={requestError}
+        onClose={() => {
+          if (!isSubmittingRequest) {
+            setRequestChangesDocument(null)
+            setRequestError(null)
+          }
+        }}
+        onSubmit={submitRequestChanges}
       />
     </section>
   )

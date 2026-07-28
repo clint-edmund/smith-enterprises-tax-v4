@@ -5,6 +5,8 @@ import App from "@/App"
 import { AppProvider } from "@/app/providers/app-provider"
 import "@/index.css"
 
+import { Toaster } from "sonner"
+
 const rootElement = document.getElementById("root")
 
 if (!rootElement) {
@@ -16,7 +18,15 @@ if (!rootElement) {
 createRoot(rootElement).render(
   <StrictMode>
     <AppProvider>
-      <App />
+      <>
+        <App />
+
+        <Toaster
+          richColors
+          position="top-right"
+        />
+      </>
     </AppProvider>
   </StrictMode>,
 )
+

@@ -308,7 +308,6 @@ async function handleReviewerAssignment(
       () =>
         requestDocumentChanges(
           document.id,
-          reviewerName,
           comments,
         ),
     )

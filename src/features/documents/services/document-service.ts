@@ -594,17 +594,15 @@ export async function requestDocumentReview(
 
 export async function approveDocument(
   documentId: string,
-  reviewerName: string,
   comments?: string | null,
 ): Promise<ClientDocument> {
   const { data, error } = await documentRpc(
-    "approve_document",
-    {
-      p_document_id: documentId,
-      p_reviewer_name: reviewerName.trim(),
-      p_comments: comments?.trim() || null,
-    },
-  )
+  "approve_document",
+  {
+    p_document_id: documentId,
+    p_comments: comments?.trim() || null,
+  },
+)
 
   if (error) {
     throw new Error(error.message)
@@ -642,7 +640,6 @@ export async function approveDocument(
 
 export async function requestDocumentChanges(
   documentId: string,
-  reviewerName: string,
   comments: string,
 ): Promise<ClientDocument> {
   const normalizedComments = comments.trim()
@@ -656,9 +653,8 @@ export async function requestDocumentChanges(
   const { data, error } = await documentRpc(
     "request_document_changes",
     {
-      p_document_id: documentId,
-      p_reviewer_name: reviewerName.trim(),
-      p_comments: normalizedComments,
+      p_document_id: documentId, 
+      p_comments: comments.trim(),
     },
   )
 

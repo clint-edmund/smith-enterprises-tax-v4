@@ -1,5 +1,6 @@
 import {
   FileSearch,
+  Loader2,
   UserRound,
 } from "lucide-react"
 
@@ -26,7 +27,14 @@ interface ReviewQueueTableProps {
 
   onRequestChanges: (
     documentId: string,
-  ) => Promise<void>
+  ) => void
+
+  activeAction: {
+    documentId: string
+    action: "approve"
+  } | null
+
+  isSubmittingRequest: boolean
 }
 
 export function ReviewQueueTable({
@@ -35,6 +43,8 @@ export function ReviewQueueTable({
   onClearFilters,
   onApprove,
   onRequestChanges,
+  activeAction,
+  isSubmittingRequest,
 }: ReviewQueueTableProps) {
   if (items.length === 0) {
     return (
@@ -87,6 +97,8 @@ export function ReviewQueueTable({
                 item={item}
                 onApprove={onApprove}
                 onRequestChanges={onRequestChanges}
+                activeAction={activeAction}
+                isSubmittingRequest={isSubmittingRequest}
               />
             ))}
           </tbody>
@@ -105,16 +117,33 @@ interface ReviewQueueRowProps {
 
   onRequestChanges: (
     documentId: string,
-  ) => Promise<void>
+  ) => void
+
+  activeAction: {
+    documentId: string
+    action: "approve"
+  } | null
+
+  isSubmittingRequest: boolean
 }
 
 function ReviewQueueRow({
   item,
   onApprove,
   onRequestChanges,
+  activeAction,
+  isSubmittingRequest,
 }: ReviewQueueRowProps) {
   const returnDescription =
     createReturnDescription(item)
+  const isApproving =
+    activeAction?.documentId ===
+      item.documentId &&
+    activeAction.action === "approve"
+
+  const disableActions =
+    isApproving ||
+    isSubmittingRequest
 
   return (
     <tr className="transition hover:bg-slate-50">
@@ -198,22 +227,32 @@ function ReviewQueueRow({
 
           <button
             type="button"
+            disabled={disableActions}
             onClick={() => {
               void onApprove(item.documentId)
             }}
-            className="rounded-md border border-emerald-300 bg-emerald-50 px-3 py-1.5 text-sm font-medium text-emerald-700 transition hover:bg-emerald-100"
+            className="rounded-md border border-emerald-300 bg-emerald-50 px-3 py-1.5 text-sm font-medium text-emerald-700 transition hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            Approve
+            {isApproving ? (
+              <span className="inline-flex items-center gap-2">
+                <Loader2
+                  className="h-4 w-4 animate-spin"
+                  aria-hidden="true"
+                />
+                Approving...
+              </span>
+            ) : (
+              "Approve"
+            )}
           </button>
 
           <button
             type="button"
+            disabled={disableActions}
             onClick={() => {
-              void onRequestChanges(
-                item.documentId,
-              )
+              onRequestChanges(item.documentId)
             }}
-            className="rounded-md border border-orange-300 bg-orange-50 px-3 py-1.5 text-sm font-medium text-orange-700 transition hover:bg-orange-100"
+            className="rounded-md border border-orange-300 bg-orange-50 px-3 py-1.5 text-sm font-medium text-orange-700 transition hover:bg-orange-100 disabled:cursor-not-allowed disabled:opacity-50"
           >
             Needs Changes
           </button>
