@@ -36,6 +36,10 @@ import {
   voidReturnPayment,
 } from "../services/payment-service"
 
+import {
+  useAuth,
+} from "@/features/auth/hooks/use-auth"
+
 interface PaymentPanelProps {
   taxReturnId: string
   onPaymentRecorded?: () => void
@@ -76,6 +80,14 @@ export function PaymentPanel({
     errorMessage,
     refreshPayments,
   } = usePayments(taxReturnId)
+
+  const {
+    profile,
+  } = useAuth()
+
+  const canVoidPayments =
+    profile?.role === "administrator" ||
+    profile?.role === "manager"
 
   async function handleVoidPayment(
     reason: string,
@@ -240,6 +252,7 @@ export function PaymentPanel({
 
               <PaymentList
                 payments={payments}
+                canVoidPayments={canVoidPayments}
                 onVoidPayment={(
                   payment,
                 ) => {

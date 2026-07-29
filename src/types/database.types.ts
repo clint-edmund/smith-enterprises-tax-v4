@@ -773,6 +773,9 @@ export type Database = {
           notes: string | null
           payment_date: string
           payment_method: Database["public"]["Enums"]["payment_method"]
+          receipt_issued_at: string | null
+          receipt_issued_by: string | null
+          receipt_number: string | null
           reference_number: string | null
           tax_return_id: string | null
           updated_at: string
@@ -790,6 +793,9 @@ export type Database = {
           notes?: string | null
           payment_date?: string
           payment_method: Database["public"]["Enums"]["payment_method"]
+          receipt_issued_at?: string | null
+          receipt_issued_by?: string | null
+          receipt_number?: string | null
           reference_number?: string | null
           tax_return_id?: string | null
           updated_at?: string
@@ -807,6 +813,9 @@ export type Database = {
           notes?: string | null
           payment_date?: string
           payment_method?: Database["public"]["Enums"]["payment_method"]
+          receipt_issued_at?: string | null
+          receipt_issued_by?: string | null
+          receipt_number?: string | null
           reference_number?: string | null
           tax_return_id?: string | null
           updated_at?: string
@@ -825,6 +834,13 @@ export type Database = {
           {
             foreignKeyName: "payments_created_by_fkey"
             columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_receipt_issued_by_fkey"
+            columns: ["receipt_issued_by"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
@@ -1721,6 +1737,7 @@ export type Database = {
           size_bytes: number
         }[]
       }
+      generate_payment_receipt_number: { Args: never; Returns: string }
       get_client_document_activity: {
         Args: { requested_client_id: string; requested_limit?: number }
         Returns: {
@@ -2043,6 +2060,9 @@ export type Database = {
           notes: string
           payment_date: string
           payment_method: Database["public"]["Enums"]["payment_method"]
+          receipt_issued_at: string
+          receipt_issued_by: string
+          receipt_number: string
           reference_number: string
           tax_return_id: string
           updated_at: string
@@ -2319,6 +2339,9 @@ export type Database = {
           notes: string | null
           payment_date: string
           payment_method: Database["public"]["Enums"]["payment_method"]
+          receipt_issued_at: string | null
+          receipt_issued_by: string | null
+          receipt_number: string | null
           reference_number: string | null
           tax_return_id: string | null
           updated_at: string
@@ -2848,6 +2871,9 @@ export type Database = {
           notes: string | null
           payment_date: string
           payment_method: Database["public"]["Enums"]["payment_method"]
+          receipt_issued_at: string | null
+          receipt_issued_by: string | null
+          receipt_number: string | null
           reference_number: string | null
           tax_return_id: string | null
           updated_at: string

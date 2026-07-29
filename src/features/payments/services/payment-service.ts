@@ -197,6 +197,12 @@ export async function getReturnPayments(
       notes:
         payment.notes,
 
+      receiptNumber: payment.receipt_number,
+
+      receiptIssuedAt: payment.receipt_issued_at,
+
+      receiptIssuedBy: payment.receipt_issued_by,
+
       isVoided:
         payment.is_voided,
 
@@ -410,6 +416,10 @@ export async function recordReturnPayment(
       notes:
         payment.notes,
 
+      receiptNumber: data.receipt_number,
+      receiptIssuedAt: data.receipt_issued_at,
+      receiptIssuedBy: data.receipt_issued_by,
+
       isVoided:
         payment.is_voided,
 
@@ -525,6 +535,10 @@ export async function voidReturnPayment(
 
       notes:
         payment.notes,
+
+      receiptNumber: data.receipt_number,
+      receiptIssuedAt: data.receipt_issued_at,
+      receiptIssuedBy: data.receipt_issued_by,
 
       isVoided:
         payment.is_voided,

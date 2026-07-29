@@ -22,6 +22,12 @@ export interface ReturnPayment {
 
   notes: string | null
 
+  receiptNumber: string | null
+
+  receiptIssuedAt: string | null
+
+  receiptIssuedBy: string | null
+
   isVoided: boolean
 
   voidedAt: string | null

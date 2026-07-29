@@ -15,6 +15,8 @@ import {
 interface Props {
   payment: ReturnPayment
 
+  canVoidPayments: boolean
+
   onVoidPayment?: (
     payment: ReturnPayment,
   ) => void
@@ -22,6 +24,7 @@ interface Props {
 
 export function PaymentRow({
   payment,
+  canVoidPayments,
   onVoidPayment,
 }: Props) {
   return (
@@ -39,6 +42,12 @@ export function PaymentRow({
               payment.paymentMethod
             ]
           }
+
+          {payment.receiptNumber && (
+            <p className="text-xs text-slate-500">
+              Receipt #{payment.receiptNumber}
+            </p>
+          )}
 
           {payment.referenceNumber &&
             ` • Ref ${payment.referenceNumber}`}
@@ -63,7 +72,8 @@ export function PaymentRow({
 
         </div>
 
-        {!payment.isVoided &&
+        {canVoidPayments &&
+          !payment.isVoided &&
           onVoidPayment && (
 
             <Button
