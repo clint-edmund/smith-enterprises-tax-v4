@@ -24,9 +24,17 @@ import {
   PaymentSummary,
 } from "./payment-summary"
 
-interface PaymentPanelProps {
-  taxReturnId: string
-}
+import {
+  VoidPaymentDialog,
+} from "./void-payment-dialog"
+
+import type {
+  ReturnPayment,
+} from "../types/payment.types"
+
+import {
+  voidReturnPayment,
+} from "../services/payment-service"
 
 interface PaymentPanelProps {
   taxReturnId: string
@@ -42,6 +50,24 @@ export function PaymentPanel({
     setIsDialogOpen,
   ] = useState(false)
 
+  const [
+    selectedPayment,
+    setSelectedPayment,
+  ] =
+    useState<ReturnPayment | null>(
+      null,
+    )
+
+  const [
+    isVoidDialogOpen,
+    setIsVoidDialogOpen,
+  ] = useState(false)
+
+  const [
+    isVoidingPayment,
+    setIsVoidingPayment,
+  ] = useState(false)
+
   const {
     payments,
     summary,
@@ -50,6 +76,40 @@ export function PaymentPanel({
     errorMessage,
     refreshPayments,
   } = usePayments(taxReturnId)
+
+  async function handleVoidPayment(
+    reason: string,
+  ) {
+    if (!selectedPayment) {
+      return
+    }
+
+    setIsVoidingPayment(true)
+
+    try {
+
+      await voidReturnPayment({
+        paymentId:
+          selectedPayment.id,
+
+        voidReason:
+          reason,
+      })
+
+      setIsVoidDialogOpen(false)
+
+      setSelectedPayment(null)
+
+      await refreshPayments()
+
+      onPaymentRecorded?.()
+
+    } finally {
+
+      setIsVoidingPayment(false)
+
+    }
+  }
 
   if (isLoading) {
     return (
@@ -180,6 +240,19 @@ export function PaymentPanel({
 
               <PaymentList
                 payments={payments}
+                onVoidPayment={(
+                  payment,
+                ) => {
+
+                  setSelectedPayment(
+                    payment,
+                  )
+
+                  setIsVoidDialogOpen(
+                    true,
+                  )
+
+                }}
               />
             </div>
           </>
@@ -195,6 +268,23 @@ export function PaymentPanel({
         onPaymentRecorded={() => {
           void refreshPayments()
         }}
+      />
+      <VoidPaymentDialog
+        open={isVoidDialogOpen}
+        paymentAmount={
+          selectedPayment?.amount ??
+          0
+        }
+        isSubmitting={
+          isVoidingPayment
+        }
+        onCancel={() => {
+          setIsVoidDialogOpen(false)
+          setSelectedPayment(null)
+        }}
+        onConfirm={
+          handleVoidPayment
+        }
       />
     </>
   )

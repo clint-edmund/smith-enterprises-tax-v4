@@ -8,12 +8,21 @@ import {
   paymentMethodLabels,
 } from "../utils/payment-formatters"
 
+import {
+  Button,
+} from "@/components/ui/button"
+
 interface Props {
   payment: ReturnPayment
+
+  onVoidPayment?: (
+    payment: ReturnPayment,
+  ) => void
 }
 
 export function PaymentRow({
   payment,
+  onVoidPayment,
 }: Props) {
   return (
     <div className="flex items-center justify-between border-b border-slate-100 py-3 last:border-none">
@@ -36,18 +45,42 @@ export function PaymentRow({
         </p>
       </div>
 
-      <div className="text-right">
-        <p className="font-semibold">
-          {formatPaymentAmount(
-            payment.amount,
-          )}
-        </p>
+      <div className="flex items-center gap-3">
 
-        {payment.isVoided && (
-          <span className="rounded bg-red-100 px-2 py-1 text-xs text-red-700">
-            Voided
-          </span>
-        )}
+        <div className="text-right">
+
+          <p className="font-semibold">
+            {formatPaymentAmount(
+              payment.amount,
+            )}
+          </p>
+
+          {payment.isVoided && (
+            <span className="rounded bg-red-100 px-2 py-1 text-xs text-red-700">
+              Voided
+            </span>
+          )}
+
+        </div>
+
+        {!payment.isVoided &&
+          onVoidPayment && (
+
+            <Button
+              type="button"
+              variant="destructive"
+              size="sm"
+              onClick={() => {
+                onVoidPayment(
+                  payment,
+                )
+              }}
+            >
+              Void
+            </Button>
+
+          )}
+
       </div>
     </div>
   )

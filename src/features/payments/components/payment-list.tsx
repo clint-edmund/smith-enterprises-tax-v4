@@ -8,10 +8,15 @@ import {
 
 interface Props {
   payments: ReturnPayment[]
+
+  onVoidPayment?: (
+    payment: ReturnPayment,
+  ) => void
 }
 
 export function PaymentList({
   payments,
+  onVoidPayment,
 }: Props) {
   if (payments.length === 0) {
     return (
@@ -27,6 +32,9 @@ export function PaymentList({
         <PaymentRow
           key={payment.id}
           payment={payment}
+          onVoidPayment={
+            onVoidPayment
+          }
         />
       ))}
     </div>
