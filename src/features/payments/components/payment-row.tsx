@@ -36,22 +36,24 @@ export function PaymentRow({
           )}
         </p>
 
-        <p className="text-sm text-slate-500">
-          {
-            paymentMethodLabels[
-              payment.paymentMethod
-            ]
-          }
+        <div className="text-sm text-slate-500">
+          <p>
+            {
+              paymentMethodLabels[
+                payment.paymentMethod
+              ]
+            }
+
+            {payment.referenceNumber &&
+              ` • Ref ${payment.referenceNumber}`}
+          </p>
 
           {payment.receiptNumber && (
-            <p className="text-xs text-slate-500">
+            <p className="mt-1 text-xs font-medium text-blue-600">
               Receipt #{payment.receiptNumber}
             </p>
           )}
-
-          {payment.referenceNumber &&
-            ` • Ref ${payment.referenceNumber}`}
-        </p>
+        </div>
       </div>
 
       <div className="flex items-center gap-3">
@@ -75,21 +77,27 @@ export function PaymentRow({
         {canVoidPayments &&
           !payment.isVoided &&
           onVoidPayment && (
+            <>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+              >
+                View Receipt
+              </Button>
 
-            <Button
-              type="button"
-              variant="destructive"
-              size="sm"
-              onClick={() => {
-                onVoidPayment(
-                  payment,
-                )
-              }}
-            >
-              Void
-            </Button>
-
-          )}
+              <Button
+                type="button"
+                variant="destructive"
+                size="sm"
+                onClick={() => {
+                  onVoidPayment(payment)
+                }}
+              >
+                Void
+              </Button>
+            </>
+        )}
 
       </div>
     </div>

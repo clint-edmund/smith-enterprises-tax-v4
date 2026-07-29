@@ -1,11 +1,9 @@
 import type {
-  ReturnPayment,
+  PaymentReceiptDetails,
 } from "@/features/payments/types/payment.types"
 
 interface PaymentReceiptProps {
-  payment: ReturnPayment
-  clientName: string
-  taxYear: number
+  receipt: PaymentReceiptDetails
 }
 
 function formatCurrency(
@@ -113,17 +111,15 @@ function ReceiptDetail({
 }
 
 export function PaymentReceipt({
-  payment,
-  clientName,
-  taxYear,
+  receipt,
 }: PaymentReceiptProps) {
   const receiptNumber =
-    payment.receiptNumber ??
-    "Receipt pending"
+    receipt.receiptNumber ??
+    "Receipt Pending"
 
   const issuedAt =
-    payment.receiptIssuedAt ??
-    payment.createdAt
+    receipt.receiptIssuedAt ??
+    receipt.createdAt
 
   return (
     <article
@@ -197,7 +193,7 @@ export function PaymentReceipt({
             "
           >
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-300 print:text-slate-500">
-              Receipt number
+              Receipt Number
             </p>
 
             <p className="mt-1 font-mono text-sm font-bold">
@@ -208,7 +204,8 @@ export function PaymentReceipt({
       </header>
 
       <div className="space-y-8 px-6 py-7 sm:px-8">
-        {payment.isVoided && (
+
+                {receipt.isVoided && (
           <section
             className="
               rounded-xl
@@ -224,16 +221,32 @@ export function PaymentReceipt({
             "
           >
             <p className="text-sm font-bold uppercase tracking-wide">
-              Voided receipt
+              Voided Receipt
             </p>
 
             <p className="mt-1 text-sm">
-              This payment was voided and should not be treated as an active payment.
+              This payment was voided and should not be
+              treated as an active payment.
             </p>
 
-            {payment.voidReason && (
+            {receipt.voidReason && (
               <p className="mt-2 text-sm">
-                Reason: {payment.voidReason}
+                Reason: {receipt.voidReason}
+              </p>
+            )}
+
+            {receipt.voidedByName && (
+              <p className="mt-2 text-sm">
+                Voided by: {receipt.voidedByName}
+              </p>
+            )}
+
+            {receipt.voidedAt && (
+              <p className="mt-1 text-sm">
+                Voided on:{" "}
+                {formatDateTime(
+                  receipt.voidedAt,
+                )}
               </p>
             )}
           </section>
@@ -243,12 +256,12 @@ export function PaymentReceipt({
           <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="text-sm font-medium text-slate-500">
-                Amount received
+                Amount Received
               </p>
 
               <p className="mt-1 text-4xl font-bold tracking-tight text-slate-950">
                 {formatCurrency(
-                  payment.amount,
+                  receipt.amount,
                 )}
               </p>
             </div>
@@ -257,7 +270,7 @@ export function PaymentReceipt({
               Paid on{" "}
               <span className="font-semibold text-slate-800">
                 {formatDate(
-                  payment.paymentDate,
+                  receipt.paymentDate,
                 )}
               </span>
             </p>
@@ -280,68 +293,172 @@ export function PaymentReceipt({
         >
           <ReceiptDetail
             label="Client"
-            value={clientName}
+            value={receipt.clientName}
           />
 
           <ReceiptDetail
-            label="Tax year"
-            value={String(
-              taxYear,
-            )}
-          />
-
-          <ReceiptDetail
-            label="Payment method"
-            value={formatPaymentMethod(
-              payment.paymentMethod,
-            )}
-          />
-
-          <ReceiptDetail
-            label="Reference number"
+            label="Client Number"
             value={
-              payment.referenceNumber ??
+              receipt.clientNumber !== null
+                ? String(
+                    receipt.clientNumber,
+                  )
+                : "Not available"
+            }
+          />
+
+          <ReceiptDetail
+            label="Tax Year"
+            value={String(
+              receipt.taxYear,
+            )}
+          />
+
+          <ReceiptDetail
+            label="Return Type"
+            value={
+              receipt.returnType ||
+              "Not available"
+            }
+          />
+
+          <ReceiptDetail
+            label="Payment Method"
+            value={formatPaymentMethod(
+              receipt.paymentMethod,
+            )}
+          />
+
+          <ReceiptDetail
+            label="Reference Number"
+            value={
+              receipt.referenceNumber ??
               "Not provided"
             }
           />
 
           <ReceiptDetail
-            label="Received by"
+            label="Received By"
             value={
-              payment.createdByName ||
+              receipt.createdByName ||
               "Smith Enterprises staff"
             }
           />
 
           <ReceiptDetail
-            label="Receipt issued"
+            label="Receipt Issued By"
+            value={
+              receipt.receiptIssuedByName ||
+              "Smith Enterprises staff"
+            }
+          />
+
+          <ReceiptDetail
+            label="Receipt Issued"
             value={formatDateTime(
               issuedAt,
             )}
           />
+
+          <ReceiptDetail
+            label="Payment Status"
+            value={
+              receipt.isVoided
+                ? "Voided"
+                : "Active"
+            }
+          />
         </section>
+        
+                {receipt.notes && (
+                  <section>
+                    <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+                      Payment Notes
+                    </h2>
 
-        {payment.notes && (
-          <section>
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
-              Payment notes
-            </h2>
+                    <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-slate-700">
+                      {receipt.notes}
+                    </p>
+                  </section>
+                )}
 
-            <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-slate-700">
-              {payment.notes}
-            </p>
-          </section>
-        )}
+                <section
+                  className="
+                    rounded-xl
+                    border
+                    border-slate-200
+                    bg-slate-50
+                    p-5
 
-        <footer className="border-t border-slate-200 pt-6 text-center">
-          <p className="text-sm font-medium text-slate-800">
-            Thank you for choosing Smith Enterprises.
-          </p>
+                    print:bg-white
+                  "
+                >
+                  <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+                    Receipt Audit Information
+                  </h2>
 
-          <p className="mt-1 text-xs text-slate-500">
-            Please retain this receipt for your records.
-          </p>
-        </footer>
+                  <dl className="mt-4 grid gap-6 sm:grid-cols-2">
+                    <ReceiptDetail
+                      label="Receipt Number"
+                      value={
+                        receipt.receiptNumber ??
+                        "Pending"
+                      }
+                    />
+
+                    <ReceiptDetail
+                      label="Receipt Issued"
+                      value={formatDateTime(
+                        receipt.receiptIssuedAt,
+                      )}
+                    />
+
+                    <ReceiptDetail
+                      label="Receipt Issued By"
+                      value={
+                        receipt.receiptIssuedByName ||
+                        "Smith Enterprises staff"
+                      }
+                    />
+
+                    <ReceiptDetail
+                      label="Recorded By"
+                      value={
+                        receipt.createdByName ||
+                        "Smith Enterprises staff"
+                      }
+                    />
+
+                    <ReceiptDetail
+                      label="Created"
+                      value={formatDateTime(
+                        receipt.createdAt,
+                      )}
+                    />
+
+                    <ReceiptDetail
+                      label="Last Updated"
+                      value={formatDateTime(
+                        receipt.updatedAt,
+                      )}
+                    />
+                  </dl>
+                </section>
+
+                <footer className="border-t border-slate-200 pt-6 text-center">
+                  <p className="text-sm font-medium text-slate-800">
+                    Thank you for choosing Smith Enterprises.
+                  </p>
+
+                  <p className="mt-1 text-xs text-slate-500">
+                    Please retain this receipt for your records.
+                  </p>
+
+                  <p className="mt-4 text-xs text-slate-400">
+                    This receipt was generated electronically by the
+                    Smith Enterprises Tax Management System.
+                  </p>
+                </footer>
       </div>
     </article>
   )

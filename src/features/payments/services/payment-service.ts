@@ -3,6 +3,7 @@ import { supabase } from "@/services/supabase"
 import type {
   RecordPaymentResult,
   RecordPaymentValues,
+  PaymentReceiptDetails,
   ReturnPayment,
   ReturnPaymentSummary,
   VoidPaymentResult,
@@ -567,5 +568,122 @@ export async function voidReturnPayment(
 
     message:
       "The payment was voided successfully.",
+  }
+}
+
+export async function getPaymentReceipt(
+  paymentId: string,
+): Promise<PaymentReceiptDetails> {
+  const normalizedPaymentId =
+    paymentId.trim()
+
+  if (!normalizedPaymentId) {
+    throw new Error(
+      "A payment identifier is required.",
+    )
+  }
+
+  const {
+    data,
+    error,
+  } = await supabase.rpc(
+    "get_payment_receipt",
+    {
+      requested_payment_id:
+        normalizedPaymentId,
+    },
+  )
+
+  if (error) {
+    throw new Error(
+      error.message ||
+        "Unable to load the payment receipt.",
+    )
+  }
+
+  const receipt =
+    data?.[0]
+
+  if (!receipt) {
+    throw new Error(
+      "The selected payment receipt was not found.",
+    )
+  }
+
+  return {
+    paymentId:
+      receipt.payment_id,
+
+    taxReturnId:
+      receipt.tax_return_id,
+
+    clientId:
+      receipt.client_id,
+
+    clientNumber:
+      receipt.client_number,
+
+    clientName:
+      receipt.client_name,
+
+    taxYear:
+      receipt.tax_year,
+
+    returnType:
+      receipt.return_type,
+
+    amount:
+      Number(receipt.amount),
+
+    paymentDate:
+      receipt.payment_date,
+
+    paymentMethod:
+      receipt.payment_method,
+
+    referenceNumber:
+      receipt.reference_number,
+
+    notes:
+      receipt.notes,
+
+    receiptNumber:
+      receipt.receipt_number,
+
+    receiptIssuedAt:
+      receipt.receipt_issued_at,
+
+    receiptIssuedBy:
+      receipt.receipt_issued_by,
+
+    receiptIssuedByName:
+      receipt.receipt_issued_by_name,
+
+    createdBy:
+      receipt.created_by,
+
+    createdByName:
+      receipt.created_by_name,
+
+    isVoided:
+      receipt.is_voided,
+
+    voidedAt:
+      receipt.voided_at,
+
+    voidedBy:
+      receipt.voided_by,
+
+    voidedByName:
+      receipt.voided_by_name,
+
+    voidReason:
+      receipt.void_reason,
+
+    createdAt:
+      receipt.created_at,
+
+    updatedAt:
+      receipt.updated_at,
   }
 }

@@ -88,3 +88,31 @@ export interface VoidPaymentResult {
   payment: ReturnPayment
   message: string
 }
+
+export interface PaymentReceiptDetails {
+  paymentId: string
+  taxReturnId: string
+  clientId: string
+  clientNumber: number | null
+  clientName: string
+  taxYear: number
+  returnType: string
+  amount: number
+  paymentDate: string
+  paymentMethod: PaymentMethod
+  referenceNumber: string | null
+  notes: string | null
+  receiptNumber: string | null
+  receiptIssuedAt: string | null
+  receiptIssuedBy: string | null
+  receiptIssuedByName: string
+  createdBy: string | null
+  createdByName: string
+  isVoided: boolean
+  voidedAt: string | null
+  voidedBy: string | null
+  voidedByName: string | null
+  voidReason: string | null
+  createdAt: string
+  updatedAt: string
+}

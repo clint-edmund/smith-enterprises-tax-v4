@@ -2025,6 +2025,36 @@ export type Database = {
         Args: never
         Returns: number
       }
+      get_payment_receipt: {
+        Args: { requested_payment_id: string }
+        Returns: {
+          amount: number
+          client_id: string
+          client_name: string
+          client_number: number
+          created_at: string
+          created_by: string
+          created_by_name: string
+          is_voided: boolean
+          notes: string
+          payment_date: string
+          payment_id: string
+          payment_method: Database["public"]["Enums"]["payment_method"]
+          receipt_issued_at: string
+          receipt_issued_by: string
+          receipt_issued_by_name: string
+          receipt_number: string
+          reference_number: string
+          return_type: Database["public"]["Enums"]["return_type"]
+          tax_return_id: string
+          tax_year: number
+          updated_at: string
+          void_reason: string
+          voided_at: string
+          voided_by: string
+          voided_by_name: string
+        }[]
+      }
       get_recent_dashboard_activity: {
         Args: { requested_limit?: number }
         Returns: {
