@@ -26,6 +26,7 @@ import { ReturnAssignmentSummary } from "@/features/returns/components/return-as
 import { ReturnClientSummary } from "@/features/returns/components/return-client-summary"
 import { ReturnFilingRequirements } from "@/features/returns/components/return-filing-requirements"
 import { ReturnFinancialSummary } from "@/features/returns/components/return-financial-summary"
+import { PaymentPanel } from "@/features/payments/components/payment-panel"
 import { ReturnStatusBadge } from "@/features/returns/components/return-status-badge"
 import { ReturnWorkflowProgress } from "@/features/returns/components/return-workflow-progress"
 import { getTaxReturnDetailData } from "@/features/returns/services/return-service"
@@ -398,6 +399,13 @@ export function ReturnDetailsPage() {
 
         <ReturnFinancialSummary
           taxReturn={taxReturn}
+        />
+
+        <PaymentPanel
+          taxReturnId={taxReturn.id}
+          onPaymentRecorded={() => {
+            void loadReturn(true)
+          }}
         />
       </div>
 

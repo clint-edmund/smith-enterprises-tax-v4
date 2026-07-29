@@ -776,6 +776,7 @@ export type Database = {
           reference_number: string | null
           tax_return_id: string | null
           updated_at: string
+          void_reason: string | null
           voided_at: string | null
           voided_by: string | null
         }
@@ -792,6 +793,7 @@ export type Database = {
           reference_number?: string | null
           tax_return_id?: string | null
           updated_at?: string
+          void_reason?: string | null
           voided_at?: string | null
           voided_by?: string | null
         }
@@ -808,6 +810,7 @@ export type Database = {
           reference_number?: string | null
           tax_return_id?: string | null
           updated_at?: string
+          void_reason?: string | null
           voided_at?: string | null
           voided_by?: string | null
         }
@@ -2016,6 +2019,38 @@ export type Database = {
           occurred_at: string
         }[]
       }
+      get_return_payment_summary: {
+        Args: { requested_return_id: string }
+        Returns: {
+          discount_amount: number
+          net_fee: number
+          outstanding_balance: number
+          payment_count: number
+          preparation_fee: number
+          total_paid: number
+        }[]
+      }
+      get_return_payments: {
+        Args: { requested_return_id: string }
+        Returns: {
+          amount: number
+          client_id: string
+          created_at: string
+          created_by: string
+          created_by_name: string
+          id: string
+          is_voided: boolean
+          notes: string
+          payment_date: string
+          payment_method: Database["public"]["Enums"]["payment_method"]
+          reference_number: string
+          tax_return_id: string
+          updated_at: string
+          void_reason: string
+          voided_at: string
+          voided_by: string
+        }[]
+      }
       get_return_staff_options: {
         Args: never
         Returns: {
@@ -2265,6 +2300,39 @@ export type Database = {
         Returns: undefined
       }
       record_client_portal_login: { Args: never; Returns: undefined }
+      record_return_payment: {
+        Args: {
+          requested_amount: number
+          requested_notes?: string
+          requested_payment_date?: string
+          requested_payment_method: Database["public"]["Enums"]["payment_method"]
+          requested_reference_number?: string
+          requested_return_id: string
+        }
+        Returns: {
+          amount: number
+          client_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          is_voided: boolean
+          notes: string | null
+          payment_date: string
+          payment_method: Database["public"]["Enums"]["payment_method"]
+          reference_number: string | null
+          tax_return_id: string | null
+          updated_at: string
+          void_reason: string | null
+          voided_at: string | null
+          voided_by: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "payments"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       record_security_event: {
         Args: { requested_action: string; requested_metadata?: Json }
         Returns: number
@@ -2764,6 +2832,32 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "tax_returns"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      void_return_payment: {
+        Args: { requested_payment_id: string; requested_void_reason: string }
+        Returns: {
+          amount: number
+          client_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          is_voided: boolean
+          notes: string | null
+          payment_date: string
+          payment_method: Database["public"]["Enums"]["payment_method"]
+          reference_number: string | null
+          tax_return_id: string | null
+          updated_at: string
+          void_reason: string | null
+          voided_at: string | null
+          voided_by: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "payments"
           isOneToOne: true
           isSetofReturn: false
         }
