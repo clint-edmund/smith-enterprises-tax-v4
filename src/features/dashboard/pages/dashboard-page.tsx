@@ -59,8 +59,16 @@ import {
   PriorityQueueCard,
 } from "@/features/dashboard/components/priority-queue-card"
 
+import {
+  useAuthorization,
+} from "@/features/authorization/hooks/use-authorization"
+
 export function DashboardPage() {
   const { profile } = useAuth();
+  const {
+    hasPermission,
+    permissions,
+  } = useAuthorization();
 
   const realtimeRefreshTimerRef =
     useRef<ReturnType<typeof setTimeout> | null>(
@@ -277,21 +285,23 @@ export function DashboardPage() {
     profile.displayName ||
     "Staff Member";
 
-  const isAdministrator =
-    profile.role === "administrator";
-
-  const isManager =
-    profile.role === "manager";
-
   const canViewExecutiveData =
-    isAdministrator || isManager;
+    hasPermission(
+      permissions.dashboard
+        .viewExecutiveData,
+    )
 
   const canViewReturnReadiness =
-    profile.role !== "receptionist" &&
-    profile.role !== "read_only";
+    hasPermission(
+      permissions.dashboard
+        .viewReturnReadiness,
+    )
 
   const canViewPriorityQueue =
-    profile.role !== "read_only";
+    hasPermission(
+      permissions.dashboard
+        .viewPriorityQueue,
+    )
 
   return (
     <section className="space-y-6">

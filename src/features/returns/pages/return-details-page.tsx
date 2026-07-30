@@ -19,7 +19,8 @@ import {
   appConfig,
   getReturnEditRoute,
 } from "@/config/app-config"
-import { useAuth } from "@/features/auth/hooks/use-auth"
+
+import { useAuthorization} from "@/features/authorization/hooks/use-authorization"
 import { DocumentWorkspace } from "@/features/documents/components/document-workspace"
 import { ReturnActivityTimeline } from "@/features/returns/components/return-activity-timeline"
 import { ReturnAssignmentSummary } from "@/features/returns/components/return-assignment-summary"
@@ -49,17 +50,15 @@ import {
   ReturnReadinessPanel,
 } from "@/features/returns/readiness/return-readiness-panel"
 
-const editRoles = [
-  "administrator",
-  "manager",
-  "preparer",
-  "reviewer",
-  "receptionist",
-]
+
 
 export function ReturnDetailsPage() {
   const { returnId } = useParams()
-  const { profile } = useAuth()
+
+  const {
+    hasPermission,
+    permissions,
+  } = useAuthorization()
 
   const [
     detailData,
@@ -200,9 +199,20 @@ export function ReturnDetailsPage() {
     activities,
   } = detailData
 
-  const canEdit =
-    profile !== null &&
-    editRoles.includes(profile.role)
+  const canEditReturn =
+    hasPermission(
+      permissions.returns.edit,
+    )
+
+  const canAssignReturn =
+    hasPermission(
+      permissions.returns.assign,
+    )
+
+  const canApproveReturn =
+    hasPermission(
+      permissions.returns.approve,
+    )
 
   return (
     <section className="space-y-6">
@@ -272,7 +282,7 @@ export function ReturnDetailsPage() {
               Refresh
             </button>
 
-            {canEdit && (
+            {canEditReturn && (
               <Link
                 to={getReturnEditRoute(
                   taxReturn.id,
@@ -287,7 +297,7 @@ export function ReturnDetailsPage() {
         </div>
       </header>
 
-      {canEdit && (
+      {(canAssignReturn || canApproveReturn) && (
         <ReturnWorkflowPanel
           returnId={taxReturn.id}
           workflowStatus={
@@ -307,7 +317,10 @@ export function ReturnDetailsPage() {
 
       <ReturnReadinessPanel
         taxReturn={taxReturn}
-        canManageWorkflow={canEdit}
+        canManageWorkflow={
+          canAssignReturn ||
+          canApproveReturn
+        }
         onWorkflowAdvanced={() => {
           void loadReturn(true)
         }}
