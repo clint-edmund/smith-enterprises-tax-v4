@@ -10,7 +10,8 @@ export const appConfig = {
     login: "/login",
     pendingApproval: "/pending-approval",
     accountError: "/account-error",
-    securityAcknowledgment: "/security-acknowledgment",
+    securityAcknowledgment:
+      "/security-acknowledgment",
     dashboard: "/dashboard",
     notifications: "/notifications",
     clients: "/clients",
@@ -22,11 +23,14 @@ export const appConfig = {
     reviewQueue: "/documents/review-queue",
     returnNew: "/returns/new",
     returnDetails: "/returns/:returnId",
+    returnWorkspace:
+      "/returns/:returnId/workspace",
     returnEdit: "/returns/:returnId/edit",
     payments: "/payments",
     reports: "/reports",
     settings: "/settings",
-    notificationPreferences: "/settings/notifications",
+    notificationPreferences:
+      "/settings/notifications",
     clientHome: "/client",
     clientLogin: "/client/login",
     clientRegister: "/client/register",
@@ -54,6 +58,12 @@ export function getReturnDetailsRoute(
   returnId: string,
 ): string {
   return `/returns/${returnId}`
+}
+
+export function getReturnWorkspaceRoute(
+  returnId: string,
+): string {
+  return `/returns/${returnId}/workspace`
 }
 
 export function getReturnEditRoute(

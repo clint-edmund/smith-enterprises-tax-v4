@@ -40,6 +40,9 @@ import { EditReturnPage } from "@/features/returns/pages/edit-return-page"
 import { NewReturnPage } from "@/features/returns/pages/new-return-page"
 import { ReturnDetailsPage } from "@/features/returns/pages/return-details-page"
 import { ReturnsPage } from "@/features/returns/pages/returns-page"
+import {
+  ReturnWorkspacePage,
+} from "@/features/return-workspace/pages/return-workspace-page"
 import { SettingsPage } from "@/features/settings/pages/settings-page"
 import {
   ClientAuthProvider,
@@ -298,6 +301,10 @@ export const appRouter =
                     />
                   ),
                   children: [
+                    {
+                      path: appConfig.routes.returnWorkspace,
+                      element: <ReturnWorkspacePage />,
+                    },
                     {
                       path: appConfig.routes.returnDetails,
                       element: <ReturnDetailsPage />,
