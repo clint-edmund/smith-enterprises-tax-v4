@@ -7,6 +7,10 @@ import {
   MessageSquareText,
   UserRound,
 } from "lucide-react"
+import {
+  useEffect,
+  useState,
+} from "react"
 
 const navigationItems = [
   {
@@ -46,23 +50,107 @@ const navigationItems = [
   },
 ] as const
 
-function scrollToSection(
-  sectionId: string,
-) {
-  const section =
-    document.getElementById(sectionId)
-
-  if (!section) {
-    return
-  }
-
-  section.scrollIntoView({
-    behavior: "smooth",
-    block: "start",
-  })
-}
+type ReturnSectionId =
+  (typeof navigationItems)[number]["id"]
 
 export function ReturnDetailsNavigation() {
+  const [
+    activeSectionId,
+    setActiveSectionId,
+  ] = useState<ReturnSectionId>(
+    "return-overview",
+  )
+
+  useEffect(() => {
+    const sections =
+      navigationItems
+        .map((item) =>
+          document.getElementById(
+            item.id,
+          ),
+        )
+        .filter(
+          (
+            section,
+          ): section is HTMLElement =>
+            section !== null,
+        )
+
+    if (sections.length === 0) {
+      return
+    }
+
+    const observer =
+      new IntersectionObserver(
+        (entries) => {
+          const visibleEntries =
+            entries
+              .filter(
+                (entry) =>
+                  entry.isIntersecting,
+              )
+              .sort(
+                (first, second) =>
+                  second.intersectionRatio -
+                  first.intersectionRatio,
+              )
+
+          const activeEntry =
+            visibleEntries[0]
+
+          if (!activeEntry) {
+            return
+          }
+
+          setActiveSectionId(
+            activeEntry.target
+              .id as ReturnSectionId,
+          )
+        },
+        {
+          root: null,
+          rootMargin:
+            "-20% 0px -65% 0px",
+          threshold: [
+            0,
+            0.1,
+            0.25,
+            0.5,
+            0.75,
+            1,
+          ],
+        },
+      )
+
+    sections.forEach((section) => {
+      observer.observe(section)
+    })
+
+    return () => {
+      observer.disconnect()
+    }
+  }, [])
+
+  function handleNavigate(
+    sectionId: ReturnSectionId,
+  ) {
+    const section =
+      document.getElementById(
+        sectionId,
+      )
+
+    if (!section) {
+      return
+    }
+
+    setActiveSectionId(sectionId)
+
+    section.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    })
+  }
+
   return (
     <nav
       aria-label="Return workspace sections"
@@ -74,34 +162,67 @@ export function ReturnDetailsNavigation() {
         </p>
 
         <p className="mt-2 text-sm leading-6 text-slate-600">
-          Move between the major areas of this
-          tax return.
+          Move between the major areas
+          of this tax return.
         </p>
       </div>
 
       <ul className="space-y-1">
-        {navigationItems.map((item) => {
-          const Icon = item.icon
+        {navigationItems.map(
+          (item) => {
+            const Icon = item.icon
 
-          return (
-            <li key={item.id}>
-              <button
-                type="button"
-                onClick={() => {
-                  scrollToSection(item.id)
-                }}
-                className="group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-slate-700 transition hover:bg-blue-50 hover:text-blue-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
-              >
-                <Icon
-                  className="size-4 shrink-0 text-slate-400 transition group-hover:text-blue-700"
-                  aria-hidden="true"
-                />
+            const isActive =
+              item.id ===
+              activeSectionId
 
-                {item.label}
-              </button>
-            </li>
-          )
-        })}
+            return (
+              <li key={item.id}>
+                <button
+                  type="button"
+                  aria-current={
+                    isActive
+                      ? "location"
+                      : undefined
+                  }
+                  onClick={() => {
+                    handleNavigate(
+                      item.id,
+                    )
+                  }}
+                  className={[
+                    "group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold transition",
+                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600",
+                    isActive
+                      ? "bg-blue-100 text-blue-900 shadow-sm"
+                      : "text-slate-700 hover:bg-blue-50 hover:text-blue-800",
+                  ].join(" ")}
+                >
+                  <Icon
+                    aria-hidden="true"
+                    className={[
+                      "size-4 shrink-0 transition",
+                      isActive
+                        ? "text-blue-700"
+                        : "text-slate-400 group-hover:text-blue-700",
+                    ].join(" ")}
+                  />
+
+                  <span className="min-w-0 flex-1">
+                    {item.label}
+                  </span>
+
+                  {isActive && (
+                    <span
+                      aria-hidden="true"
+                      className="size-2 rounded-full bg-blue-700"
+                    />
+                  )}
+                </button>
+              </li>
+            )
+          },
+        )}
       </ul>
     </nav>
   )

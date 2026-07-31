@@ -12,38 +12,12 @@ export function WorkspacePanel({
   children,
 }: WorkspacePanelProps) {
   return (
-    <section
-      className="
-        grid
-        gap-6
-        lg:grid-cols-[280px_1fr]
-      "
-    >
-      <aside
-        className="
-          rounded-2xl
-          border
-          border-slate-200
-          bg-white
-          p-5
-          shadow-sm
-          h-fit
-        "
-      >
+    <section className="grid items-start gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
+      <aside className="h-fit rounded-2xl border border-slate-200 bg-white p-5 shadow-sm lg:sticky lg:top-24">
         {sidebar}
       </aside>
 
-      <main
-        className="
-          rounded-2xl
-          border
-          border-slate-200
-          bg-white
-          p-6
-          shadow-sm
-          min-h-[550px]
-        "
-      >
+      <main className="min-h-[550px] min-w-0 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         {children}
       </main>
     </section>
