@@ -60,12 +60,6 @@ export function getReturnDetailsRoute(
   return `/returns/${returnId}`
 }
 
-export function getReturnWorkspaceRoute(
-  returnId: string,
-): string {
-  return `/returns/${returnId}/workspace`
-}
-
 export function getReturnEditRoute(
   returnId: string,
 ): string {
