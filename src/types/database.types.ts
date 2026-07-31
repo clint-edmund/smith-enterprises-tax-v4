@@ -2110,6 +2110,26 @@ export type Database = {
           role: Database["public"]["Enums"]["app_role"]
         }[]
       }
+      get_return_workspace_summary: {
+        Args: { p_return_id: string }
+        Returns: {
+          assigned_preparer: string
+          assigned_reviewer: string
+          client_id: string
+          client_name: string
+          created_at: string
+          due_date: string
+          estimated_amount_due: number
+          outstanding_balance: number
+          payments_received: number
+          return_id: string
+          return_type: string
+          status: string
+          tax_year: number
+          updated_at: string
+          workflow_percent: number
+        }[]
+      }
       get_staff_workload_summary: {
         Args: never
         Returns: {
