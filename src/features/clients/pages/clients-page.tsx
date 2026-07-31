@@ -24,8 +24,9 @@ import {
   appConfig,
   getClientDetailsRoute,
 } from "@/config/app-config"
-import { useAuth } from "@/features/auth/hooks/use-auth"
-import type { AppRole } from "@/features/auth/types/auth.types"
+import {
+  useAuthorization,
+} from "@/features/authorization/hooks/use-authorization"
 import { searchClients } from "@/features/clients/services/client-service"
 import type {
   ClientListItem,
@@ -40,11 +41,6 @@ type StatusFilter =
   | ClientStatus
   | "all"
 
-const createRoles: AppRole[] = [
-  "administrator",
-  "manager",
-  "receptionist",
-]
 
 const statusOptions: Array<{
   value: StatusFilter
@@ -87,7 +83,10 @@ function getStatusIcon(
 }
 
 export function ClientsPage() {
-  const { profile } = useAuth()
+  const {
+    hasPermission,
+    permissions,
+  } = useAuthorization()
 
   const [clients, setClients] =
     useState<ClientListItem[]>([])
@@ -163,10 +162,10 @@ export function ClientsPage() {
     void loadClients("", statusFilter)
   }
 
-  const canCreate = Boolean(
-    profile &&
-      createRoles.includes(profile.role),
-  )
+  const canCreateClient =
+    hasPermission(
+      permissions.clients.create,
+    )
 
   const statusCounts = useMemo(() => {
     return clients.reduce(
@@ -213,7 +212,7 @@ export function ClientsPage() {
             </p>
           </div>
 
-          {canCreate && (
+          {canCreateClient && (
             <Link
               to={appConfig.routes.clientNew}
               className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-blue-700 px-5 py-3 font-semibold text-white shadow-sm transition hover:bg-blue-800 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-200"

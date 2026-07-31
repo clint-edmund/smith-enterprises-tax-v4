@@ -20,7 +20,8 @@ import type {
 
 interface ClientCommandBarProps {
   client: ClientRecord
-  canEdit: boolean
+  canEditClient: boolean
+  canCreateReturn: boolean
 }
 
 const primaryActionClasses = [
@@ -49,7 +50,8 @@ const disabledActionClasses = [
 
 export function ClientCommandBar({
   client,
-  canEdit,
+  canEditClient,
+  canCreateReturn,
 }: ClientCommandBarProps) {
   const emailHref = client.email
     ? `mailto:${client.email}`
@@ -80,7 +82,7 @@ export function ClientCommandBar({
       </div>
 
       <div className="flex flex-wrap gap-3 p-5">
-        {canEdit && (
+        {canCreateReturn && (
           <Link
             to={getNewClientReturnRoute(client.id)}
             className={primaryActionClasses}
@@ -93,7 +95,7 @@ export function ClientCommandBar({
           </Link>
         )}
 
-        {canEdit && (
+        {canEditClient && (
           <Link
             to={getClientEditRoute(client.id)}
             className={secondaryActionClasses}

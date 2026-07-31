@@ -39,7 +39,9 @@ import {
   getNewClientReturnRoute,
   getReturnDetailsRoute,
 } from "@/config/app-config"
-import { useAuth } from "@/features/auth/hooks/use-auth"
+import {
+  useAuthorization,
+} from "@/features/authorization/hooks/use-authorization"
 import { getClientById } from "@/features/clients/services/client-service"
 import type {
   ClientRecord,
@@ -84,17 +86,14 @@ import {
   DocumentWorkspace,
 } from "@/features/documents/components/document-workspace"
 
-const editRoles = [
-  "administrator",
-  "manager",
-  "preparer",
-  "reviewer",
-  "receptionist",
-]
+
 
 export function ClientDetailsPage() {
   const { clientId } = useParams()
-  const { profile } = useAuth()
+  const {
+    hasPermission,
+    permissions,
+  } = useAuthorization()
 
   const [client, setClient] =
     useState<ClientRecord | null>(null)
@@ -511,11 +510,15 @@ export function ClientDetailsPage() {
     )
   }
 
-  const canEdit =
-    profile !== null &&
-    editRoles.includes(profile.role)
+  const canEditClient =
+    hasPermission(
+      permissions.clients.edit,
+    )
 
-
+  const canCreateReturn =
+    hasPermission(
+      permissions.returns.create,
+    )
 
   return (
     <section className="space-y-6">
@@ -561,7 +564,7 @@ export function ClientDetailsPage() {
             </div>
 
             <div className="flex flex-wrap gap-3">
-              {canEdit && (
+              {canCreateReturn && (
                 <Link
                   to={getNewClientReturnRoute(client.id)}
                   className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-white/25 bg-white/10 px-5 py-3 font-semibold text-white transition hover:bg-white/20"
@@ -571,7 +574,7 @@ export function ClientDetailsPage() {
                 </Link>
               )}
 
-              {canEdit && (
+              {canCreateReturn && (
                 <Link
                   to={getClientEditRoute(client.id)}
                   className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-white px-5 py-3 font-semibold text-slate-950 shadow-sm transition hover:bg-blue-50"
@@ -631,7 +634,8 @@ export function ClientDetailsPage() {
       
       <ClientCommandBar
         client={client}
-        canEdit={canEdit}
+        canEditClient={canEditClient}
+        canCreateReturn={canCreateReturn}
       />
 
       <div className="grid gap-6 lg:grid-cols-2">
@@ -855,7 +859,7 @@ export function ClientDetailsPage() {
             </p>
 
             <div className="mt-5 grid gap-3">
-              {canEdit && (
+              {canEditClient&& (
                 <Link
                   to={getNewClientReturnRoute(client.id)}
                   className="inline-flex min-h-12 items-center justify-between gap-3 rounded-xl bg-blue-700 px-4 py-3 font-semibold text-white transition hover:bg-blue-800"
@@ -868,7 +872,7 @@ export function ClientDetailsPage() {
                 </Link>
               )}
 
-              {canEdit && (
+              {canEditClient && (
                 <Link
                   to={getClientEditRoute(client.id)}
                   className="inline-flex min-h-12 items-center justify-between gap-3 rounded-xl border border-slate-300 bg-white px-4 py-3 font-semibold text-slate-800 transition hover:bg-slate-50"
@@ -1149,7 +1153,7 @@ export function ClientDetailsPage() {
                 Refresh
               </button>
 
-              {canEdit && (
+              {canEditClient && (
                 <Link
                   to={getNewClientReturnRoute(client.id)}
                   className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-800"
@@ -1210,7 +1214,7 @@ export function ClientDetailsPage() {
               This client does not have any tax returns yet.
             </p>
 
-            {canEdit && (
+            {canCreateReturn && (
               <Link
                 to={getNewClientReturnRoute(client.id)}
                 className="mt-5 inline-flex items-center gap-2 rounded-xl bg-blue-700 px-5 py-3 font-semibold text-white transition hover:bg-blue-800"

@@ -45,6 +45,15 @@ import {
   ClientAuthProvider,
 } from "@/features/client-portal/providers/client-auth-provider"
 import { ClientReturnsPage } from "@/features/client-portal/pages/client-returns-page"
+import {
+  AccessDeniedPage,
+} from "@/features/auth/pages/access-denied-page"
+import {
+  PermissionRoute,
+} from "@/features/authorization/components/permission-route"
+import {
+  permissions,
+} from "@/features/authorization/permissions"
 
 export const appRouter =
   createBrowserRouter([
@@ -119,6 +128,10 @@ export const appRouter =
       element: <AccountErrorPage />,
     },
     {
+      path: "/403",
+      element: <AccessDeniedPage />,
+    },
+    {
       element: <ProtectedRoute />,
       children: [
         {
@@ -136,101 +149,212 @@ export const appRouter =
               element: <AppLayout />,
               children: [
                 {
-                  path:
-                    appConfig.routes.dashboard,
-                  element:
-                    <DashboardPage />,
+                  element: (
+                    <PermissionRoute
+                      permission={permissions.dashboard.view}
+                    />
+                  ),
+                  children: [
+                    {
+                      path: appConfig.routes.dashboard,
+                      element: <DashboardPage />,
+                    },
+                  ],
                 },
                 {
-                  path:
-                    appConfig.routes.notifications,
-                  element:
-                    <NotificationCenterPage />,
+                  element: (
+                    <PermissionRoute
+                      permission={permissions.notifications.view}
+                    />
+                  ),
+                  children: [
+                    {
+                      path: appConfig.routes.notifications,
+                      element: <NotificationCenterPage />,
+                    },
+                  ],
                 },
                 {
-                  path:
-                    appConfig.routes.clients,
-                  element:
-                    <ClientsPage />,
+                  element: (
+                    <PermissionRoute
+                      permission={permissions.clients.view}
+                    />
+                  ),
+                  children: [
+                    {
+                      path: appConfig.routes.clients,
+                      element: <ClientsPage />,
+                    },
+                  ],
                 },
                 {
-                  path:
-                    appConfig.routes.clientNew,
-                  element:
-                    <NewClientPage />,
+                  element: (
+                    <PermissionRoute
+                      permission={permissions.clients.create}
+                    />
+                  ),
+                  children: [
+                    {
+                      path: appConfig.routes.clientNew,
+                      element: <NewClientPage />,
+                    },
+                  ],
                 },
                 {
-                  path:
-                    appConfig.routes.clientEdit,
-                  element:
-                    <EditClientPage />,
+                  element: (
+                    <PermissionRoute
+                      permission={permissions.clients.edit}
+                    />
+                  ),
+                  children: [
+                    {
+                      path: appConfig.routes.clientEdit,
+                      element: <EditClientPage />,
+                    },
+                  ],
                 },
                 {
-                  path:
-                    appConfig.routes.clientDetails,
-                  element:
-                    <ClientDetailsPage />,
+                  element: (
+                    <PermissionRoute
+                      permission={permissions.clients.view}
+                    />
+                  ),
+                  children: [
+                    {
+                      path: appConfig.routes.clientDetails,
+                      element: <ClientDetailsPage />,
+                    },
+                  ],
                 },
                 {
-                  path:
-                    appConfig.routes.returns,
-                  element:
-                    <ReturnsPage />,
+                  element: (
+                    <PermissionRoute
+                      permission={permissions.returns.view}
+                    />
+                  ),
+                  children: [
+                    {
+                      path: appConfig.routes.returns,
+                      element: <ReturnsPage />,
+                    },
+                  ],
                 },
                 {
-                  path:
-                    appConfig.routes.documents,
-                  element:
-                    <DocumentsPage />,
+                  element: (
+                    <PermissionRoute
+                      permission={permissions.documents.view}
+                    />
+                  ),
+                  children: [
+                    {
+                      path: appConfig.routes.documents,
+                      element: <DocumentsPage />,
+                    },
+                  ],
                 },
                 {
-                  path:
-                    appConfig.routes.reviewQueue,
-                  element:
-                    <ReviewQueuePage />,
+                  element: (
+                    <PermissionRoute
+                      permission={permissions.documents.view}
+                    />
+                  ),
+                  children: [
+                    {
+                      path: appConfig.routes.reviewQueue,
+                      element: <ReviewQueuePage />,
+                    },
+                  ],
                 },
                 {
-                  path:
-                    appConfig.routes.returnNew,
-                  element:
-                    <NewReturnPage />,
+                  element: (
+                    <PermissionRoute
+                      permission={permissions.returns.create}
+                    />
+                  ),
+                  children: [
+                    {
+                      path: appConfig.routes.returnNew,
+                      element: <NewReturnPage />,
+                    },
+                  ],
                 },
                 {
-                  path:
-                    appConfig.routes.returnEdit,
-                  element:
-                    <EditReturnPage />,
+                  element: (
+                    <PermissionRoute
+                      permission={permissions.returns.edit}
+                    />
+                  ),
+                  children: [
+                    {
+                      path: appConfig.routes.returnEdit,
+                      element: <EditReturnPage />,
+                    },
+                  ],
                 },
                 {
-                  path:
-                    appConfig.routes.returnDetails,
-                  element:
-                    <ReturnDetailsPage />,
+                  element: (
+                    <PermissionRoute
+                      permission={permissions.returns.view}
+                    />
+                  ),
+                  children: [
+                    {
+                      path: appConfig.routes.returnDetails,
+                      element: <ReturnDetailsPage />,
+                    },
+                  ],
                 },
                 {
-                  path:
-                    appConfig.routes.payments,
-                  element:
-                    <PaymentsPage />,
+                  element: (
+                    <PermissionRoute
+                      permission={permissions.payments.view}
+                    />
+                  ),
+                  children: [
+                    {
+                      path: appConfig.routes.payments,
+                      element: <PaymentsPage />,
+                    },
+                  ],
                 },
                 {
-                  path:
-                    appConfig.routes.reports,
-                  element:
-                    <ReportsPage />,
+                  element: (
+                    <PermissionRoute
+                      permission={permissions.reports.view}
+                    />
+                  ),
+                  children: [
+                    {
+                      path: appConfig.routes.reports,
+                      element: <ReportsPage />,
+                    },
+                  ],
                 },
                 {
-                  path:
-                    appConfig.routes.settings,
-                  element:
-                    <SettingsPage />,
+                  element: (
+                    <PermissionRoute
+                      permission={permissions.settings.view}
+                    />
+                  ),
+                  children: [
+                    {
+                      path: appConfig.routes.settings,
+                      element: <SettingsPage />,
+                    },
+                  ],
                 },
                 {
-                  path:
-                    appConfig.routes
-                      .notificationPreferences,
-                  element:
-                    <NotificationPreferencesPage />,
+                  element: (
+                    <PermissionRoute
+                      permission={permissions.settings.view}
+                    />
+                  ),
+                  children: [
+                    {
+                      path: appConfig.routes.notificationPreferences,
+                      element: <NotificationPreferencesPage />,
+                    },
+                  ],
                 },
               ],
             },

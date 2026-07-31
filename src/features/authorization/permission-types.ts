@@ -27,6 +27,9 @@ export type Permission =
   | "reports:view"
   | "reports:export"
 
+  | "notifications:view"
+  | "notifications:manage"
+
   | "users:view"
   | "users:create"
   | "users:edit"

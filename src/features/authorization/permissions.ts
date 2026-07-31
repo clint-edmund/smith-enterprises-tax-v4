@@ -46,6 +46,11 @@ export const permissions = {
     export: "reports:export",
   },
 
+  notifications: {
+    view: "notifications:view",
+    manage: "notifications:manage",
+  },
+
   users: {
     view: "users:view",
     create: "users:create",

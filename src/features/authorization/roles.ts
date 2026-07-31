@@ -48,6 +48,9 @@ export const rolePermissions: Record<
     permissions.reports.view,
     permissions.reports.export,
 
+    permissions.notifications.view,
+    permissions.notifications.manage,
+
     permissions.users.view,
 
     permissions.audit.view,
@@ -70,6 +73,7 @@ export const rolePermissions: Record<
 
     permissions.payments.view,
     permissions.payments.record,
+    permissions.notifications.view,
   ],
 
   reviewer: [
@@ -87,6 +91,7 @@ export const rolePermissions: Record<
     permissions.documents.upload,
 
     permissions.payments.view,
+    permissions.notifications.view,
   ],
 
   receptionist: [
@@ -104,6 +109,7 @@ export const rolePermissions: Record<
 
     permissions.payments.view,
     permissions.payments.record,
+    permissions.notifications.view,
   ],
 
   read_only: [
@@ -116,5 +122,6 @@ export const rolePermissions: Record<
     permissions.documents.view,
 
     permissions.payments.view,
+    permissions.notifications.view,
   ],
 }
