@@ -12,10 +12,6 @@ import type {
 } from "@/components/framework/workspace"
 
 import {
-  ReturnWorkspacePanel,
-} from "../components/return-workspace-panel"
-
-import {
   ReturnWorkspaceSummary,
 } from "../components/return-workspace-summary"
 
@@ -26,6 +22,18 @@ import {
 import {
   useReturnWorkspace,
 } from "../hooks/use-return-workspace"
+
+import {
+  WorkspacePanel,
+} from "@/components/framework/workspace"
+
+import {
+  ReturnNavigation,
+} from "../components/return-navigation"
+
+import {
+  ReturnOverviewPanel,
+} from "../components/return-overview-panel"
 
 const tabs: WorkspaceTab[] = [
   {
@@ -115,44 +123,12 @@ export function ReturnWorkspacePage() {
         onTabChange={setActiveTab}
       />
 
-      <ReturnWorkspacePanel>
-  <div
-    role="tabpanel"
-    id={`workspace-panel-${activeTab}`}
-    aria-labelledby={`workspace-tab-${activeTab}`}
-    className="min-h-[300px]"
-  >
-    <h2
-      className="
-        text-2xl
-        font-semibold
-        text-slate-900
-      "
-    >
-      {tabs.find(
-        (tab) =>
-          tab.id === activeTab,
-      )?.label}
-    </h2>
+      <WorkspacePanel
+        sidebar={<ReturnNavigation />}
+      >
+        <ReturnOverviewPanel />
+      </WorkspacePanel>
 
-    <p
-      className="
-        mt-4
-        max-w-3xl
-        text-slate-600
-      "
-    >
-      This section is ready for
-      business functionality.
-
-      Future milestones will connect
-      this panel to Supabase services,
-      workflow actions, document
-      management, payments, and audit
-      history.
-    </p>
-  </div>
-</ReturnWorkspacePanel>
     </WorkspaceShell>
   )
 }

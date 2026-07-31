@@ -1,15 +1,4 @@
-export {
-  WorkspaceHeader,
-} from "./workspace-header"
-
-export {
-  WorkspaceShell,
-} from "./workspace-shell"
-
-export {
-  WorkspaceTabs,
-} from "./workspace-tabs"
-
-export type {
-  WorkspaceTab,
-} from "./workspace-tabs"
+export * from "./workspace-shell"
+export * from "./workspace-header"
+export * from "./workspace-tabs"
+export * from "./workspace-panel"
