@@ -7,6 +7,9 @@ import {
 
 import { navigationItems } from "@/components/navigation/navigation-items"
 import type { AppRole } from "@/features/auth/types/auth.types"
+import {
+  useAuthorization,
+} from "@/features/authorization/hooks/use-authorization"
 
 interface AppNavigationProps {
   role: AppRole
@@ -73,14 +76,25 @@ export function AppNavigation({
   role,
   onNavigate,
 }: AppNavigationProps) {
-  const visibleItems =
-    navigationItems.filter((item) => {
-      if (!item.allowedRoles) {
-        return true
-      }
 
+  const {
+    hasPermission,
+  } = useAuthorization()
+
+  const visibleItems =
+  navigationItems.filter((item) => {
+    if (item.requiredPermission) {
+      return hasPermission(
+        item.requiredPermission,
+      )
+    }
+
+    if (item.allowedRoles) {
       return item.allowedRoles.includes(role)
-    })
+    }
+
+    return true
+  })
 
   return (
     <nav
