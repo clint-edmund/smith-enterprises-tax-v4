@@ -9,10 +9,16 @@ import {
 import {
   useMemo,
   useState,
+  useTransition,
 } from "react"
 import {
   Link,
+  useNavigate,
 } from "react-router-dom"
+
+import {
+  activateClientPortalAccount,
+} from "@/features/client-portal/services/client-activation-service"
 
 import {
   appConfig,
@@ -156,6 +162,38 @@ export function ClientRegistrationPage() {
     setShowConfirmPassword,
   ] = useState(false)
 
+  const [
+    acceptedTerms,
+    setAcceptedTerms,
+  ] = useState(false)
+
+  const [
+    acceptedPrivacy,
+    setAcceptedPrivacy,
+  ] = useState(false)
+
+  const navigate =
+    useNavigate()
+
+  const [
+    isPending,
+    startTransition,
+  ] = useTransition()
+
+  const [
+    activationError,
+    setActivationError,
+  ] = useState<string | null>(
+    null,
+  )
+
+  const [
+    activationMessage,
+    setActivationMessage,
+  ] = useState<string | null>(
+    null,
+  )
+
   const passwordRequirements =
     useMemo(
       () =>
@@ -186,6 +224,18 @@ export function ClientRegistrationPage() {
     confirmPassword.length > 0 &&
     !passwordsMatch
 
+  const passwordRequirementsMet =
+    passwordRequirements.every(
+      (requirement) =>
+        requirement.isMet,
+    )
+
+  const canActivateAccount =
+    passwordRequirementsMet &&
+    passwordsMatch &&
+    acceptedTerms &&
+    acceptedPrivacy
+
   const strengthSegments =
     Array.from(
       {
@@ -195,7 +245,52 @@ export function ClientRegistrationPage() {
         index <
         passwordStrength.score,
     )
+  
+  async function handleCreateAccount() {
+  setActivationError(null)
+  setActivationMessage(null)
 
+  startTransition(async () => {
+    try {
+      const invitationToken =
+        decodeURIComponent(
+          window.location.hash.slice(1),
+        )
+
+      const response =
+        await activateClientPortalAccount({
+          email: "", // populated next phase
+          password,
+          invitationToken,
+        })
+
+      if (
+        response.requiresEmailConfirmation
+      ) {
+        setActivationMessage(
+          "Check your email to complete account activation.",
+        )
+
+        return
+      }
+
+      setActivationMessage(
+        "Account successfully activated.",
+      )
+
+      navigate(
+        appConfig.routes.clientDashboard,
+      )
+    } catch (error) {
+      setActivationError(
+        error instanceof Error
+          ? error.message
+          : "Unable to activate your account.",
+      )
+    }
+  })
+}
+  
   return (
     <section className="mx-auto flex min-h-screen max-w-2xl items-center px-6 py-12">
       <div className="w-full overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xl">
@@ -484,13 +579,130 @@ export function ClientRegistrationPage() {
                 </p>
               </div>
 
+              <div className="space-y-4 rounded-2xl border border-slate-200 bg-slate-50 p-5">
+                <label className="flex cursor-pointer items-start gap-3">
+                  <input
+                    type="checkbox"
+                    checked={acceptedTerms}
+                    onChange={(event) => {
+                      setAcceptedTerms(
+                        event.target.checked,
+                      )
+                    }}
+                    className="mt-1 size-4 rounded border-slate-300 text-blue-700 focus:ring-blue-600"
+                  />
+
+                  <span className="text-sm leading-6 text-slate-700">
+                    I have read and agree to the{" "}
+                    <Link
+                      to={
+                        appConfig.routes
+                          .termsOfService
+                      }
+                      target="_blank"
+                      rel="noreferrer"
+                      className="font-semibold text-blue-700 hover:text-blue-900 hover:underline"
+                    >
+                      Terms of Service
+                    </Link>
+                    .
+                  </span>
+                </label>
+
+                <label className="flex cursor-pointer items-start gap-3">
+                  <input
+                    type="checkbox"
+                    checked={acceptedPrivacy}
+                    onChange={(event) => {
+                      setAcceptedPrivacy(
+                        event.target.checked,
+                      )
+                    }}
+                    className="mt-1 size-4 rounded border-slate-300 text-blue-700 focus:ring-blue-600"
+                  />
+
+                  <span className="text-sm leading-6 text-slate-700">
+                    I have read and acknowledge the{" "}
+                    <Link
+                      to={
+                        appConfig.routes
+                          .privacyPolicy
+                      }
+                      target="_blank"
+                      rel="noreferrer"
+                      className="font-semibold text-blue-700 hover:text-blue-900 hover:underline"
+                    >
+                      Privacy Policy
+                    </Link>
+                    .
+                  </span>
+                </label>
+              </div>
+
+              <div className="rounded-2xl border border-slate-200 bg-white p-5">
+                <p className="text-sm font-bold text-slate-900">
+                  Account setup progress
+                </p>
+
+                <ul className="mt-4 space-y-3">
+                  <EligibilityItem
+                    label="Password requirements met"
+                    isComplete={
+                      passwordRequirementsMet
+                    }
+                  />
+
+                  <EligibilityItem
+                    label="Passwords match"
+                    isComplete={passwordsMatch}
+                  />
+
+                  <EligibilityItem
+                    label="Terms of Service accepted"
+                    isComplete={acceptedTerms}
+                  />
+
+                  <EligibilityItem
+                    label="Privacy Policy acknowledged"
+                    isComplete={acceptedPrivacy}
+                  />
+                </ul>
+              </div>
+
+              {activationError && (
+                <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+                  {activationError}
+                </div>
+              )}
+
+              {activationMessage && (
+                <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-700">
+                  {activationMessage}
+                </div>
+              )}
+
               <button
                 type="button"
-                disabled
-                title="Terms, privacy consent, and account activation will be enabled in the next phases."
-                className="inline-flex w-full cursor-not-allowed items-center justify-center rounded-xl bg-blue-700 px-5 py-3.5 font-semibold text-white opacity-60"
+                onClick={handleCreateAccount}
+                disabled={
+                  !canActivateAccount ||
+                  isPending
+                }
+                title={
+                  canActivateAccount
+                    ? "Account activation will be connected in the next phase."
+                    : "Complete all account setup requirements."
+                }
+                className={[
+                  "inline-flex w-full items-center justify-center rounded-xl px-5 py-3.5 font-semibold text-white transition",
+                  canActivateAccount
+                    ? "bg-blue-700 hover:bg-blue-800 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-200"
+                    : "cursor-not-allowed bg-blue-700 opacity-50",
+                ].join(" ")}
               >
-                Create Secure Account
+                {isPending
+                  ? "Creating Account..."
+                  : "Create Secure Account"}
               </button>
             </div>
           </section>
@@ -523,5 +735,40 @@ export function ClientRegistrationPage() {
         </div>
       </div>
     </section>
+  )
+}
+interface EligibilityItemProps {
+  label: string
+  isComplete: boolean
+}
+
+function EligibilityItem({
+  label,
+  isComplete,
+}: EligibilityItemProps) {
+  return (
+    <li className="flex items-center gap-3 text-sm">
+      {isComplete ? (
+        <CheckCircle2
+          className="size-5 shrink-0 text-emerald-600"
+          aria-hidden="true"
+        />
+      ) : (
+        <Circle
+          className="size-5 shrink-0 text-slate-300"
+          aria-hidden="true"
+        />
+      )}
+
+      <span
+        className={
+          isComplete
+            ? "font-medium text-emerald-800"
+            : "text-slate-600"
+        }
+      >
+        {label}
+      </span>
+    </li>
   )
 }
