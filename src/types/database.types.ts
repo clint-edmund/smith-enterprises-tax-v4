@@ -343,6 +343,106 @@ export type Database = {
           },
         ]
       }
+      client_tax_organizer_sections: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          id: string
+          last_saved_at: string | null
+          organizer_id: string
+          progress_percentage: number
+          section_key: Database["public"]["Enums"]["tax_organizer_section_key"]
+          started_at: string | null
+          status: Database["public"]["Enums"]["tax_organizer_section_status"]
+          updated_at: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          last_saved_at?: string | null
+          organizer_id: string
+          progress_percentage?: number
+          section_key: Database["public"]["Enums"]["tax_organizer_section_key"]
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["tax_organizer_section_status"]
+          updated_at?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          last_saved_at?: string | null
+          organizer_id?: string
+          progress_percentage?: number
+          section_key?: Database["public"]["Enums"]["tax_organizer_section_key"]
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["tax_organizer_section_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_tax_organizer_sections_organizer_id_fkey"
+            columns: ["organizer_id"]
+            isOneToOne: false
+            referencedRelation: "client_tax_organizers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_tax_organizers: {
+        Row: {
+          client_id: string
+          created_at: string
+          current_section: Database["public"]["Enums"]["tax_organizer_section_key"]
+          id: string
+          last_saved_at: string | null
+          progress_percentage: number
+          reviewed_at: string | null
+          started_at: string | null
+          status: Database["public"]["Enums"]["tax_organizer_status"]
+          submitted_at: string | null
+          tax_year: number
+          updated_at: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          current_section?: Database["public"]["Enums"]["tax_organizer_section_key"]
+          id?: string
+          last_saved_at?: string | null
+          progress_percentage?: number
+          reviewed_at?: string | null
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["tax_organizer_status"]
+          submitted_at?: string | null
+          tax_year: number
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          current_section?: Database["public"]["Enums"]["tax_organizer_section_key"]
+          id?: string
+          last_saved_at?: string | null
+          progress_percentage?: number
+          reviewed_at?: string | null
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["tax_organizer_status"]
+          submitted_at?: string | null
+          tax_year?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_tax_organizers_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clients: {
         Row: {
           address_line_1: string | null
@@ -3221,6 +3321,32 @@ export type Database = {
         | "schedule_c"
         | "state_only"
         | "other"
+      tax_organizer_section_key:
+        | "personal"
+        | "identity"
+        | "banking"
+        | "dependents"
+        | "income"
+        | "business"
+        | "rental"
+        | "healthcare"
+        | "education"
+        | "deductions"
+        | "documents"
+        | "review"
+        | "signature"
+      tax_organizer_section_status:
+        | "not_started"
+        | "in_progress"
+        | "completed"
+        | "needs_attention"
+      tax_organizer_status:
+        | "not_started"
+        | "in_progress"
+        | "submitted"
+        | "under_review"
+        | "changes_requested"
+        | "approved"
       tax_return_workflow_status:
         | "intake"
         | "documents_pending"
@@ -3416,6 +3542,35 @@ export const Constants = {
         "schedule_c",
         "state_only",
         "other",
+      ],
+      tax_organizer_section_key: [
+        "personal",
+        "identity",
+        "banking",
+        "dependents",
+        "income",
+        "business",
+        "rental",
+        "healthcare",
+        "education",
+        "deductions",
+        "documents",
+        "review",
+        "signature",
+      ],
+      tax_organizer_section_status: [
+        "not_started",
+        "in_progress",
+        "completed",
+        "needs_attention",
+      ],
+      tax_organizer_status: [
+        "not_started",
+        "in_progress",
+        "submitted",
+        "under_review",
+        "changes_requested",
+        "approved",
       ],
       tax_return_workflow_status: [
         "intake",

@@ -7,6 +7,7 @@ import {
   ShieldCheck,
 } from "lucide-react"
 import {
+  useEffect,
   useMemo,
   useState,
   useTransition,
@@ -23,6 +24,20 @@ import {
 import {
   appConfig,
 } from "@/config/app-config"
+
+import {
+  validatePortalInvitation,
+} from "@/features/security/services/portal-validation-service"
+import type {
+  PortalInvitationValidation,
+} from "@/features/security/types/portal-validation.types"
+import {
+  hashPortalToken,
+} from "@/features/security/utils/portal-token"
+
+import {
+  useClientAuth,
+} from "@/features/client-portal/hooks/use-client-auth"
 
 interface PasswordRequirement {
   label: string
@@ -175,6 +190,11 @@ export function ClientRegistrationPage() {
   const navigate =
     useNavigate()
 
+  const {
+    refreshProfile,
+  } =
+    useClientAuth()
+
   const [
     isPending,
     startTransition,
@@ -193,6 +213,120 @@ export function ClientRegistrationPage() {
   ] = useState<string | null>(
     null,
   )
+
+  const [
+    invitation,
+    setInvitation,
+  ] =
+    useState<PortalInvitationValidation | null>(
+      null,
+    )
+
+  const [
+    invitationToken,
+    setInvitationToken,
+  ] = useState("")
+
+  const [
+    isLoadingInvitation,
+    setIsLoadingInvitation,
+  ] = useState(true)
+
+  const [
+    invitationError,
+    setInvitationError,
+  ] = useState<string | null>(
+    null,
+  )
+
+  useEffect(() => {
+    let isCancelled = false
+
+    async function loadInvitation() {
+      try {
+        setIsLoadingInvitation(true)
+        setInvitationError(null)
+
+        const rawHash =
+          window.location.hash.slice(1)
+
+        const rawToken =
+          decodeURIComponent(
+            rawHash,
+          ).trim()
+
+        if (!rawToken) {
+          throw new Error(
+            "The secure invitation token is missing.",
+          )
+        }
+
+        const tokenHash =
+          await hashPortalToken(
+            rawToken,
+          )
+
+        const validation =
+          await validatePortalInvitation(
+            tokenHash,
+          )
+
+        if (
+          validation.invitationStatus !==
+          "pending"
+        ) {
+          throw new Error(
+            "This invitation is no longer available for account setup.",
+          )
+        }
+
+        if (
+          new Date(
+            validation.expiresAt,
+          ).getTime() <= Date.now()
+        ) {
+          throw new Error(
+            "This invitation has expired.",
+          )
+        }
+
+        if (isCancelled) {
+          return
+        }
+
+        setInvitationToken(rawToken)
+        setInvitation(validation)
+      } catch (error) {
+        if (isCancelled) {
+          return
+        }
+
+        console.error(
+          "Unable to load the portal invitation:",
+          error,
+        )
+
+        setInvitation(null)
+        setInvitationToken("")
+
+        setInvitationError(
+          error instanceof Error
+            ? error.message
+            : "Unable to validate the portal invitation.",
+        )
+      } finally {
+        if (!isCancelled) {
+          setIsLoadingInvitation(false)
+        }
+      }
+    }
+
+    void loadInvitation()
+
+    return () => {
+      isCancelled = true
+    }
+  }, [])
 
   const passwordRequirements =
     useMemo(
@@ -231,6 +365,8 @@ export function ClientRegistrationPage() {
     )
 
   const canActivateAccount =
+    invitation !== null &&
+    !isLoadingInvitation &&
     passwordRequirementsMet &&
     passwordsMatch &&
     acceptedTerms &&
@@ -250,16 +386,23 @@ export function ClientRegistrationPage() {
   setActivationError(null)
   setActivationMessage(null)
 
+  if (
+    !invitation ||
+    !invitationToken
+  ) {
+    setActivationError(
+      "A valid portal invitation is required.",
+    )
+
+    return
+  }
+
   startTransition(async () => {
     try {
-      const invitationToken =
-        decodeURIComponent(
-          window.location.hash.slice(1),
-        )
-
+      
       const response =
         await activateClientPortalAccount({
-          email: "", // populated next phase
+          email: invitation.email, // populated next phase
           password,
           invitationToken,
         })
@@ -274,13 +417,21 @@ export function ClientRegistrationPage() {
         return
       }
 
+      await refreshProfile()
+
       setActivationMessage(
         "Account successfully activated.",
       )
 
-      navigate(
-        appConfig.routes.clientDashboard,
-      )
+      try {
+        navigate(
+          appConfig.routes.clientDashboard,
+        )
+      } catch {
+        setActivationError(
+          "Your account was created, but the portal could not be opened. Please sign in.",
+        )
+      }
     } catch (error) {
       setActivationError(
         error instanceof Error
@@ -326,10 +477,46 @@ export function ClientRegistrationPage() {
               Invitation
             </h2>
 
-            <p className="mt-2 text-sm leading-6 text-slate-600">
-              Your secure invitation has been validated. Create a strong
-              password to continue activating your portal account.
-            </p>
+            {isLoadingInvitation ? (
+              <p className="mt-2 text-sm leading-6 text-slate-600">
+                Validating your secure invitation...
+              </p>
+            ) : invitationError ? (
+              <div
+                role="alert"
+                className="mt-4 rounded-xl border border-red-200 bg-red-50 p-4"
+              >
+                <p className="text-sm font-semibold text-red-900">
+                  Invitation unavailable
+                </p>
+
+                <p className="mt-2 text-sm leading-6 text-red-700">
+                  {invitationError}
+                </p>
+              </div>
+            ) : invitation ? (
+              <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-wide text-slate-500">
+                    Client
+                  </p>
+
+                  <p className="mt-1 font-semibold text-slate-950">
+                    {invitation.clientName}
+                  </p>
+                </div>
+
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-wide text-slate-500">
+                    Portal Email
+                  </p>
+
+                  <p className="mt-1 break-words font-semibold text-slate-950">
+                    {invitation.email}
+                  </p>
+                </div>
+              </div>
+            ) : null}
           </section>
 
           <section
@@ -379,10 +566,16 @@ export function ClientRegistrationPage() {
                     }
                     value={password}
                     onChange={(event) => {
+                      
                       setPassword(
                         event.target.value,
                       )
                     }}
+                    disabled={
+                      isPending ||
+                      isLoadingInvitation ||
+                      invitation === null
+                    }
                     autoComplete="new-password"
                     className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 pr-12 text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-blue-600 focus:ring-4 focus:ring-blue-100"
                     placeholder="Create a strong password"
@@ -517,6 +710,11 @@ export function ClientRegistrationPage() {
                         event.target.value,
                       )
                     }}
+                    disabled={
+                      isPending ||
+                      isLoadingInvitation ||
+                      invitation === null
+                    }
                     autoComplete="new-password"
                     aria-invalid={
                       confirmPasswordHasError
@@ -589,6 +787,11 @@ export function ClientRegistrationPage() {
                         event.target.checked,
                       )
                     }}
+                    disabled={
+                      isPending ||
+                      isLoadingInvitation ||
+                      invitation === null
+                    }
                     className="mt-1 size-4 rounded border-slate-300 text-blue-700 focus:ring-blue-600"
                   />
 
@@ -618,6 +821,11 @@ export function ClientRegistrationPage() {
                         event.target.checked,
                       )
                     }}
+                    disabled={
+                      isPending ||
+                      isLoadingInvitation ||
+                      invitation === null
+                    }
                     className="mt-1 size-4 rounded border-slate-300 text-blue-700 focus:ring-blue-600"
                   />
 
@@ -686,7 +894,8 @@ export function ClientRegistrationPage() {
                 onClick={handleCreateAccount}
                 disabled={
                   !canActivateAccount ||
-                  isPending
+                  isPending ||
+                  isLoadingInvitation
                 }
                 title={
                   canActivateAccount
