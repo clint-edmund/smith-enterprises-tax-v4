@@ -1519,6 +1519,32 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      activate_client_portal_account: {
+        Args: { requested_token_hash: string }
+        Returns: {
+          accepted_at: string | null
+          auth_user_id: string | null
+          client_id: string
+          created_at: string
+          email: string
+          failed_sign_in_attempts: number
+          id: string
+          invitation_expires_at: string | null
+          invitation_sent_at: string | null
+          invitation_status: Database["public"]["Enums"]["portal_invitation_status"]
+          invitation_token_hash: string | null
+          last_sign_in_at: string | null
+          locked_at: string | null
+          status: Database["public"]["Enums"]["portal_account_status"]
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "client_portal_accounts"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       approve_document: {
         Args: { p_comments?: string; p_document_id: string }
         Returns: {
@@ -1572,6 +1598,15 @@ export type Database = {
         Returns: undefined
       }
       can_view_executive_financial_analytics: { Args: never; Returns: boolean }
+      complete_client_portal_activation: {
+        Args: { requested_token_hash: string }
+        Returns: {
+          activated_at: string
+          client_id: string
+          email: string
+          portal_profile_id: string
+        }[]
+      }
       complete_required_document: {
         Args: {
           requested_document_id?: string
