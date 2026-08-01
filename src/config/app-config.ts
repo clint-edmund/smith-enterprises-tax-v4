@@ -5,6 +5,22 @@ export const appConfig = {
   version: env.VITE_APP_VERSION,
   environment: env.VITE_APP_ENVIRONMENT,
 
+  business: {
+    name: "Smith Enterprises",
+    tagline: "Professional Tax & Accounting Services",
+
+    // Add the office contact information when it is finalized.
+    // Blank values are automatically hidden from printed receipts.
+    addressLines: [
+      "4518 Beech Road", 
+      "Suite 225",
+      "Temple Hills, MD 20748",
+    ] as string[],
+    phone: "301-316-1229",
+    email: "info@smithenterprises.com",
+    website: "https://smithenterprisesllc.com",
+  },
+
   routes: {
     home: "/",
     login: "/login",

@@ -1,11 +1,14 @@
 import {
   Ban,
+  Download,
   Printer,
   WalletCards,
   X,
 } from "lucide-react"
 import {
   useEffect,
+  useRef,
+  useState,
 } from "react"
 
 import {
@@ -23,6 +26,9 @@ import {
 import {
   PaymentReceipt,
 } from "@/features/payments/components/payment-receipt"
+import {
+  generatePaymentReceiptPdf,
+} from "@/features/payments/utils/payment-pdf"
 import {
   Link,
 } from "react-router-dom"
@@ -44,6 +50,44 @@ export function PaymentDetailsDialog({
   onRecordPayment,
   onVoidPayment,
 }: PaymentDetailsDialogProps) {
+  const receiptRef =
+    useRef<HTMLDivElement | null>(null)
+
+  const [
+    isDownloadingPdf,
+    setIsDownloadingPdf,
+  ] = useState(false)
+
+  async function handleDownloadPdf() {
+    if (!receiptRef.current) {
+      window.alert(
+        "The receipt preview is not available for PDF export.",
+      )
+      return
+    }
+
+    try {
+      setIsDownloadingPdf(true)
+
+      await generatePaymentReceiptPdf({
+        element: receiptRef.current,
+        receiptNumber: receipt.receiptNumber,
+      })
+    } catch (error) {
+      console.error(
+        "Unable to generate payment receipt PDF:",
+        error,
+      )
+
+      window.alert(
+        error instanceof Error
+          ? error.message
+          : "Unable to generate the payment receipt PDF.",
+      )
+    } finally {
+      setIsDownloadingPdf(false)
+    }
+  }
   useEffect(() => {
     function handleKeyDown(
       event: KeyboardEvent,
@@ -274,9 +318,11 @@ export function PaymentDetailsDialog({
               </div>
 
               <div className="overflow-x-auto p-3 sm:p-5">
-                <PaymentReceipt
-                  receipt={receipt}
-                />
+                <div ref={receiptRef}>
+                  <PaymentReceipt
+                    receipt={receipt}
+                  />
+                </div>
               </div>
             </section>
           </div>
@@ -365,6 +411,24 @@ export function PaymentDetailsDialog({
                   />
 
                   Print Receipt
+                </button>
+
+                <button
+                  type="button"
+                  disabled={isDownloadingPdf}
+                  onClick={() => {
+                    void handleDownloadPdf()
+                  }}
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-blue-300 bg-white px-4 py-2.5 text-sm font-semibold text-blue-700 transition hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
+                >
+                  <Download
+                    className="size-4"
+                    aria-hidden="true"
+                  />
+
+                  {isDownloadingPdf
+                    ? "Preparing PDF..."
+                    : "Download PDF"}
                 </button>
 
                 <button
