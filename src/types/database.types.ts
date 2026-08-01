@@ -1509,6 +1509,7 @@ export type Database = {
         Args: { requested_preparer_id?: string; requested_return_id: string }
         Returns: undefined
       }
+      can_view_executive_financial_analytics: { Args: never; Returns: boolean }
       complete_required_document: {
         Args: {
           requested_document_id?: string
@@ -2021,6 +2022,7 @@ export type Database = {
           workflow_signature_pending: number
         }[]
       }
+      get_executive_financial_analytics: { Args: never; Returns: Json }
       get_my_unread_document_notification_count: {
         Args: never
         Returns: number
@@ -2872,6 +2874,42 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "clients"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      update_return_payment: {
+        Args: {
+          requested_amount: number
+          requested_notes?: string
+          requested_payment_date: string
+          requested_payment_id: string
+          requested_payment_method: Database["public"]["Enums"]["payment_method"]
+          requested_reference_number?: string
+        }
+        Returns: {
+          amount: number
+          client_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          is_voided: boolean
+          notes: string | null
+          payment_date: string
+          payment_method: Database["public"]["Enums"]["payment_method"]
+          receipt_issued_at: string | null
+          receipt_issued_by: string | null
+          receipt_number: string | null
+          reference_number: string | null
+          tax_return_id: string | null
+          updated_at: string
+          void_reason: string | null
+          voided_at: string | null
+          voided_by: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "payments"
           isOneToOne: true
           isSetofReturn: false
         }

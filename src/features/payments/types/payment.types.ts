@@ -73,6 +73,20 @@ export interface RecordPaymentValues {
   notes: string
 }
 
+export interface UpdatePaymentValues {
+  paymentId: string
+  amount: number
+  paymentDate: string
+  paymentMethod: ReturnPayment["paymentMethod"]
+  referenceNumber: string
+  notes: string
+}
+
+export interface UpdatePaymentResult {
+  payment: ReturnPayment
+  message: string
+}
+
 export interface RecordPaymentResult {
   payment: ReturnPayment
 

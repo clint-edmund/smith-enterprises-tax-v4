@@ -3,6 +3,8 @@ import { supabase } from "@/services/supabase"
 import type {
   RecordPaymentResult,
   RecordPaymentValues,
+  UpdatePaymentResult,
+  UpdatePaymentValues,
   PaymentReceiptDetails,
   ReturnPayment,
   ReturnPaymentSummary,
@@ -130,6 +132,22 @@ export function getPaymentServiceErrorMessage(
     )
   ) {
     return "The selected tax return is no longer available."
+  }
+
+  if (
+    normalizedMessage.includes(
+      "voided payment cannot be edited",
+    )
+  ) {
+    return "A voided payment cannot be edited."
+  }
+
+  if (
+    normalizedMessage.includes(
+      "not authorized to edit payments",
+    )
+  ) {
+    return "Only administrators and managers can edit payments."
   }
 
   if (
@@ -455,6 +473,7 @@ export async function recordReturnPayment(
       "The payment was recorded successfully.",
   }
 }
+
 export async function voidReturnPayment(
   values: VoidPaymentValues,
 ): Promise<VoidPaymentResult> {
@@ -827,4 +846,157 @@ export async function getRecentOfficePayments(
         payment.created_at,
     }),
   )
+}
+
+export async function updateReturnPayment(
+  values: UpdatePaymentValues,
+): Promise<UpdatePaymentResult> {
+  const normalizedPaymentId =
+    values.paymentId.trim()
+
+  if (!normalizedPaymentId) {
+    throw new Error(
+      "A payment identifier is required.",
+    )
+  }
+
+  if (
+    !Number.isFinite(values.amount) ||
+    values.amount <= 0
+  ) {
+    throw new Error(
+      "Enter a payment amount greater than $0.00.",
+    )
+  }
+
+  if (!values.paymentDate) {
+    throw new Error(
+      "Enter the payment date.",
+    )
+  }
+
+  if (!values.paymentMethod) {
+    throw new Error(
+      "Select a payment method.",
+    )
+  }
+
+  const {
+    data,
+    error,
+  } = await supabase.rpc(
+    "update_return_payment",
+    {
+      requested_payment_id:
+        normalizedPaymentId,
+
+      requested_amount:
+        values.amount,
+
+      requested_payment_method:
+        values.paymentMethod,
+
+      requested_payment_date:
+        values.paymentDate,
+
+      requested_reference_number:
+        normalizeOptionalString(
+          values.referenceNumber,
+        ),
+
+      requested_notes:
+        normalizeOptionalString(
+          values.notes,
+        ),
+    },
+  )
+
+  if (error) {
+    throw new Error(
+      getPaymentServiceErrorMessage(
+        error,
+      ),
+    )
+  }
+
+  if (!data) {
+    throw new Error(
+      "Supabase did not return the updated payment.",
+    )
+  }
+
+  const payment =
+    Array.isArray(data)
+      ? data[0]
+      : data
+
+  if (!payment) {
+    throw new Error(
+      "Supabase did not return the updated payment.",
+    )
+  }
+
+  return {
+    payment: {
+      id:
+        payment.id,
+
+      taxReturnId:
+        payment.tax_return_id,
+
+      clientId:
+        payment.client_id,
+
+      amount:
+        toNumber(payment.amount),
+
+      paymentDate:
+        payment.payment_date,
+
+      paymentMethod:
+        payment.payment_method,
+
+      referenceNumber:
+        payment.reference_number,
+
+      notes:
+        payment.notes,
+
+      receiptNumber:
+        payment.receipt_number,
+
+      receiptIssuedAt:
+        payment.receipt_issued_at,
+
+      receiptIssuedBy:
+        payment.receipt_issued_by,
+
+      isVoided:
+        payment.is_voided,
+
+      voidedAt:
+        payment.voided_at,
+
+      voidedBy:
+        payment.voided_by,
+
+      voidReason:
+        payment.void_reason,
+
+      createdBy:
+        payment.created_by,
+
+      createdByName:
+        "System",
+
+      createdAt:
+        payment.created_at,
+
+      updatedAt:
+        payment.updated_at,
+    },
+
+    message:
+      "The payment was updated successfully.",
+  }
 }

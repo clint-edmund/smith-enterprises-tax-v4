@@ -26,6 +26,7 @@ import {
   getOfficePaymentSummary,
   getRecentOfficePayments,
   getPaymentReceipt,
+  updateReturnPayment,
 } from "@/features/payments/services/payment-service"
 import type {
   OfficePaymentRecord,
@@ -51,6 +52,9 @@ import {
 } from "@/features/payments/components/office-void-payment-dialog"
 import {
   PaymentEditDialog,
+} from "@/features/payments/components/payment-edit-dialog"
+import type {
+  EditPaymentValues,
 } from "@/features/payments/components/payment-edit-dialog"
 
 const emptySummary: OfficePaymentSummary = {
@@ -184,6 +188,11 @@ export function PaymentsPage() {
   ] = useState<PaymentReceiptDetails | null>(
     null,
   )
+
+  const [
+    isSavingPayment,
+    setIsSavingPayment,
+  ] = useState(false)
 
   const handleViewReceipt =
   useCallback(
@@ -349,6 +358,47 @@ export function PaymentsPage() {
           )
         } finally {
           setIsLoadingReceipt(false)
+        }
+      },
+      [loadPayments],
+    )
+
+  const handlePaymentUpdated =
+    useCallback(
+      async (
+        values: EditPaymentValues,
+      ) => {
+        try {
+          setIsSavingPayment(true)
+
+          const result =
+            await updateReturnPayment(values)
+
+          setPaymentForEditing(null)
+          await loadPayments(true)
+
+          const refreshedReceipt =
+            await getPaymentReceipt(
+              result.payment.id,
+            )
+
+          setSelectedReceipt(
+            refreshedReceipt,
+          )
+          setIsReceiptOpen(true)
+        } catch (error) {
+          console.error(
+            "Unable to update payment:",
+            error,
+          )
+
+          window.alert(
+            error instanceof Error
+              ? error.message
+              : "Unable to update the payment.",
+          )
+        } finally {
+          setIsSavingPayment(false)
         }
       },
       [loadPayments],
@@ -846,13 +896,13 @@ export function PaymentsPage() {
     {paymentForEditing && (
       <PaymentEditDialog
         payment={paymentForEditing}
+        isSaving={isSavingPayment}
         onClose={() => {
-          setPaymentForEditing(null)
+          if (!isSavingPayment) {
+            setPaymentForEditing(null)
+          }
         }}
-        onSave={() => {
-          // Database wiring comes in RC1.3B.5.4
-          setPaymentForEditing(null)
-        }}
+        onSave={handlePaymentUpdated}
       />
     )}
 
