@@ -4,8 +4,12 @@ import {
   FilePlus2,
   Mail,
   Printer,
+  Send,
   UploadCloud,
 } from "lucide-react"
+import {
+  useState,
+} from "react"
 import {
   Link,
 } from "react-router-dom"
@@ -17,6 +21,9 @@ import {
 import type {
   ClientRecord,
 } from "@/features/clients/types/client.types"
+import {
+  CreatePortalInvitationDialog,
+} from "@/features/security/components/create-portal-invitation-dialog"
 
 interface ClientCommandBarProps {
   client: ClientRecord
@@ -48,143 +55,231 @@ const disabledActionClasses = [
   "text-sm font-semibold text-slate-400",
 ].join(" ")
 
+function formatClientDisplayName(
+  client: ClientRecord,
+): string {
+  return [
+    client.firstName,
+    client.middleName,
+    client.lastName,
+  ]
+    .filter(Boolean)
+    .join(" ")
+}
+
 export function ClientCommandBar({
   client,
   canEditClient,
   canCreateReturn,
 }: ClientCommandBarProps) {
+  const [
+    isInvitationDialogOpen,
+    setIsInvitationDialogOpen,
+  ] = useState(false)
+
   const emailHref = client.email
     ? `mailto:${client.email}`
     : undefined
+
+  const canInviteToPortal =
+    canEditClient &&
+    Boolean(client.email)
 
   function handlePrint() {
     window.print()
   }
 
   return (
-    <section
-      aria-labelledby="client-actions-heading"
-      className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
-    >
-      <div className="border-b border-slate-200 bg-slate-50 px-5 py-4">
-        <div>
-          <h2
-            id="client-actions-heading"
-            className="font-bold text-slate-950"
-          >
-            Client Actions
-          </h2>
+    <>
+      <section
+        aria-labelledby="client-actions-heading"
+        className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
+      >
+        <div className="border-b border-slate-200 bg-slate-50 px-5 py-4">
+          <div>
+            <h2
+              id="client-actions-heading"
+              className="font-bold text-slate-950"
+            >
+              Client Actions
+            </h2>
 
-          <p className="mt-1 text-sm text-slate-500">
-            Quickly start the most common client workflows.
-          </p>
+            <p className="mt-1 text-sm text-slate-500">
+              Quickly start the most common client workflows.
+            </p>
+          </div>
         </div>
-      </div>
 
-      <div className="flex flex-wrap gap-3 p-5">
-        {canCreateReturn && (
-          <Link
-            to={getNewClientReturnRoute(client.id)}
-            className={primaryActionClasses}
-          >
-            <FilePlus2
-              className="size-4"
-              aria-hidden="true"
-            />
-            New Return
-          </Link>
-        )}
+        <div className="flex flex-wrap gap-3 p-5">
+          {canCreateReturn && (
+            <Link
+              to={getNewClientReturnRoute(
+                client.id,
+              )}
+              className={primaryActionClasses}
+            >
+              <FilePlus2
+                className="size-4"
+                aria-hidden="true"
+              />
 
-        {canEditClient && (
-          <Link
-            to={getClientEditRoute(client.id)}
-            className={secondaryActionClasses}
-          >
-            <Edit3
-              className="size-4"
-              aria-hidden="true"
-            />
-            Edit Client
-          </Link>
-        )}
+              New Return
+            </Link>
+          )}
 
-        <button
-          type="button"
-          disabled
-          className={disabledActionClasses}
-          title="Client-specific payment entry will be enabled in a future phase."
-        >
-          <CreditCard
-            className="size-4"
-            aria-hidden="true"
-          />
-          Record Payment
-          <span className="sr-only">
-            Coming soon
-          </span>
-        </button>
+          {canEditClient && (
+            <Link
+              to={getClientEditRoute(
+                client.id,
+              )}
+              className={secondaryActionClasses}
+            >
+              <Edit3
+                className="size-4"
+                aria-hidden="true"
+              />
 
-        <button
-          type="button"
-          disabled
-          className={disabledActionClasses}
-          title="Document uploads will be enabled with the Document Center."
-        >
-          <UploadCloud
-            className="size-4"
-            aria-hidden="true"
-          />
-          Upload Documents
-          <span className="sr-only">
-            Coming soon
-          </span>
-        </button>
+              Edit Client
+            </Link>
+          )}
 
-        {emailHref ? (
-          <a
-            href={emailHref}
-            className={secondaryActionClasses}
-          >
-            <Mail
-              className="size-4"
-              aria-hidden="true"
-            />
-            Email Client
-          </a>
-        ) : (
+          {canInviteToPortal ? (
+            <button
+              type="button"
+              onClick={() => {
+                setIsInvitationDialogOpen(
+                  true,
+                )
+              }}
+              className={secondaryActionClasses}
+            >
+              <Send
+                className="size-4"
+                aria-hidden="true"
+              />
+
+              Invite to Portal
+            </button>
+          ) : (
+            <button
+              type="button"
+              disabled
+              className={disabledActionClasses}
+              title={
+                !canEditClient
+                  ? "You do not have permission to invite clients to the portal."
+                  : "Add an email address to enable portal invitations."
+              }
+            >
+              <Send
+                className="size-4"
+                aria-hidden="true"
+              />
+
+              Invite to Portal
+            </button>
+          )}
+
           <button
             type="button"
             disabled
             className={disabledActionClasses}
-            title="Add an email address to enable this action."
+            title="Client-specific payment entry will be enabled in a future phase."
           >
-            <Mail
+            <CreditCard
               className="size-4"
               aria-hidden="true"
             />
-            Email Client
+
+            Record Payment
+
+            <span className="sr-only">
+              Coming soon
+            </span>
           </button>
+
+          <button
+            type="button"
+            disabled
+            className={disabledActionClasses}
+            title="Document uploads will be enabled with the Document Center."
+          >
+            <UploadCloud
+              className="size-4"
+              aria-hidden="true"
+            />
+
+            Upload Documents
+
+            <span className="sr-only">
+              Coming soon
+            </span>
+          </button>
+
+          {emailHref ? (
+            <a
+              href={emailHref}
+              className={secondaryActionClasses}
+            >
+              <Mail
+                className="size-4"
+                aria-hidden="true"
+              />
+
+              Email Client
+            </a>
+          ) : (
+            <button
+              type="button"
+              disabled
+              className={disabledActionClasses}
+              title="Add an email address to enable this action."
+            >
+              <Mail
+                className="size-4"
+                aria-hidden="true"
+              />
+
+              Email Client
+            </button>
+          )}
+
+          <button
+            type="button"
+            onClick={handlePrint}
+            className={secondaryActionClasses}
+          >
+            <Printer
+              className="size-4"
+              aria-hidden="true"
+            />
+
+            Print Summary
+          </button>
+        </div>
+
+        <div className="border-t border-slate-100 bg-slate-50/70 px-5 py-3">
+          <p className="text-xs text-slate-500">
+            Portal invitations require an authorized staff role and a valid
+            client email address. Payment entry and document upload remain
+            disabled until their secure workflows are completed.
+          </p>
+        </div>
+      </section>
+
+      <CreatePortalInvitationDialog
+        clientId={client.id}
+        clientName={formatClientDisplayName(
+          client,
         )}
-
-        <button
-          type="button"
-          onClick={handlePrint}
-          className={secondaryActionClasses}
-        >
-          <Printer
-            className="size-4"
-            aria-hidden="true"
-          />
-          Print Summary
-        </button>
-      </div>
-
-      <div className="border-t border-slate-100 bg-slate-50/70 px-5 py-3">
-        <p className="text-xs text-slate-500">
-          Payment entry and document upload are visible now but remain
-          disabled until their secure workflows are completed.
-        </p>
-      </div>
-    </section>
+        email={client.email ?? ""}
+        open={isInvitationDialogOpen}
+        onClose={() => {
+          setIsInvitationDialogOpen(
+            false,
+          )
+        }}
+      />
+    </>
   )
 }

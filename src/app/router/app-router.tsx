@@ -18,6 +18,9 @@ import { PendingApprovalPage } from "@/features/auth/pages/pending-approval-page
 import { SecurityAcknowledgmentPage } from "@/features/auth/pages/security-acknowledgment-page"
 import { ClientPortalGuard } from "@/features/client-portal/guards/client-portal-guard"
 import { ClientPortalLayout } from "@/features/client-portal/layouts/client-portal-layout"
+import {
+  AcceptPortalInvitationPage,
+} from "@/features/security/pages/accept-portal-invitation-page"
 import { ClientDashboardPage } from "@/features/client-portal/pages/client-dashboard-page"
 import { ClientLoginPage } from "@/features/client-portal/pages/client-login-page"
 import { ClientRegistrationPage } from "@/features/client-portal/pages/client-registration-page"
@@ -101,6 +104,14 @@ export const appRouter =
         {
           path: appConfig.routes.clientRegister,
           element: <ClientRegistrationPage />,
+        },
+        {
+          path: "/accept-invitation",
+          element: <AcceptPortalInvitationPage />,
+        },
+        {
+          path: "/accept-invitation",
+          element: <AcceptPortalInvitationPage />,
         },
         {
           element: <ClientPortalGuard />,

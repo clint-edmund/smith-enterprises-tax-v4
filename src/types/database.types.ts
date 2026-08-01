@@ -3090,6 +3090,17 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      validate_client_portal_invitation: {
+        Args: { requested_token_hash: string }
+        Returns: {
+          client_id: string
+          client_name: string
+          email: string
+          expires_at: string
+          invitation_status: Database["public"]["Enums"]["portal_invitation_status"]
+          portal_account_id: string
+        }[]
+      }
       void_return_payment: {
         Args: { requested_payment_id: string; requested_void_reason: string }
         Returns: {
