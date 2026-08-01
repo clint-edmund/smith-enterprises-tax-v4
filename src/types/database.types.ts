@@ -2149,6 +2149,23 @@ export type Database = {
           role: Database["public"]["Enums"]["app_role"]
         }[]
       }
+      get_return_workflow_history: {
+        Args: { requested_return_id: string }
+        Returns: {
+          actor_name: string
+          actor_user_id: string
+          client_id: string
+          created_at: string
+          event_data: Json
+          event_description: string
+          event_label: string
+          event_type: string
+          id: string
+          is_client_visible: boolean
+          occurred_at: string
+          tax_return_id: string
+        }[]
+      }
       get_return_workspace_summary: {
         Args: { p_return_id: string }
         Returns: {
