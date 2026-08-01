@@ -343,6 +343,59 @@ export type Database = {
           },
         ]
       }
+      client_tax_organizer_identity_information: {
+        Row: {
+          citizenship_status: string | null
+          created_at: string
+          has_government_photo_id: boolean | null
+          has_identity_changed: boolean | null
+          identification_expiration_date: string | null
+          identification_issue_date: string | null
+          identification_number: string | null
+          identification_state: string | null
+          identification_type: string | null
+          is_us_citizen: boolean | null
+          organizer_id: string
+          updated_at: string
+        }
+        Insert: {
+          citizenship_status?: string | null
+          created_at?: string
+          has_government_photo_id?: boolean | null
+          has_identity_changed?: boolean | null
+          identification_expiration_date?: string | null
+          identification_issue_date?: string | null
+          identification_number?: string | null
+          identification_state?: string | null
+          identification_type?: string | null
+          is_us_citizen?: boolean | null
+          organizer_id: string
+          updated_at?: string
+        }
+        Update: {
+          citizenship_status?: string | null
+          created_at?: string
+          has_government_photo_id?: boolean | null
+          has_identity_changed?: boolean | null
+          identification_expiration_date?: string | null
+          identification_issue_date?: string | null
+          identification_number?: string | null
+          identification_state?: string | null
+          identification_type?: string | null
+          is_us_citizen?: boolean | null
+          organizer_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_tax_organizer_identity_information_organizer_id_fkey"
+            columns: ["organizer_id"]
+            isOneToOne: true
+            referencedRelation: "client_tax_organizers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_tax_organizer_personal_information: {
         Row: {
           address_changed_this_year: boolean | null
@@ -2060,6 +2113,22 @@ export type Database = {
           occurred_at: string
         }[]
       }
+      get_client_organizer_identity_information: {
+        Args: { requested_organizer_id: string }
+        Returns: {
+          citizenship_status: string
+          created_at: string
+          has_government_photo_id: boolean
+          has_identity_changed: boolean
+          identification_expiration_date: string
+          identification_issue_date: string
+          identification_state: string
+          identification_type: string
+          is_us_citizen: boolean
+          result_organizer_id: string
+          updated_at: string
+        }[]
+      }
       get_client_organizer_personal_information: {
         Args: { requested_organizer_id: string }
         Returns: {
@@ -3097,6 +3166,26 @@ export type Database = {
           isOneToOne: false
           isSetofReturn: true
         }
+      }
+      save_client_organizer_identity_information: {
+        Args: {
+          requested_citizenship_status: string
+          requested_has_government_photo_id: boolean
+          requested_has_identity_changed: boolean
+          requested_identification_expiration_date: string
+          requested_identification_issue_date: string
+          requested_identification_state: string
+          requested_identification_type: string
+          requested_is_us_citizen: boolean
+          requested_organizer_id: string
+        }
+        Returns: {
+          last_saved_at: string
+          organizer_progress_percentage: number
+          result_organizer_id: string
+          section_progress_percentage: number
+          section_status: Database["public"]["Enums"]["tax_organizer_section_status"]
+        }[]
       }
       save_client_organizer_personal_information: {
         Args: {

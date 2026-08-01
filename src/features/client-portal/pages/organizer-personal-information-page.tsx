@@ -1,9 +1,13 @@
 import {
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react"
 
+import {
+  OrganizerAddressFields,
+} from "@/features/client-portal/components/organizer/organizer-address-fields"
 import {
   OrganizerCard,
 } from "@/features/client-portal/components/organizer/organizer-card"
@@ -20,8 +24,14 @@ import {
   OrganizerPageHeader,
 } from "@/features/client-portal/components/organizer/organizer-page-header"
 import {
+  OrganizerPhoneField,
+} from "@/features/client-portal/components/organizer/organizer-phone-field"
+import {
   OrganizerProgressBar,
 } from "@/features/client-portal/components/organizer/organizer-progress-bar"
+import {
+  OrganizerSaveBar,
+} from "@/features/client-portal/components/organizer/organizer-save-bar"
 import {
   OrganizerSection,
 } from "@/features/client-portal/components/organizer/organizer-section"
@@ -33,221 +43,396 @@ import {
   OrganizerTextField,
 } from "@/features/client-portal/components/organizer/organizer-text-field"
 import {
+  OrganizerYesNoQuestion,
+} from "@/features/client-portal/components/organizer/organizer-yes-no-question"
+import {
   useOrganizerPersonalInformation,
 } from "@/features/client-portal/hooks/use-organizer-personal-information"
 import {
-  useTaxOrganizer,
-} from "@/features/client-portal/hooks/use-tax-organizer"
-
+  useOrganizer,
+} from "@/features/client-portal/context/organizer/use-organizer"
+import type {
+  SaveOrganizerPersonalInformationRequest,
+} from "@/features/client-portal/services/organizer-personal-information-service"
 import {
-  OrganizerAddressFields,
-} from "@/features/client-portal/components/organizer/organizer-address-fields"
-import {
-  OrganizerPhoneField,
-} from "@/features/client-portal/components/organizer/organizer-phone-field"
+  hasOrganizerPersonalValidationErrors,
+  type OrganizerPersonalValidationErrors,
+  validateOrganizerPersonalInformation,
+} from "@/features/client-portal/utils/organizer-personal-validation"
 
 const filingStatusOptions: OrganizerSelectOption[] = [
-  { value: "single", label: "Single" },
-  { value: "married_filing_jointly", label: "Married Filing Jointly" },
-  { value: "married_filing_separately", label: "Married Filing Separately" },
-  { value: "head_of_household", label: "Head of Household" },
-  { value: "qualifying_surviving_spouse", label: "Qualifying Surviving Spouse" },
-  { value: "not_sure", label: "Not Sure" },
+  {
+    value: "single",
+    label: "Single",
+  },
+  {
+    value: "married_filing_jointly",
+    label: "Married Filing Jointly",
+  },
+  {
+    value: "married_filing_separately",
+    label: "Married Filing Separately",
+  },
+  {
+    value: "head_of_household",
+    label: "Head of Household",
+  },
+  {
+    value: "qualifying_surviving_spouse",
+    label: "Qualifying Surviving Spouse",
+  },
+  {
+    value: "not_sure",
+    label: "Not Sure",
+  },
 ]
 
-export function OrganizerPersonalInformationPage() {
-  const organizerTaxYear =
-    new Date().getFullYear()
+interface PersonalInformationFormState {
+  legalFirstName: string
+  legalMiddleName: string
+  legalLastName: string
+  preferredName: string
 
+  birthDate: string
+  filingStatus: string
+  occupation: string
+
+  email: string
+  mobilePhone: string
+  alternatePhone: string
+
+  addressLine1: string
+  addressLine2: string
+  city: string
+  state: string
+  postalCode: string
+
+  addressChangedThisYear: boolean | null
+  maritalStatusChangedThisYear: boolean | null
+  employerChangedThisYear: boolean | null
+}
+
+const emptyForm: PersonalInformationFormState = {
+  legalFirstName: "",
+  legalMiddleName: "",
+  legalLastName: "",
+  preferredName: "",
+
+  birthDate: "",
+  filingStatus: "",
+  occupation: "",
+
+  email: "",
+  mobilePhone: "",
+  alternatePhone: "",
+
+  addressLine1: "",
+  addressLine2: "",
+  city: "",
+  state: "",
+  postalCode: "",
+
+  addressChangedThisYear: null,
+  maritalStatusChangedThisYear: null,
+  employerChangedThisYear: null,
+}
+
+export function OrganizerPersonalInformationPage() {
   const {
-    summary,
+    taxYear: organizerTaxYear,
+    organizer,
+    progress,
+    completedSections,
+    remainingSections,
     isLoading,
     errorMessage,
-    refresh,
-  } = useTaxOrganizer(
-    organizerTaxYear,
-  )
+    refreshOrganizer,
+  } = useOrganizer()
 
   const organizerId =
-    summary?.organizer.id ?? ""
+    organizer?.id ?? ""
 
   const {
     personalInformation,
     isLoading:
       isPersonalInformationLoading,
+    isSaving,
     errorMessage:
       personalInformationError,
+    saveMessage,
     refresh:
       refreshPersonalInformation,
+    save,
   } =
     useOrganizerPersonalInformation(
       organizerId,
     )
 
   const [
-    legalFirstName,
-    setLegalFirstName,
-  ] = useState("")
+    form,
+    setForm,
+  ] =
+    useState<PersonalInformationFormState>(
+      emptyForm,
+    )
 
   const [
-    legalMiddleName,
-    setLegalMiddleName,
-  ] = useState("")
+    initialForm,
+    setInitialForm,
+  ] =
+    useState<PersonalInformationFormState>(
+      emptyForm,
+    )
 
   const [
-    legalLastName,
-    setLegalLastName,
-  ] = useState("")
+    validationErrors,
+    setValidationErrors,
+  ] =
+    useState<OrganizerPersonalValidationErrors>(
+      {},
+    )
 
   const [
-    preferredName,
-    setPreferredName,
-  ] = useState("")
+    pageMessage,
+    setPageMessage,
+  ] = useState<string | null>(
+    null,
+  )
 
-  const [
-    birthDate,
-    setBirthDate,
-  ] = useState("")
-
-  const [
-    filingStatus,
-    setFilingStatus,
-  ] = useState("")
-
-  const [
-    occupation,
-    setOccupation,
-  ] = useState("")
-
-  const [
-    email,
-    setEmail,
-  ] = useState("")
-
-  const [
-    mobilePhone,
-    setMobilePhone,
-  ] = useState("")
-
-  const [
-    alternatePhone,
-    setAlternatePhone,
-  ] = useState("")
-
-  const [
-    addressLine1,
-    setAddressLine1,
-  ] = useState("")
-
-  const [
-    addressLine2,
-    setAddressLine2,
-  ] = useState("")
-
-  const [
-    city,
-    setCity,
-  ] = useState("")
-
-  const [
-    state,
-    setState,
-  ] = useState("")
-
-  const [
-    postalCode,
-    setPostalCode,
-  ] = useState("")
+  const validationSummaryRef =
+    useRef<HTMLDivElement | null>(
+      null,
+    )
 
   useEffect(() => {
     if (!personalInformation) {
       return
     }
 
-    setLegalFirstName(
-      personalInformation.legalFirstName,
-    )
+    const nextForm:
+      PersonalInformationFormState = {
+        legalFirstName:
+          personalInformation.legalFirstName,
 
-    setLegalMiddleName(
-      personalInformation.legalMiddleName,
-    )
+        legalMiddleName:
+          personalInformation.legalMiddleName,
 
-    setLegalLastName(
-      personalInformation.legalLastName,
-    )
+        legalLastName:
+          personalInformation.legalLastName,
 
-    setPreferredName(
-      personalInformation.preferredName,
-    )
+        preferredName:
+          personalInformation.preferredName,
 
-    setBirthDate(
-      personalInformation.birthDate ?? "",
-    )
+        birthDate:
+          personalInformation.birthDate ?? "",
 
-    setFilingStatus(
-      personalInformation.filingStatus,
-    )
+        filingStatus:
+          personalInformation.filingStatus,
 
-    setOccupation(
-      personalInformation.occupation,
-    )
+        occupation:
+          personalInformation.occupation,
 
-    setEmail(
-      personalInformation.email,
-    )
+        email:
+          personalInformation.email,
 
-    setMobilePhone(
-      personalInformation.mobilePhone,
-    )
+        mobilePhone:
+          personalInformation.mobilePhone,
 
-    setAlternatePhone(
-      personalInformation.alternatePhone,
-    )
+        alternatePhone:
+          personalInformation.alternatePhone,
 
-    setAddressLine1(
-      personalInformation.addressLine1,
-    )
+        addressLine1:
+          personalInformation.addressLine1,
 
-    setAddressLine2(
-      personalInformation.addressLine2,
-    )
+        addressLine2:
+          personalInformation.addressLine2,
 
-    setCity(
-      personalInformation.city,
-    )
+        city:
+          personalInformation.city,
 
-    setState(
-      personalInformation.state,
-    )
+        state:
+          personalInformation.state,
 
-    setPostalCode(
-      personalInformation.postalCode,
-    )
+        postalCode:
+          personalInformation.postalCode,
+
+        addressChangedThisYear:
+          personalInformation.addressChangedThisYear,
+
+        maritalStatusChangedThisYear:
+          personalInformation.maritalStatusChangedThisYear,
+
+        employerChangedThisYear:
+          personalInformation.employerChangedThisYear,
+      }
+
+    setForm(nextForm)
+    setInitialForm(nextForm)
+    setValidationErrors({})
   }, [personalInformation])
 
-  const progress =
-    summary?.organizer
-      .progressPercentage ?? 0
-
-  const completedSections =
-    summary?.completedSections ?? 0
-
-  const totalSections =
-    summary?.totalSections ?? 13
-
-  const remainingSections =
+  const hasUnsavedChanges =
     useMemo(
       () =>
-        Math.max(
-          totalSections -
-            completedSections,
-          0,
-        ),
+        JSON.stringify(form) !==
+        JSON.stringify(initialForm),
       [
-        completedSections,
-        totalSections,
+        form,
+        initialForm,
       ],
     )
+
+  function updateField<
+    Field extends keyof PersonalInformationFormState,
+  >(
+    field: Field,
+    value:
+      PersonalInformationFormState[Field],
+  ) {
+    setForm(
+      (currentForm) => ({
+        ...currentForm,
+        [field]: value,
+      }),
+    )
+
+    setValidationErrors(
+      (currentErrors) => ({
+        ...currentErrors,
+        [field]: undefined,
+      }),
+    )
+
+    setPageMessage(null)
+  }
+
+  function createSaveRequest():
+    SaveOrganizerPersonalInformationRequest {
+    return {
+      organizerId,
+
+      legalFirstName:
+        form.legalFirstName,
+
+      legalMiddleName:
+        form.legalMiddleName,
+
+      legalLastName:
+        form.legalLastName,
+
+      preferredName:
+        form.preferredName,
+
+      birthDate:
+        form.birthDate || null,
+
+      filingStatus:
+        form.filingStatus,
+
+      occupation:
+        form.occupation,
+
+      email:
+        form.email,
+
+      mobilePhone:
+        form.mobilePhone,
+
+      alternatePhone:
+        form.alternatePhone,
+
+      addressLine1:
+        form.addressLine1,
+
+      addressLine2:
+        form.addressLine2,
+
+      city:
+        form.city,
+
+      state:
+        form.state,
+
+      postalCode:
+        form.postalCode,
+
+      addressChangedThisYear:
+        form.addressChangedThisYear,
+
+      maritalStatusChangedThisYear:
+        form.maritalStatusChangedThisYear,
+
+      employerChangedThisYear:
+        form.employerChangedThisYear,
+    }
+  }
+
+  async function handleSave(
+    continueAfterSave: boolean,
+  ) {
+    setPageMessage(null)
+
+    const request =
+      createSaveRequest()
+
+    const errors =
+      validateOrganizerPersonalInformation(
+        request,
+      )
+
+    setValidationErrors(errors)
+
+    if (
+      hasOrganizerPersonalValidationErrors(
+        errors,
+      )
+    ) {
+      setPageMessage(
+        "Review the highlighted fields before saving.",
+      )
+
+      requestAnimationFrame(() => {
+        validationSummaryRef.current?.scrollIntoView(
+          {
+            behavior: "smooth",
+            block: "center",
+          },
+        )
+      })
+
+      return
+    }
+
+    try {
+      const result =
+        await save(request)
+
+      await Promise.all([
+        refreshOrganizer(),
+        refreshPersonalInformation(),
+      ])
+
+      setInitialForm(form)
+
+      if (continueAfterSave) {
+        setPageMessage(
+          result.sectionStatus ===
+          "completed"
+            ? "Personal Information is complete. Identity Verification is the next organizer section."
+            : "Your draft was saved. Complete the remaining required fields before continuing.",
+        )
+      } else {
+        setPageMessage(
+          result.sectionStatus ===
+          "completed"
+            ? "Personal Information was saved and marked complete."
+            : "Your Personal Information draft was saved.",
+        )
+      }
+    } catch {
+      // The hook exposes the service error through personalInformationError.
+    }
+  }
 
   if (isLoading) {
     return (
@@ -260,19 +445,24 @@ export function OrganizerPersonalInformationPage() {
       <OrganizerErrorState
         message={errorMessage}
         onRetry={() => {
-          void refresh()
+          void refreshOrganizer()
         }}
       />
     )
   }
 
-  if (isPersonalInformationLoading) {
+  if (
+    isPersonalInformationLoading
+  ) {
     return (
       <OrganizerLoadingState message="Loading your personal information..." />
     )
   }
 
-  if (personalInformationError) {
+  if (
+    personalInformationError &&
+    !personalInformation
+  ) {
     return (
       <OrganizerErrorState
         title="Unable to load personal information"
@@ -291,11 +481,18 @@ export function OrganizerPersonalInformationPage() {
       <OrganizerPageHeader
         eyebrow={`${organizerTaxYear} Tax Organizer`}
         title="Personal Information"
-        description="Review and update your legal name, filing status, date of birth, and occupation before continuing."
+        description="Review and update your legal name, contact details, filing information, and address before continuing."
       />
 
       <OrganizerCard>
-        <div className="space-y-10 p-8">
+        <form
+          className="space-y-10 p-8"
+          onSubmit={(event) => {
+            event.preventDefault()
+
+            void handleSave(false)
+          }}
+        >
           <OrganizerProgressBar
             progress={progress}
           />
@@ -323,14 +520,48 @@ export function OrganizerPersonalInformationPage() {
 
             <div>
               <p className="text-sm font-semibold text-slate-500">
-                Status
+                Save status
               </p>
 
-              <p className="mt-2 text-lg font-bold text-blue-700">
-                In Progress
+              <p
+                className={[
+                  "mt-2 text-lg font-bold",
+                  hasUnsavedChanges
+                    ? "text-amber-700"
+                    : "text-emerald-700",
+                ].join(" ")}
+              >
+                {hasUnsavedChanges
+                  ? "Unsaved Changes"
+                  : "All Changes Saved"}
               </p>
             </div>
           </div>
+
+          {(
+            pageMessage ||
+            saveMessage ||
+            personalInformationError
+          ) && (
+            <div
+              ref={validationSummaryRef}
+              role="status"
+              className={[
+                "rounded-xl border p-4 text-sm",
+                personalInformationError
+                  ? "border-red-200 bg-red-50 text-red-800"
+                  : hasOrganizerPersonalValidationErrors(
+                        validationErrors,
+                      )
+                    ? "border-amber-200 bg-amber-50 text-amber-900"
+                    : "border-emerald-200 bg-emerald-50 text-emerald-800",
+              ].join(" ")}
+            >
+              {personalInformationError ??
+                pageMessage ??
+                saveMessage}
+            </div>
+          )}
 
           <OrganizerSection
             title="Legal Name"
@@ -339,51 +570,73 @@ export function OrganizerPersonalInformationPage() {
             <OrganizerTextField
               id="legal-first-name"
               label="Legal first name"
-              value={legalFirstName}
+              value={
+                form.legalFirstName
+              }
               onChange={(event) => {
-                setLegalFirstName(
+                updateField(
+                  "legalFirstName",
                   event.target.value,
                 )
               }}
               autoComplete="given-name"
               required
+              disabled={isSaving}
+              errorMessage={
+                validationErrors.legalFirstName
+              }
             />
 
             <OrganizerTextField
               id="legal-middle-name"
               label="Legal middle name"
-              value={legalMiddleName}
+              value={
+                form.legalMiddleName
+              }
               onChange={(event) => {
-                setLegalMiddleName(
+                updateField(
+                  "legalMiddleName",
                   event.target.value,
                 )
               }}
               autoComplete="additional-name"
+              disabled={isSaving}
               helpText="Optional"
             />
 
             <OrganizerTextField
               id="legal-last-name"
               label="Legal last name"
-              value={legalLastName}
+              value={
+                form.legalLastName
+              }
               onChange={(event) => {
-                setLegalLastName(
+                updateField(
+                  "legalLastName",
                   event.target.value,
                 )
               }}
               autoComplete="family-name"
               required
+              disabled={isSaving}
+              errorMessage={
+                validationErrors.legalLastName
+              }
             />
 
             <OrganizerTextField
               id="preferred-name"
               label="Preferred name"
-              value={preferredName}
+              value={
+                form.preferredName
+              }
               onChange={(event) => {
-                setPreferredName(
+                updateField(
+                  "preferredName",
                   event.target.value,
                 )
               }}
+              disabled={isSaving}
               helpText="Optional"
             />
           </OrganizerSection>
@@ -397,9 +650,10 @@ export function OrganizerPersonalInformationPage() {
             <OrganizerTextField
               id="organizer-email"
               label="Email address"
-              value={email}
+              value={form.email}
               onChange={(event) => {
-                setEmail(
+                updateField(
+                  "email",
                   event.target.value,
                 )
               }}
@@ -407,22 +661,45 @@ export function OrganizerPersonalInformationPage() {
               inputMode="email"
               autoComplete="email"
               required
-              helpText="This should be an email address you check regularly."
+              disabled={isSaving}
+              errorMessage={
+                validationErrors.email
+              }
+              helpText="Use an email address you check regularly."
             />
 
             <OrganizerPhoneField
               id="mobile-phone"
               label="Mobile phone"
-              value={mobilePhone}
-              onChange={setMobilePhone}
+              value={
+                form.mobilePhone
+              }
+              onChange={(value) => {
+                updateField(
+                  "mobilePhone",
+                  value,
+                )
+              }}
               required
+              disabled={isSaving}
+              errorMessage={
+                validationErrors.mobilePhone
+              }
             />
 
             <OrganizerPhoneField
               id="alternate-phone"
               label="Alternate phone"
-              value={alternatePhone}
-              onChange={setAlternatePhone}
+              value={
+                form.alternatePhone
+              }
+              onChange={(value) => {
+                updateField(
+                  "alternatePhone",
+                  value,
+                )
+              }}
+              disabled={isSaving}
               helpText="Optional"
             />
           </OrganizerSection>
@@ -435,37 +712,43 @@ export function OrganizerPersonalInformationPage() {
           >
             <OrganizerAddressFields
               value={{
-                addressLine1,
-                addressLine2,
-                city,
-                state,
-                postalCode,
+                addressLine1:
+                  form.addressLine1,
+
+                addressLine2:
+                  form.addressLine2,
+
+                city:
+                  form.city,
+
+                state:
+                  form.state,
+
+                postalCode:
+                  form.postalCode,
               }}
               onChange={(
                 field,
                 value,
               ) => {
-                switch (field) {
-                  case "addressLine1":
-                    setAddressLine1(value)
-                    break
+                updateField(
+                  field,
+                  value,
+                )
+              }}
+              disabled={isSaving}
+              errors={{
+                addressLine1:
+                  validationErrors.addressLine1,
 
-                  case "addressLine2":
-                    setAddressLine2(value)
-                    break
+                city:
+                  validationErrors.city,
 
-                  case "city":
-                    setCity(value)
-                    break
+                state:
+                  validationErrors.state,
 
-                  case "state":
-                    setState(value)
-                    break
-
-                  case "postalCode":
-                    setPostalCode(value)
-                    break
-                }
+                postalCode:
+                  validationErrors.postalCode,
               }}
             />
           </OrganizerSection>
@@ -479,9 +762,12 @@ export function OrganizerPersonalInformationPage() {
             <OrganizerDateField
               id="birth-date"
               label="Date of birth"
-              value={birthDate}
+              value={
+                form.birthDate
+              }
               onChange={(event) => {
-                setBirthDate(
+                updateField(
+                  "birthDate",
                   event.target.value,
                 )
               }}
@@ -491,21 +777,32 @@ export function OrganizerPersonalInformationPage() {
                   .slice(0, 10)
               }
               required
+              disabled={isSaving}
+              errorMessage={
+                validationErrors.birthDate
+              }
             />
 
             <OrganizerSelectField
               id="filing-status"
               label="Expected filing status"
-              value={filingStatus}
+              value={
+                form.filingStatus
+              }
               options={
                 filingStatusOptions
               }
               onChange={(event) => {
-                setFilingStatus(
+                updateField(
+                  "filingStatus",
                   event.target.value,
                 )
               }}
               required
+              disabled={isSaving}
+              errorMessage={
+                validationErrors.filingStatus
+              }
               helpText="Choose Not Sure if you need help determining your filing status."
             />
 
@@ -513,31 +810,106 @@ export function OrganizerPersonalInformationPage() {
               <OrganizerTextField
                 id="occupation"
                 label="Occupation"
-                value={occupation}
+                value={
+                  form.occupation
+                }
                 onChange={(event) => {
-                  setOccupation(
+                  updateField(
+                    "occupation",
                     event.target.value,
                   )
                 }}
                 autoComplete="organization-title"
                 required
+                disabled={isSaving}
+                errorMessage={
+                  validationErrors.occupation
+                }
                 helpText="Enter your primary occupation during the tax year."
               />
             </div>
           </OrganizerSection>
 
-          <div className="rounded-xl border border-blue-200 bg-blue-50 p-5">
-            <p className="text-sm font-semibold text-blue-900">
-              Form fields connected
-            </p>
+          <div className="border-t border-slate-200" />
 
-            <p className="mt-2 text-sm leading-6 text-blue-800">
-              Your personal, contact, and address information is loaded from
-              the secure organizer record. The year-over-year questions,
-              validation, and save workflow will be connected next.
-            </p>
-          </div>
-        </div>
+          <OrganizerSection
+            title="Changes Since Last Tax Year"
+            description="These questions help your preparer identify changes that may affect your tax return."
+          >
+            <div className="space-y-8 md:col-span-2">
+              <OrganizerYesNoQuestion
+                id="address-changed"
+                label="Has your mailing address changed since your last tax return?"
+                value={
+                  form.addressChangedThisYear
+                }
+                onChange={(value) => {
+                  updateField(
+                    "addressChangedThisYear",
+                    value,
+                  )
+                }}
+                required
+                disabled={isSaving}
+                errorMessage={
+                  validationErrors.addressChangedThisYear
+                }
+              />
+
+              <OrganizerYesNoQuestion
+                id="marital-status-changed"
+                label="Has your marital status changed since your last tax return?"
+                value={
+                  form.maritalStatusChangedThisYear
+                }
+                onChange={(value) => {
+                  updateField(
+                    "maritalStatusChangedThisYear",
+                    value,
+                  )
+                }}
+                required
+                disabled={isSaving}
+                errorMessage={
+                  validationErrors.maritalStatusChangedThisYear
+                }
+              />
+
+              <OrganizerYesNoQuestion
+                id="employer-changed"
+                label="Have you changed employers since your last tax return?"
+                value={
+                  form.employerChangedThisYear
+                }
+                onChange={(value) => {
+                  updateField(
+                    "employerChangedThisYear",
+                    value,
+                  )
+                }}
+                required
+                disabled={isSaving}
+                errorMessage={
+                  validationErrors.employerChangedThisYear
+                }
+              />
+            </div>
+          </OrganizerSection>
+
+          <OrganizerSaveBar
+            isSaving={isSaving}
+            saveMessage={
+              pageMessage ??
+              saveMessage
+            }
+            onSave={() => {
+              void handleSave(false)
+            }}
+            onContinue={() => {
+              void handleSave(true)
+            }}
+          />
+        </form>
       </OrganizerCard>
     </section>
   )

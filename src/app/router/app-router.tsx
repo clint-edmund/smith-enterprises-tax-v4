@@ -71,6 +71,14 @@ import {
   OrganizerPersonalInformationPage,
 } from "@/features/client-portal/pages/organizer-personal-information-page"
 
+import {
+  OrganizerIdentityInformationPage,
+} from "@/features/client-portal/pages/organizer-identity-information-page"
+
+import {
+  OrganizerProvider,
+} from "@/features/client-portal/context/organizer/organizer-provider"
+
 export const appRouter =
   createBrowserRouter([
     {
@@ -138,8 +146,25 @@ export const appRouter =
                   element: <ClientDashboardPage />,
                 },
                 {
-                  path: "/client/organizer/personal",
-                  element: <OrganizerPersonalInformationPage />,      
+                  element: (
+                    <OrganizerProvider>
+                      <Outlet />
+                    </OrganizerProvider>
+                  ),
+                  children: [
+                    {
+                      path: "/client/organizer/personal",
+                      element: (
+                        <OrganizerPersonalInformationPage />
+                      ),
+                    },
+                    {
+                      path: "/client/organizer/identity",
+                      element: (
+                        <OrganizerIdentityInformationPage />
+                      ),
+                    },
+                  ],
                 },
                 {
                   path: "/client/returns",
