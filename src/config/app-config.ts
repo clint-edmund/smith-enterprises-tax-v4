@@ -50,6 +50,8 @@ export const appConfig = {
     clientHome: "/client",
     clientLogin: "/client/login",
     clientRegister: "/client/register",
+    termsOfService: "/terms",
+    privacyPolicy: "/privacy",
     clientDashboard: "/client/dashboard",
     clientDocuments: "/client/documents",
     clientMessages: "/client/messages",

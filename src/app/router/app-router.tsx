@@ -21,6 +21,12 @@ import { ClientPortalLayout } from "@/features/client-portal/layouts/client-port
 import {
   AcceptPortalInvitationPage,
 } from "@/features/security/pages/accept-portal-invitation-page"
+import {
+  PrivacyPolicyPage,
+} from "@/features/client-portal/pages/privacy-policy-page"
+import {
+  TermsOfServicePage,
+} from "@/features/client-portal/pages/terms-of-service-page"
 import { ClientDashboardPage } from "@/features/client-portal/pages/client-dashboard-page"
 import { ClientLoginPage } from "@/features/client-portal/pages/client-login-page"
 import { ClientRegistrationPage } from "@/features/client-portal/pages/client-registration-page"
@@ -104,6 +110,14 @@ export const appRouter =
         {
           path: appConfig.routes.clientRegister,
           element: <ClientRegistrationPage />,
+        },
+        {
+          path: appConfig.routes.termsOfService,
+          element: <TermsOfServicePage />,
+        },
+        {
+          path: appConfig.routes.privacyPolicy,
+          element: <PrivacyPolicyPage />,
         },
         {
           path: "/accept-invitation",
