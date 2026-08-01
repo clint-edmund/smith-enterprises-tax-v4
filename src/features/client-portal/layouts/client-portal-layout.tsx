@@ -9,6 +9,10 @@ const navigation = [
     href: "/client/dashboard",
   },
   {
+    label: "Tax Organizer",
+    href: "/client/organizer/personal",
+  },
+  {
     label: "My Tax Returns",
     href: "/client/returns",
   },

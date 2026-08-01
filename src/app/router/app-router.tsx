@@ -67,6 +67,10 @@ import {
   permissions,
 } from "@/features/authorization/permissions"
 
+import {
+  OrganizerPersonalInformationPage,
+} from "@/features/client-portal/pages/organizer-personal-information-page"
+
 export const appRouter =
   createBrowserRouter([
     {
@@ -124,10 +128,6 @@ export const appRouter =
           element: <AcceptPortalInvitationPage />,
         },
         {
-          path: "/accept-invitation",
-          element: <AcceptPortalInvitationPage />,
-        },
-        {
           element: <ClientPortalGuard />,
           children: [
             {
@@ -136,6 +136,10 @@ export const appRouter =
                 {
                   path: appConfig.routes.clientDashboard,
                   element: <ClientDashboardPage />,
+                },
+                {
+                  path: "/client/organizer/personal",
+                  element: <OrganizerPersonalInformationPage />,      
                 },
                 {
                   path: "/client/returns",
