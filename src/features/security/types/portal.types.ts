@@ -14,6 +14,8 @@ export interface ClientPortalAccount {
 
   clientId: string
 
+  authUserId: string | null
+
   email: string
 
   status: PortalAccountStatus
