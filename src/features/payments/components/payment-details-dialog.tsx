@@ -1,20 +1,30 @@
 import {
   Ban,
   Download,
+  History,
   Printer,
+  ReceiptText,
+  RefreshCw,
   WalletCards,
   X,
 } from "lucide-react"
 import {
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from "react"
+import {
+  Link,
+} from "react-router-dom"
 
 import {
   getClientDetailsRoute,
   getReturnDetailsRoute,
 } from "@/config/app-config"
+import {
+  PaymentReceipt,
+} from "@/features/payments/components/payment-receipt"
 import type {
   PaymentReceiptDetails,
 } from "@/features/payments/types/payment.types"
@@ -24,14 +34,14 @@ import {
   paymentMethodLabels,
 } from "@/features/payments/utils/payment-formatters"
 import {
-  PaymentReceipt,
-} from "@/features/payments/components/payment-receipt"
-import {
   generatePaymentReceiptPdf,
 } from "@/features/payments/utils/payment-pdf"
 import {
-  Link,
-} from "react-router-dom"
+  WorkflowTimeline,
+} from "@/features/returns/components/workflow-timeline"
+import {
+  useReturnWorkflowHistory,
+} from "@/features/returns/hooks/use-return-workflow-history"
 
 interface PaymentDetailsDialogProps {
   receipt: PaymentReceiptDetails
@@ -40,6 +50,30 @@ interface PaymentDetailsDialogProps {
   onPrintReceipt: () => void
   onRecordPayment: () => void
   onVoidPayment: () => void
+}
+
+type DetailsTab =
+  | "receipt"
+  | "timeline"
+
+function getPaymentIdFromEventData(
+  eventData: unknown,
+): string | null {
+  if (
+    typeof eventData !== "object" ||
+    eventData === null ||
+    Array.isArray(eventData)
+  ) {
+    return null
+  }
+
+  const paymentId =
+    (eventData as Record<string, unknown>)
+      .payment_id
+
+  return typeof paymentId === "string"
+    ? paymentId
+    : null
 }
 
 export function PaymentDetailsDialog({
@@ -54,9 +88,38 @@ export function PaymentDetailsDialog({
     useRef<HTMLDivElement | null>(null)
 
   const [
+    activeTab,
+    setActiveTab,
+  ] = useState<DetailsTab>("receipt")
+
+  const [
     isDownloadingPdf,
     setIsDownloadingPdf,
   ] = useState(false)
+
+  const {
+    events,
+    isLoading: isTimelineLoading,
+    errorMessage: timelineErrorMessage,
+    refresh: refreshTimeline,
+  } = useReturnWorkflowHistory(
+    receipt.taxReturnId,
+  )
+
+  const paymentEvents =
+    useMemo(
+      () =>
+        events.filter(
+          (event) =>
+            getPaymentIdFromEventData(
+              event.eventData,
+            ) === receipt.paymentId,
+        ),
+      [
+        events,
+        receipt.paymentId,
+      ],
+    )
 
   async function handleDownloadPdf() {
     if (!receiptRef.current) {
@@ -88,6 +151,7 @@ export function PaymentDetailsDialog({
       setIsDownloadingPdf(false)
     }
   }
+
   useEffect(() => {
     function handleKeyDown(
       event: KeyboardEvent,
@@ -101,6 +165,7 @@ export function PaymentDetailsDialog({
       document.body.style.overflow
 
     document.body.style.overflow = "hidden"
+
     document.addEventListener(
       "keydown",
       handleKeyDown,
@@ -311,19 +376,135 @@ export function PaymentDetailsDialog({
             )}
 
             <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-              <div className="border-b border-slate-200 px-5 py-4">
-                <h3 className="font-bold text-slate-950">
-                  Receipt preview
-                </h3>
-              </div>
+              <div className="border-b border-slate-200 px-5 pt-4">
+                <div
+                  role="tablist"
+                  aria-label="Payment receipt information"
+                  className="flex gap-6"
+                >
+                  <button
+                    type="button"
+                    role="tab"
+                    id="payment-receipt-tab"
+                    aria-selected={
+                      activeTab === "receipt"
+                    }
+                    aria-controls="payment-receipt-panel"
+                    onClick={() => {
+                      setActiveTab("receipt")
+                    }}
+                    className={`inline-flex items-center gap-2 border-b-2 pb-3 text-sm font-semibold transition ${
+                      activeTab === "receipt"
+                        ? "border-blue-700 text-blue-700"
+                        : "border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-900"
+                    }`}
+                  >
+                    <ReceiptText
+                      className="size-4"
+                      aria-hidden="true"
+                    />
 
-              <div className="overflow-x-auto p-3 sm:p-5">
-                <div ref={receiptRef}>
-                  <PaymentReceipt
-                    receipt={receipt}
-                  />
+                    Receipt
+                  </button>
+
+                  <button
+                    type="button"
+                    role="tab"
+                    id="payment-timeline-tab"
+                    aria-selected={
+                      activeTab === "timeline"
+                    }
+                    aria-controls="payment-timeline-panel"
+                    onClick={() => {
+                      setActiveTab("timeline")
+                    }}
+                    className={`inline-flex items-center gap-2 border-b-2 pb-3 text-sm font-semibold transition ${
+                      activeTab === "timeline"
+                        ? "border-blue-700 text-blue-700"
+                        : "border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-900"
+                    }`}
+                  >
+                    <History
+                      className="size-4"
+                      aria-hidden="true"
+                    />
+
+                    Timeline
+                  </button>
                 </div>
               </div>
+
+              {activeTab === "receipt" ? (
+                <div
+                  role="tabpanel"
+                  id="payment-receipt-panel"
+                  aria-labelledby="payment-receipt-tab"
+                  className="overflow-x-auto p-3 sm:p-5"
+                >
+                  <div ref={receiptRef}>
+                    <PaymentReceipt
+                      receipt={receipt}
+                    />
+                  </div>
+                </div>
+              ) : (
+                <div
+                  role="tabpanel"
+                  id="payment-timeline-panel"
+                  aria-labelledby="payment-timeline-tab"
+                  className="p-5"
+                >
+                  {isTimelineLoading ? (
+                    <div
+                      role="status"
+                      className="rounded-xl border border-slate-200 bg-slate-50 p-8 text-center"
+                    >
+                      <RefreshCw
+                        className="mx-auto size-6 animate-spin text-slate-400"
+                        aria-hidden="true"
+                      />
+
+                      <p className="mt-3 text-sm font-semibold text-slate-700">
+                        Loading payment timeline...
+                      </p>
+                    </div>
+                  ) : timelineErrorMessage ? (
+                    <div
+                      role="alert"
+                      className="rounded-xl border border-red-200 bg-red-50 p-5"
+                    >
+                      <p className="font-semibold text-red-900">
+                        Unable to load the payment timeline
+                      </p>
+
+                      <p className="mt-2 text-sm text-red-700">
+                        {timelineErrorMessage}
+                      </p>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          void refreshTimeline()
+                        }}
+                        className="mt-4 inline-flex items-center gap-2 rounded-lg border border-red-300 bg-white px-3 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600"
+                      >
+                        <RefreshCw
+                          className="size-4"
+                          aria-hidden="true"
+                        />
+
+                        Try Again
+                      </button>
+                    </div>
+                  ) : (
+                    <WorkflowTimeline
+                      events={paymentEvents}
+                      emptyTitle="No payment timeline events"
+                      emptyDescription="Payment activity will appear here after workflow events are recorded for this transaction."
+                    />
+                  )}
+                </div>
+              )}
             </section>
           </div>
 
