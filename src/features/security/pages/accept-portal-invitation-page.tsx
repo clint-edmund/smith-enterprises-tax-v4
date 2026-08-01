@@ -10,9 +10,6 @@ import {
   useEffect,
   useState,
 } from "react"
-import {
-  useSearchParams,
-} from "react-router-dom"
 
 import {
   validatePortalInvitation,
@@ -89,8 +86,6 @@ function getPageState(
 }
 
 export function AcceptPortalInvitationPage() {
-  const [searchParams] =
-    useSearchParams()
 
   const [
     pageState,
@@ -118,9 +113,13 @@ export function AcceptPortalInvitationPage() {
     let isCancelled = false
 
     async function loadInvitation() {
+      const rawHash =
+        window.location.hash.slice(1)
+
       const rawToken =
-        searchParams.get("token")?.trim() ??
-        ""
+        decodeURIComponent(
+          rawHash,
+        ).trim()
 
       if (!rawToken) {
         setPageState("invalid")
@@ -177,7 +176,7 @@ export function AcceptPortalInvitationPage() {
     return () => {
       isCancelled = true
     }
-  }, [searchParams])
+    }, [])
 
   return (
     <main className="min-h-screen bg-slate-100 px-4 py-10 sm:px-6 lg:py-16">
