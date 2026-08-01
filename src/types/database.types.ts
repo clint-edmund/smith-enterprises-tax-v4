@@ -343,6 +343,86 @@ export type Database = {
           },
         ]
       }
+      client_tax_organizer_personal_information: {
+        Row: {
+          address_changed_this_year: boolean | null
+          address_line_1: string | null
+          address_line_2: string | null
+          alternate_phone: string | null
+          birth_date: string | null
+          city: string | null
+          created_at: string | null
+          email: string | null
+          employer_changed_this_year: boolean | null
+          filing_status: string | null
+          legal_first_name: string | null
+          legal_last_name: string | null
+          legal_middle_name: string | null
+          marital_status_changed_this_year: boolean | null
+          mobile_phone: string | null
+          occupation: string | null
+          organizer_id: string
+          postal_code: string | null
+          preferred_name: string | null
+          state: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          address_changed_this_year?: boolean | null
+          address_line_1?: string | null
+          address_line_2?: string | null
+          alternate_phone?: string | null
+          birth_date?: string | null
+          city?: string | null
+          created_at?: string | null
+          email?: string | null
+          employer_changed_this_year?: boolean | null
+          filing_status?: string | null
+          legal_first_name?: string | null
+          legal_last_name?: string | null
+          legal_middle_name?: string | null
+          marital_status_changed_this_year?: boolean | null
+          mobile_phone?: string | null
+          occupation?: string | null
+          organizer_id: string
+          postal_code?: string | null
+          preferred_name?: string | null
+          state?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          address_changed_this_year?: boolean | null
+          address_line_1?: string | null
+          address_line_2?: string | null
+          alternate_phone?: string | null
+          birth_date?: string | null
+          city?: string | null
+          created_at?: string | null
+          email?: string | null
+          employer_changed_this_year?: boolean | null
+          filing_status?: string | null
+          legal_first_name?: string | null
+          legal_last_name?: string | null
+          legal_middle_name?: string | null
+          marital_status_changed_this_year?: boolean | null
+          mobile_phone?: string | null
+          occupation?: string | null
+          organizer_id?: string
+          postal_code?: string | null
+          preferred_name?: string | null
+          state?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_tax_organizer_personal_information_organizer_id_fkey"
+            columns: ["organizer_id"]
+            isOneToOne: true
+            referencedRelation: "client_tax_organizers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_tax_organizer_sections: {
         Row: {
           completed_at: string | null
@@ -1980,6 +2060,32 @@ export type Database = {
           occurred_at: string
         }[]
       }
+      get_client_organizer_personal_information: {
+        Args: { requested_organizer_id: string }
+        Returns: {
+          address_changed_this_year: boolean
+          address_line_1: string
+          address_line_2: string
+          alternate_phone: string
+          birth_date: string
+          city: string
+          created_at: string
+          email: string
+          employer_changed_this_year: boolean
+          filing_status: string
+          legal_first_name: string
+          legal_last_name: string
+          legal_middle_name: string
+          marital_status_changed_this_year: boolean
+          mobile_phone: string
+          occupation: string
+          organizer_id: string
+          postal_code: string
+          preferred_name: string
+          state: string
+          updated_at: string
+        }[]
+      }
       get_client_portal_dashboard: {
         Args: never
         Returns: {
@@ -2991,6 +3097,36 @@ export type Database = {
           isOneToOne: false
           isSetofReturn: true
         }
+      }
+      save_client_organizer_personal_information: {
+        Args: {
+          requested_address_changed_this_year: boolean
+          requested_address_line_1: string
+          requested_address_line_2: string
+          requested_alternate_phone: string
+          requested_birth_date: string
+          requested_city: string
+          requested_email: string
+          requested_employer_changed_this_year: boolean
+          requested_filing_status: string
+          requested_legal_first_name: string
+          requested_legal_last_name: string
+          requested_legal_middle_name: string
+          requested_marital_status_changed_this_year: boolean
+          requested_mobile_phone: string
+          requested_occupation: string
+          requested_organizer_id: string
+          requested_postal_code: string
+          requested_preferred_name: string
+          requested_state: string
+        }
+        Returns: {
+          last_saved_at: string
+          organizer_id: string
+          organizer_progress_percentage: number
+          section_progress_percentage: number
+          section_status: Database["public"]["Enums"]["tax_organizer_section_status"]
+        }[]
       }
       search_clients: {
         Args: {

@@ -10,6 +10,14 @@ import {
   useClientDashboard,
 } from "@/features/client-portal/hooks/use-client-dashboard"
 
+import {
+  useTaxOrganizer,
+} from "@/features/client-portal/hooks/use-tax-organizer"
+
+import {
+  taxOrganizerSections,
+} from "@/features/client-portal/constants/tax-organizer-sections"
+
 function formatCurrency(
   value: number,
 ): string {
@@ -194,6 +202,20 @@ export function ClientDashboardPage() {
     refresh,
   } = useClientDashboard()
 
+  const organizerTaxYear =
+    dashboard?.currentTaxYear ??
+    new Date().getFullYear()
+
+  const {
+    summary: organizerSummary,
+    currentSection,
+    isLoading: isOrganizerLoading,
+    errorMessage: organizerError,
+    refresh: refreshOrganizer,
+  } = useTaxOrganizer(
+    organizerTaxYear,
+)
+
   if (isLoading) {
     return <DashboardLoadingState />
   }
@@ -229,6 +251,48 @@ export function ClientDashboardPage() {
 
   const hasCurrentReturn =
     dashboard.currentReturnId !== null
+
+  const organizerProgress =
+    organizerSummary?.organizer
+      .progressPercentage ?? 0
+
+  const completedSections =
+    organizerSummary?.completedSections ??
+    0
+
+  const totalSections =
+    organizerSummary?.totalSections ??
+    13
+
+  const remainingSections =
+    Math.max(
+      totalSections -
+        completedSections,
+      0,
+    )
+
+  const organizerStatus =
+    organizerSummary?.organizer.status ??
+    "not_started"
+
+  const organizerActionLabel =
+    organizerStatus === "submitted" ||
+    organizerStatus === "under_review" ||
+    organizerStatus === "approved"
+      ? "View Organizer"
+      : organizerProgress > 0
+        ? "Continue Organizer"
+        : "Start Tax Organizer"
+
+  const currentSectionDefinition =
+    currentSection
+      ? taxOrganizerSections.find(
+          (section) =>
+            section.key ===
+            currentSection.sectionKey,
+        )
+      : null
+
 
   return (
     <section className="space-y-6">
@@ -273,6 +337,186 @@ export function ClientDashboardPage() {
             : "Refresh"}
         </button>
       </header>
+      
+      <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <div className="border-b border-slate-200 bg-gradient-to-r from-blue-950 to-slate-950 p-6 text-white">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <p className="text-sm font-semibold uppercase tracking-[0.14em] text-blue-200">
+                  {organizerTaxYear} Tax Organizer
+                </p>
+
+                <h2 className="mt-2 text-2xl font-bold tracking-tight">
+                  Secure Tax Intake
+                </h2>
+
+                <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-300">
+                  Complete your organizer, upload supporting documents, and securely
+                  provide the information needed to prepare your return.
+                </p>
+              </div>
+
+              {organizerSummary && (
+                <span
+                  className={`inline-flex self-start rounded-full px-3 py-1.5 text-xs font-bold uppercase tracking-wide ${
+                    organizerStatus === "approved"
+                      ? "bg-emerald-100 text-emerald-800"
+                      : organizerStatus === "submitted" ||
+                          organizerStatus === "under_review"
+                        ? "bg-blue-100 text-blue-800"
+                        : organizerStatus === "changes_requested"
+                          ? "bg-amber-100 text-amber-800"
+                          : "bg-white/10 text-white"
+                  }`}
+                >
+                  {formatLabel(
+                    organizerStatus,
+                  )}
+                </span>
+              )}
+            </div>
+          </div>
+
+          <div className="p-6">
+            {isOrganizerLoading ? (
+              <div
+                role="status"
+                className="rounded-xl border border-slate-200 bg-slate-50 p-8 text-center"
+              >
+                <RefreshCw
+                  className="mx-auto h-6 w-6 animate-spin text-slate-400"
+                  aria-hidden="true"
+                />
+
+                <p className="mt-3 text-sm font-semibold text-slate-700">
+                  Loading your tax organizer...
+                </p>
+              </div>
+            ) : organizerError ? (
+              <div
+                role="alert"
+                className="rounded-xl border border-red-200 bg-red-50 p-5"
+              >
+                <div className="flex gap-3">
+                  <AlertCircle
+                    className="mt-0.5 h-5 w-5 shrink-0 text-red-600"
+                    aria-hidden="true"
+                  />
+
+                  <div>
+                    <p className="font-semibold text-red-900">
+                      Unable to load your tax organizer
+                    </p>
+
+                    <p className="mt-2 text-sm text-red-700">
+                      {organizerError}
+                    </p>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        void refreshOrganizer()
+                      }}
+                      className="mt-4 inline-flex items-center gap-2 rounded-lg border border-red-300 bg-white px-3 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2"
+                    >
+                      <RefreshCw
+                        className="h-4 w-4"
+                        aria-hidden="true"
+                      />
+
+                      Try Again
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : organizerSummary ? (
+              <div className="space-y-6">
+                <div>
+                  <div className="flex items-center justify-between gap-4">
+                    <p className="text-sm font-semibold text-slate-700">
+                      Overall progress
+                    </p>
+
+                    <p className="text-sm font-bold text-slate-950">
+                      {organizerProgress}%
+                    </p>
+                  </div>
+
+                  <div
+                    className="mt-3 h-3 overflow-hidden rounded-full bg-slate-200"
+                    role="progressbar"
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    aria-valuenow={
+                      organizerProgress
+                    }
+                    aria-label="Tax organizer progress"
+                  >
+                    <div
+                      className="h-full rounded-full bg-blue-700 transition-all"
+                      style={{
+                        width: `${organizerProgress}%`,
+                      }}
+                    />
+                  </div>
+                </div>
+
+                <dl className="grid gap-4 sm:grid-cols-3">
+                  <div className="rounded-xl bg-slate-50 p-4">
+                    <dt className="text-xs font-bold uppercase tracking-wide text-slate-500">
+                      Current section
+                    </dt>
+
+                    <dd className="mt-2 font-semibold text-slate-950">
+                      {currentSectionDefinition?.title ??
+                        "Personal Information"}
+                    </dd>
+                  </div>
+
+                  <div className="rounded-xl bg-slate-50 p-4">
+                    <dt className="text-xs font-bold uppercase tracking-wide text-slate-500">
+                      Completed
+                    </dt>
+
+                    <dd className="mt-2 text-2xl font-bold text-emerald-700">
+                      {completedSections}
+                    </dd>
+                  </div>
+
+                  <div className="rounded-xl bg-slate-50 p-4">
+                    <dt className="text-xs font-bold uppercase tracking-wide text-slate-500">
+                      Remaining
+                    </dt>
+
+                    <dd className="mt-2 text-2xl font-bold text-slate-950">
+                      {remainingSections}
+                    </dd>
+                  </div>
+                </dl>
+
+                <button
+                  type="button"
+                  disabled
+                  title="Organizer navigation will be connected in the next phase."
+                  className="inline-flex w-full cursor-not-allowed items-center justify-center rounded-xl bg-blue-700 px-5 py-3.5 font-semibold text-white opacity-60 sm:w-auto"
+                >
+                  {organizerActionLabel}
+                </button>
+              </div>
+            ) : (
+              <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-8 text-center">
+                <p className="font-semibold text-slate-900">
+                  Your organizer is not available yet.
+                </p>
+
+                <p className="mt-2 text-sm text-slate-500">
+                  Refresh the page or contact Smith Enterprises for assistance.
+                </p>
+              </div>
+            )}
+          </div>
+        </article>
+
 
       {error ? (
         <div className="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
