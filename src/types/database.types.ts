@@ -242,6 +242,7 @@ export type Database = {
           email: string
           failed_sign_in_attempts: number
           id: string
+          invitation_expires_at: string | null
           invitation_sent_at: string | null
           invitation_status: Database["public"]["Enums"]["portal_invitation_status"]
           invitation_token_hash: string | null
@@ -257,6 +258,7 @@ export type Database = {
           email: string
           failed_sign_in_attempts?: number
           id?: string
+          invitation_expires_at?: string | null
           invitation_sent_at?: string | null
           invitation_status?: Database["public"]["Enums"]["portal_invitation_status"]
           invitation_token_hash?: string | null
@@ -272,6 +274,7 @@ export type Database = {
           email?: string
           failed_sign_in_attempts?: number
           id?: string
+          invitation_expires_at?: string | null
           invitation_sent_at?: string | null
           invitation_status?: Database["public"]["Enums"]["portal_invitation_status"]
           invitation_token_hash?: string | null
@@ -1590,6 +1593,36 @@ export type Database = {
           template_id: string
           updated_at: string
         }[]
+      }
+      create_client_portal_account: {
+        Args: {
+          requested_client_id: string
+          requested_email: string
+          requested_invitation_expires_at: string
+          requested_invitation_token_hash: string
+        }
+        Returns: {
+          accepted_at: string | null
+          client_id: string
+          created_at: string
+          email: string
+          failed_sign_in_attempts: number
+          id: string
+          invitation_expires_at: string | null
+          invitation_sent_at: string | null
+          invitation_status: Database["public"]["Enums"]["portal_invitation_status"]
+          invitation_token_hash: string | null
+          last_sign_in_at: string | null
+          locked_at: string | null
+          status: Database["public"]["Enums"]["portal_account_status"]
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "client_portal_accounts"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       create_client_record: {
         Args: {
