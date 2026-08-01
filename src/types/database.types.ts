@@ -2268,6 +2268,24 @@ export type Database = {
           voided_payments_total: number
         }[]
       }
+      get_or_create_client_tax_organizer: {
+        Args: { requested_tax_year: number }
+        Returns: {
+          client_id: string
+          created_at: string
+          current_section: Database["public"]["Enums"]["tax_organizer_section_key"]
+          last_saved_at: string
+          organizer_id: string
+          organizer_status: Database["public"]["Enums"]["tax_organizer_status"]
+          progress_percentage: number
+          reviewed_at: string
+          sections: Json
+          started_at: string
+          submitted_at: string
+          tax_year: number
+          updated_at: string
+        }[]
+      }
       get_payment_receipt: {
         Args: { requested_payment_id: string }
         Returns: {
