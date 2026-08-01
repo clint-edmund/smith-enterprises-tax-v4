@@ -2025,6 +2025,19 @@ export type Database = {
         Args: never
         Returns: number
       }
+      get_office_payment_summary: {
+        Args: never
+        Returns: {
+          outstanding_receivables: number
+          payment_count_this_month: number
+          payment_count_today: number
+          payments_this_month: number
+          payments_today: number
+          returns_with_balance: number
+          voided_payment_count: number
+          voided_payments_total: number
+        }[]
+      }
       get_payment_receipt: {
         Args: { requested_payment_id: string }
         Returns: {
@@ -2064,6 +2077,30 @@ export type Database = {
           entity_type: string
           id: number
           occurred_at: string
+        }[]
+      }
+      get_recent_office_payments: {
+        Args: { requested_limit?: number }
+        Returns: {
+          amount: number
+          client_id: string
+          client_name: string
+          client_number: number
+          created_at: string
+          created_by: string
+          created_by_name: string
+          is_voided: boolean
+          payment_date: string
+          payment_id: string
+          payment_method: Database["public"]["Enums"]["payment_method"]
+          receipt_number: string
+          reference_number: string
+          return_type: Database["public"]["Enums"]["return_type"]
+          tax_form: Database["public"]["Enums"]["tax_form_type"]
+          tax_return_id: string
+          tax_year: number
+          void_reason: string
+          voided_at: string
         }[]
       }
       get_return_payment_summary: {

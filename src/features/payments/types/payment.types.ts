@@ -116,3 +116,57 @@ export interface PaymentReceiptDetails {
   createdAt: string
   updatedAt: string
 }
+
+export interface OfficePaymentSummary {
+  paymentsToday: number
+  paymentCountToday: number
+
+  paymentsThisMonth: number
+  paymentCountThisMonth: number
+
+  outstandingReceivables: number
+  returnsWithBalance: number
+
+  voidedPaymentsTotal: number
+  voidedPaymentCount: number
+}
+
+export interface OfficePaymentRecord {
+  paymentId: string
+
+  taxReturnId: string
+
+  clientId: string
+
+  clientNumber: number | null
+
+  clientName: string
+
+  taxYear: number
+
+  returnType: string
+
+  taxForm: string
+
+  amount: number
+
+  paymentDate: string
+
+  paymentMethod: PaymentMethod
+
+  referenceNumber: string | null
+
+  receiptNumber: string | null
+
+  isVoided: boolean
+
+  voidedAt: string | null
+
+  voidReason: string | null
+
+  createdBy: string | null
+
+  createdByName: string
+
+  createdAt: string
+}

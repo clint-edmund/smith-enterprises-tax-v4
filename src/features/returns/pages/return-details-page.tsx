@@ -50,9 +50,6 @@ import {
   ReturnFinancialSummary,
 } from "@/features/returns/components/return-financial-summary"
 import {
-  ReturnStatusBadge,
-} from "@/features/returns/components/return-status-badge"
-import {
   ReturnWorkflowProgress,
 } from "@/features/returns/components/return-workflow-progress"
 import {
@@ -74,6 +71,9 @@ import {
 import {
   ReturnWorkflowPanel,
 } from "@/features/workflow"
+import {
+  WorkflowStatusBadge,
+} from "@/features/workflow/components/workflow-status-badge"
 
 export function ReturnDetailsPage() {
   const { returnId } = useParams()
@@ -261,8 +261,8 @@ export function ReturnDetailsPage() {
                 }
               </h1>
 
-              <ReturnStatusBadge
-                status={taxReturn.status}
+              <WorkflowStatusBadge
+                status={taxReturn.workflowStatus}
               />
             </div>
 
@@ -347,7 +347,7 @@ export function ReturnDetailsPage() {
               </div>
 
               <ReturnWorkflowProgress
-                status={taxReturn.status}
+                status={taxReturn.workflowStatus}
               />
             </div>
 

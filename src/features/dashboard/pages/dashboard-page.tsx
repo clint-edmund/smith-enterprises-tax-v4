@@ -26,6 +26,16 @@ import { RecentActivity } from "@/features/dashboard/components/recent-activity"
 import { StaffWorkload } from "@/features/dashboard/components/staff-workload";
 import { SummaryCard } from "@/features/dashboard/components/summary-card";
 import { WorkflowOperations } from "@/features/dashboard/components/workflow-operations";
+import { DashboardFinancialOverview } from "@/features/dashboard/components/dashboard-financial-overview";
+import { ExecutiveFinancialAnalyticsPanel } from "@/features/dashboard/components/executive-financial-analytics-panel";
+import { getExecutiveFinancialAnalytics } from "@/features/dashboard/services/financial-analytics-service";
+import type { ExecutiveFinancialAnalytics } from "@/features/dashboard/types/financial-analytics.types";
+import {
+  getOfficePaymentSummary,
+} from "@/features/payments/services/payment-service";
+import type {
+  OfficePaymentSummary,
+} from "@/features/payments/types/payment.types";
 import {
   getDashboardData,
   getRecentDashboardActivity,
@@ -63,12 +73,61 @@ import {
   useAuthorization,
 } from "@/features/authorization/hooks/use-authorization"
 
+const emptyFinancialOverview: OfficePaymentSummary = {
+  paymentsToday: 0,
+  paymentCountToday: 0,
+  paymentsThisMonth: 0,
+  paymentCountThisMonth: 0,
+  outstandingReceivables: 0,
+  returnsWithBalance: 0,
+  voidedPaymentsTotal: 0,
+  voidedPaymentCount: 0,
+};
+
+const emptyExecutiveAnalytics: ExecutiveFinancialAnalytics = {
+  periods: {
+    todayRevenue: 0,
+    todayPaymentCount: 0,
+    yesterdayRevenue: 0,
+    last7DaysRevenue: 0,
+    previous7DaysRevenue: 0,
+    last30DaysRevenue: 0,
+    yearToDateRevenue: 0,
+    averageDailyRevenue: 0,
+  },
+  collection: {
+    totalFees: 0,
+    totalCollected: 0,
+    outstandingReceivables: 0,
+    returnsAwaitingPayment: 0,
+    collectionRate: 0,
+  },
+  paymentMethods: [],
+  preparers: [],
+  dailySnapshot: {
+    returnsCompletedToday: 0,
+    paymentsReceivedToday: 0,
+    revenueToday: 0,
+    returnsAwaitingPayment: 0,
+    returnsFiledToday: 0,
+    newClientsToday: 0,
+  },
+  generatedAt: new Date(0).toISOString(),
+};
+
+
 export function DashboardPage() {
   const { profile } = useAuth();
   const {
     hasPermission,
     permissions,
   } = useAuthorization();
+
+  const canViewExecutiveData =
+    hasPermission(
+      permissions.dashboard
+        .viewExecutiveData,
+    )
 
   const realtimeRefreshTimerRef =
     useRef<ReturnType<typeof setTimeout> | null>(
@@ -79,6 +138,30 @@ export function DashboardPage() {
     null,
   );
   const [staffWorkload, setStaffWorkload] = useState<DashboardStaffWorkload | null>(null);
+  const [
+    financialOverview,
+    setFinancialOverview,
+  ] = useState<OfficePaymentSummary>(
+    emptyFinancialOverview,
+  );
+  const [
+    financialOverviewError,
+    setFinancialOverviewError,
+  ] = useState<string | null>(null);
+  const [
+    executiveAnalytics,
+    setExecutiveAnalytics,
+  ] = useState<ExecutiveFinancialAnalytics>(
+    emptyExecutiveAnalytics,
+  );
+  const [
+    executiveAnalyticsError,
+    setExecutiveAnalyticsError,
+  ] = useState<string | null>(null);
+  const [
+    isRefreshingExecutiveAnalytics,
+    setIsRefreshingExecutiveAnalytics,
+  ] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -96,23 +179,91 @@ export function DashboardPage() {
     setErrorMessage(null);
 
     try {
-      const [data, workloadData] = await Promise.all([
+      const [
+        data,
+        workloadData,
+        paymentSummary,
+      ] = await Promise.all([
         getDashboardData(),
         getStaffWorkloadSummary(),
+        getOfficePaymentSummary(),
       ]);
 
       setDashboardData(data);
       setStaffWorkload(workloadData);
+      setFinancialOverview(paymentSummary);
+      setFinancialOverviewError(null);
       setActivities(data.activities);
+
+      if (canViewExecutiveData) {
+        try {
+          const executiveAnalyticsResult =
+            await getExecutiveFinancialAnalytics();
+
+          setExecutiveAnalytics(
+            executiveAnalyticsResult,
+          );
+          setExecutiveAnalyticsError(null);
+        } catch (analyticsError) {
+          console.error(
+            "Unable to load executive financial analytics:",
+            analyticsError,
+          );
+
+          setExecutiveAnalyticsError(
+            analyticsError instanceof Error
+              ? analyticsError.message
+              : "Executive financial analytics could not be loaded.",
+          );
+        }
+      } else {
+        setExecutiveAnalytics(
+          emptyExecutiveAnalytics,
+        );
+        setExecutiveAnalyticsError(null);
+      }
     } catch (error) {
       console.error("Unable to load dashboard:", error);
 
       setErrorMessage("Unable to load dashboard data.");
+      setFinancialOverviewError(
+        "Financial overview could not be loaded.",
+      );
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
     }
-  }, []);
+  }, [canViewExecutiveData]);
+
+  const refreshExecutiveAnalytics =
+    useCallback(async () => {
+      if (!canViewExecutiveData) {
+        return
+      }
+
+      setIsRefreshingExecutiveAnalytics(true)
+      setExecutiveAnalyticsError(null)
+
+      try {
+        const result =
+          await getExecutiveFinancialAnalytics()
+
+        setExecutiveAnalytics(result)
+      } catch (error) {
+        console.error(
+          "Unable to refresh executive financial analytics:",
+          error,
+        )
+
+        setExecutiveAnalyticsError(
+          error instanceof Error
+            ? error.message
+            : "Executive financial analytics could not be refreshed.",
+        )
+      } finally {
+        setIsRefreshingExecutiveAnalytics(false)
+      }
+    }, [canViewExecutiveData])
 
       const refreshActivity = useCallback(
       async (
@@ -285,12 +436,6 @@ export function DashboardPage() {
     profile.displayName ||
     "Staff Member";
 
-  const canViewExecutiveData =
-    hasPermission(
-      permissions.dashboard
-        .viewExecutiveData,
-    )
-
   const canViewReturnReadiness =
     hasPermission(
       permissions.dashboard
@@ -415,6 +560,29 @@ export function DashboardPage() {
           href="/returns?status=completed"
         />
             </div>
+
+      {canViewExecutiveData && (
+        <DashboardFinancialOverview
+          summary={financialOverview}
+          errorMessage={financialOverviewError}
+          onRefresh={() => {
+            void loadDashboard(true);
+          }}
+        />
+      )}
+
+      {canViewExecutiveData && (
+        <ExecutiveFinancialAnalyticsPanel
+          analytics={executiveAnalytics}
+          errorMessage={executiveAnalyticsError}
+          isRefreshing={
+            isRefreshingExecutiveAnalytics
+          }
+          onRefresh={() => {
+            void refreshExecutiveAnalytics()
+          }}
+        />
+      )}
 
       {canViewReturnReadiness && (
         <ReturnReadinessCenter

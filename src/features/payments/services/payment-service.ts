@@ -10,6 +10,11 @@ import type {
   VoidPaymentValues,
 } from "../types/payment.types"
 
+import type {
+  OfficePaymentRecord,
+  OfficePaymentSummary,
+} from "../types/payment.types"
+
 type NumericDatabaseValue =
   number |
   string |
@@ -686,4 +691,140 @@ export async function getPaymentReceipt(
     updatedAt:
       receipt.updated_at,
   }
+}
+
+export async function getOfficePaymentSummary(): Promise<OfficePaymentSummary> {
+  const { data, error } = await supabase.rpc(
+    "get_office_payment_summary",
+  )
+
+  if (error) {
+    throw new Error(
+      getPaymentServiceErrorMessage(error),
+    )
+  }
+
+  const summary = data?.[0]
+
+  if (!summary) {
+    return {
+      paymentsToday: 0,
+      paymentCountToday: 0,
+      paymentsThisMonth: 0,
+      paymentCountThisMonth: 0,
+      outstandingReceivables: 0,
+      returnsWithBalance: 0,
+      voidedPaymentsTotal: 0,
+      voidedPaymentCount: 0,
+    }
+  }
+
+  return {
+    paymentsToday:
+      toNumber(summary.payments_today),
+
+    paymentCountToday:
+      Number(summary.payment_count_today),
+
+    paymentsThisMonth:
+      toNumber(summary.payments_this_month),
+
+    paymentCountThisMonth:
+      Number(summary.payment_count_this_month),
+
+    outstandingReceivables:
+      toNumber(
+        summary.outstanding_receivables,
+      ),
+
+    returnsWithBalance:
+      Number(summary.returns_with_balance),
+
+    voidedPaymentsTotal:
+      toNumber(
+        summary.voided_payments_total,
+      ),
+
+    voidedPaymentCount:
+      Number(summary.voided_payment_count),
+  }
+}
+
+export async function getRecentOfficePayments(
+  limit = 25,
+): Promise<OfficePaymentRecord[]> {
+  const { data, error } =
+    await supabase.rpc(
+      "get_recent_office_payments",
+      {
+        requested_limit: limit,
+      },
+    )
+
+  if (error) {
+    throw new Error(
+      getPaymentServiceErrorMessage(error),
+    )
+  }
+
+  return (data ?? []).map(
+    (payment) => ({
+      paymentId: payment.payment_id,
+
+      taxReturnId:
+        payment.tax_return_id,
+
+      clientId:
+        payment.client_id,
+
+      clientNumber:
+        payment.client_number,
+
+      clientName:
+        payment.client_name,
+
+      taxYear:
+        payment.tax_year,
+
+      returnType:
+        payment.return_type,
+
+      taxForm:
+        payment.tax_form,
+
+      amount:
+        toNumber(payment.amount),
+
+      paymentDate:
+        payment.payment_date,
+
+      paymentMethod:
+        payment.payment_method,
+
+      referenceNumber:
+        payment.reference_number,
+
+      receiptNumber:
+        payment.receipt_number,
+
+      isVoided:
+        payment.is_voided,
+
+      voidedAt:
+        payment.voided_at,
+
+      voidReason:
+        payment.void_reason,
+
+      createdBy:
+        payment.created_by,
+
+      createdByName:
+        payment.created_by_name ??
+        "System",
+
+      createdAt:
+        payment.created_at,
+    }),
+  )
 }
