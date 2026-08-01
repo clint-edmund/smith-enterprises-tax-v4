@@ -234,6 +234,62 @@ export type Database = {
           },
         ]
       }
+      client_portal_accounts: {
+        Row: {
+          accepted_at: string | null
+          client_id: string
+          created_at: string
+          email: string
+          failed_sign_in_attempts: number
+          id: string
+          invitation_sent_at: string | null
+          invitation_status: Database["public"]["Enums"]["portal_invitation_status"]
+          invitation_token_hash: string | null
+          last_sign_in_at: string | null
+          locked_at: string | null
+          status: Database["public"]["Enums"]["portal_account_status"]
+          updated_at: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          client_id: string
+          created_at?: string
+          email: string
+          failed_sign_in_attempts?: number
+          id?: string
+          invitation_sent_at?: string | null
+          invitation_status?: Database["public"]["Enums"]["portal_invitation_status"]
+          invitation_token_hash?: string | null
+          last_sign_in_at?: string | null
+          locked_at?: string | null
+          status?: Database["public"]["Enums"]["portal_account_status"]
+          updated_at?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          client_id?: string
+          created_at?: string
+          email?: string
+          failed_sign_in_attempts?: number
+          id?: string
+          invitation_sent_at?: string | null
+          invitation_status?: Database["public"]["Enums"]["portal_invitation_status"]
+          invitation_token_hash?: string | null
+          last_sign_in_at?: string | null
+          locked_at?: string | null
+          status?: Database["public"]["Enums"]["portal_account_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_portal_accounts_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: true
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_portal_profiles: {
         Row: {
           activated_at: string | null
@@ -3056,6 +3112,8 @@ export type Database = {
         | "ach"
         | "money_order"
         | "other"
+      portal_account_status: "inactive" | "active" | "locked"
+      portal_invitation_status: "pending" | "accepted" | "expired" | "revoked"
       return_status:
         | "not_started"
         | "documents_pending"
@@ -3248,6 +3306,8 @@ export const Constants = {
         "money_order",
         "other",
       ],
+      portal_account_status: ["inactive", "active", "locked"],
+      portal_invitation_status: ["pending", "accepted", "expired", "revoked"],
       return_status: [
         "not_started",
         "documents_pending",
