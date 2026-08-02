@@ -33,3 +33,7 @@ export {
 export {
   OrganizerValidationSummary,
 } from "./organizer-validation-summary"
+
+export {
+  OrganizerPage,
+} from "./organizer-page"

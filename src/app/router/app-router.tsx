@@ -83,6 +83,10 @@ import {
   OrganizerProvider,
 } from "@/features/client-portal/context/organizer/organizer-provider"
 
+import {
+  OrganizerDependentsPage,
+} from "@/features/client-portal/pages/organizer-dependents-page"
+
 export const appRouter =
   createBrowserRouter([
     {
@@ -172,6 +176,12 @@ export const appRouter =
                       path: "/client/organizer/banking",
                       element: (
                         <OrganizerBankingInformationPage />
+                      ),
+                    },
+                    {
+                      path: "/client/organizer/dependents",
+                      element: (
+                        <OrganizerDependentsPage />
                       ),
                     },
                   ],

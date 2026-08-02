@@ -387,6 +387,74 @@ export type Database = {
           },
         ]
       }
+      client_tax_organizer_dependents: {
+        Row: {
+          birth_date: string
+          claimed_by_another_taxpayer: boolean
+          created_at: string
+          display_order: number
+          first_name: string
+          id: string
+          is_full_time_student: boolean
+          is_permanently_disabled: boolean
+          last_name: string
+          lived_with_taxpayer_all_year: boolean
+          middle_name: string | null
+          months_lived_with_taxpayer: number
+          organizer_id: string
+          relationship: string
+          suffix: string | null
+          updated_at: string
+          us_citizen_or_resident: boolean
+        }
+        Insert: {
+          birth_date: string
+          claimed_by_another_taxpayer?: boolean
+          created_at?: string
+          display_order?: number
+          first_name: string
+          id?: string
+          is_full_time_student?: boolean
+          is_permanently_disabled?: boolean
+          last_name: string
+          lived_with_taxpayer_all_year?: boolean
+          middle_name?: string | null
+          months_lived_with_taxpayer?: number
+          organizer_id: string
+          relationship: string
+          suffix?: string | null
+          updated_at?: string
+          us_citizen_or_resident?: boolean
+        }
+        Update: {
+          birth_date?: string
+          claimed_by_another_taxpayer?: boolean
+          created_at?: string
+          display_order?: number
+          first_name?: string
+          id?: string
+          is_full_time_student?: boolean
+          is_permanently_disabled?: boolean
+          last_name?: string
+          lived_with_taxpayer_all_year?: boolean
+          middle_name?: string | null
+          months_lived_with_taxpayer?: number
+          organizer_id?: string
+          relationship?: string
+          suffix?: string | null
+          updated_at?: string
+          us_citizen_or_resident?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_tax_organizer_dependents_organizer_id_fkey"
+            columns: ["organizer_id"]
+            isOneToOne: false
+            referencedRelation: "client_tax_organizers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_tax_organizer_identity_information: {
         Row: {
           citizenship_status: string | null
@@ -1775,6 +1843,7 @@ export type Database = {
           actor_user_id: string | null
           client_id: string | null
           created_at: string
+          dependent_id: string | null
           id: string
           ip_address: unknown
           metadata: Json
@@ -1793,6 +1862,7 @@ export type Database = {
           actor_user_id?: string | null
           client_id?: string | null
           created_at?: string
+          dependent_id?: string | null
           id?: string
           ip_address?: unknown
           metadata?: Json
@@ -1811,6 +1881,7 @@ export type Database = {
           actor_user_id?: string | null
           client_id?: string | null
           created_at?: string
+          dependent_id?: string | null
           id?: string
           ip_address?: unknown
           metadata?: Json
@@ -1830,6 +1901,13 @@ export type Database = {
             columns: ["client_id"]
             isOneToOne: false
             referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vault_audit_log_dependent_id_fkey"
+            columns: ["dependent_id"]
+            isOneToOne: false
+            referencedRelation: "client_tax_organizer_dependents"
             referencedColumns: ["id"]
           },
           {
@@ -1893,6 +1971,7 @@ export type Database = {
           client_id: string
           created_at: string
           created_by: string | null
+          dependent_id: string | null
           encrypted_value: string
           id: string
           initialization_vector: string
@@ -1914,6 +1993,7 @@ export type Database = {
           client_id: string
           created_at?: string
           created_by?: string | null
+          dependent_id?: string | null
           encrypted_value: string
           id?: string
           initialization_vector: string
@@ -1935,6 +2015,7 @@ export type Database = {
           client_id?: string
           created_at?: string
           created_by?: string | null
+          dependent_id?: string | null
           encrypted_value?: string
           id?: string
           initialization_vector?: string
@@ -1954,6 +2035,13 @@ export type Database = {
             columns: ["client_id"]
             isOneToOne: false
             referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vault_secrets_dependent_id_fkey"
+            columns: ["dependent_id"]
+            isOneToOne: false
+            referencedRelation: "client_tax_organizer_dependents"
             referencedColumns: ["id"]
           },
           {
@@ -2024,6 +2112,45 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      add_client_organizer_dependent: {
+        Args: {
+          requested_birth_date: string
+          requested_claimed_by_another_taxpayer: boolean
+          requested_first_name: string
+          requested_is_full_time_student: boolean
+          requested_is_permanently_disabled: boolean
+          requested_last_name: string
+          requested_lived_with_taxpayer_all_year: boolean
+          requested_middle_name: string
+          requested_months_lived_with_taxpayer: number
+          requested_organizer_id: string
+          requested_relationship: string
+          requested_suffix: string
+          requested_us_citizen_or_resident: boolean
+        }
+        Returns: {
+          birth_date: string
+          claimed_by_another_taxpayer: boolean
+          created_at: string
+          dependent_id: string
+          display_order: number
+          first_name: string
+          is_full_time_student: boolean
+          is_permanently_disabled: boolean
+          last_name: string
+          lived_with_taxpayer_all_year: boolean
+          middle_name: string
+          months_lived_with_taxpayer: number
+          organizer_id: string
+          organizer_progress_percentage: number
+          relationship: string
+          section_progress_percentage: number
+          section_status: Database["public"]["Enums"]["tax_organizer_section_status"]
+          suffix: string
+          updated_at: string
+          us_citizen_or_resident: boolean
+        }[]
       }
       approve_document: {
         Args: { p_comments?: string; p_document_id: string }
@@ -2325,6 +2452,19 @@ export type Database = {
         Args: never
         Returns: Database["public"]["Enums"]["app_role"]
       }
+      delete_client_organizer_dependent: {
+        Args: { requested_dependent_id: string; requested_organizer_id: string }
+        Returns: {
+          deleted_at: string
+          dependent_id: string
+          dependent_name: string
+          organizer_id: string
+          organizer_progress_percentage: number
+          remaining_dependent_count: number
+          section_progress_percentage: number
+          section_status: Database["public"]["Enums"]["tax_organizer_section_status"]
+        }[]
+      }
       describe_tax_return_change: {
         Args: {
           new_record: Database["public"]["Tables"]["tax_returns"]["Row"]
@@ -2383,6 +2523,28 @@ export type Database = {
           routing_number_masked: string
           updated_at: string
           use_direct_deposit: boolean
+        }[]
+      }
+      get_client_organizer_dependents: {
+        Args: { requested_organizer_id: string }
+        Returns: {
+          birth_date: string
+          claimed_by_another_taxpayer: boolean
+          created_at: string
+          dependent_id: string
+          display_order: number
+          first_name: string
+          is_full_time_student: boolean
+          is_permanently_disabled: boolean
+          last_name: string
+          lived_with_taxpayer_all_year: boolean
+          middle_name: string
+          months_lived_with_taxpayer: number
+          organizer_id: string
+          relationship: string
+          suffix: string
+          updated_at: string
+          us_citizen_or_resident: boolean
         }[]
       }
       get_client_organizer_identity_information: {
@@ -3583,6 +3745,28 @@ export type Database = {
           vault_secret_id: string
         }[]
       }
+      store_vault_secret_v2: {
+        Args: {
+          requested_actor_user_id: string
+          requested_authentication_tag: string
+          requested_client_id: string
+          requested_dependent_id: string
+          requested_encrypted_value: string
+          requested_initialization_vector: string
+          requested_key_version: number
+          requested_masked_value: string
+          requested_organizer_id: string
+          requested_secret_type: string
+        }
+        Returns: {
+          key_version: number
+          masked_value: string
+          replaced_existing_secret: boolean
+          status: string
+          updated_at: string
+          vault_secret_id: string
+        }[]
+      }
       toggle_client_document_favorite: {
         Args: { requested_document_id: string }
         Returns: {
@@ -3626,6 +3810,46 @@ export type Database = {
           isOneToOne: false
           isSetofReturn: true
         }
+      }
+      update_client_organizer_dependent: {
+        Args: {
+          requested_birth_date: string
+          requested_claimed_by_another_taxpayer: boolean
+          requested_dependent_id: string
+          requested_first_name: string
+          requested_is_full_time_student: boolean
+          requested_is_permanently_disabled: boolean
+          requested_last_name: string
+          requested_lived_with_taxpayer_all_year: boolean
+          requested_middle_name: string
+          requested_months_lived_with_taxpayer: number
+          requested_organizer_id: string
+          requested_relationship: string
+          requested_suffix: string
+          requested_us_citizen_or_resident: boolean
+        }
+        Returns: {
+          birth_date: string
+          claimed_by_another_taxpayer: boolean
+          created_at: string
+          dependent_id: string
+          display_order: number
+          first_name: string
+          is_full_time_student: boolean
+          is_permanently_disabled: boolean
+          last_name: string
+          lived_with_taxpayer_all_year: boolean
+          middle_name: string
+          months_lived_with_taxpayer: number
+          organizer_id: string
+          organizer_progress_percentage: number
+          relationship: string
+          section_progress_percentage: number
+          section_status: Database["public"]["Enums"]["tax_organizer_section_status"]
+          suffix: string
+          updated_at: string
+          us_citizen_or_resident: boolean
+        }[]
       }
       update_client_record: {
         Args: {
@@ -3827,6 +4051,26 @@ export type Database = {
           requested_action: string
           requested_actor_user_id: string
           requested_client_id: string
+          requested_ip_address: unknown
+          requested_metadata: Json
+          requested_organizer_id: string
+          requested_outcome: string
+          requested_reason: string
+          requested_request_id: string
+          requested_secret_type: string
+          requested_session_id: string
+          requested_source: string
+          requested_user_agent: string
+          requested_vault_secret_id: string
+        }
+        Returns: string
+      }
+      write_vault_audit_event_v2: {
+        Args: {
+          requested_action: string
+          requested_actor_user_id: string
+          requested_client_id: string
+          requested_dependent_id: string
           requested_ip_address: unknown
           requested_metadata: Json
           requested_organizer_id: string
