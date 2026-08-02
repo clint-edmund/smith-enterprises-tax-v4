@@ -27,9 +27,6 @@ import {
   OrganizerPhoneField,
 } from "@/features/client-portal/components/organizer/organizer-phone-field"
 import {
-  OrganizerProgressBar,
-} from "@/features/client-portal/components/organizer/organizer-progress-bar"
-import {
   OrganizerSaveBar,
 } from "@/features/client-portal/components/organizer/organizer-save-bar"
 import {
@@ -46,6 +43,9 @@ import {
   OrganizerYesNoQuestion,
 } from "@/features/client-portal/components/organizer/organizer-yes-no-question"
 import {
+  OrganizerWorkspace,
+} from "@/features/client-portal/components/organizer/workspace/organizer-workspace"
+import {
   useOrganizerPersonalInformation,
 } from "@/features/client-portal/hooks/use-organizer-personal-information"
 import {
@@ -54,6 +54,9 @@ import {
 import type {
   SaveOrganizerPersonalInformationRequest,
 } from "@/features/client-portal/services/organizer-personal-information-service"
+import {
+  getOrganizerNavigationItems,
+} from "@/features/client-portal/services/organizer-navigation-service"
 import {
   hasOrganizerPersonalValidationErrors,
   type OrganizerPersonalValidationErrors,
@@ -140,10 +143,11 @@ const emptyForm: PersonalInformationFormState = {
 export function OrganizerPersonalInformationPage() {
   const {
     taxYear: organizerTaxYear,
+    summary,
     organizer,
     progress,
     completedSections,
-    remainingSections,
+    totalSections,
     isLoading,
     errorMessage,
     refreshOrganizer,
@@ -279,6 +283,24 @@ export function OrganizerPersonalInformationPage() {
       [
         form,
         initialForm,
+      ],
+    )
+
+
+  const navigationItems =
+    useMemo(
+      () =>
+        summary
+          ? getOrganizerNavigationItems({
+              sections: summary.sections,
+              currentSectionKey:
+                organizer?.currentSection ??
+                "personal",
+            })
+          : [],
+      [
+        summary,
+        organizer?.currentSection,
       ],
     )
 
@@ -477,65 +499,49 @@ export function OrganizerPersonalInformationPage() {
   }
 
   return (
-    <section className="space-y-8">
-      <OrganizerPageHeader
-        eyebrow={`${organizerTaxYear} Tax Organizer`}
-        title="Personal Information"
-        description="Review and update your legal name, contact details, filing information, and address before continuing."
-      />
+    <OrganizerWorkspace
+      title="Personal Information"
+      description="Review and update your legal name, contact details, filing information, and address before continuing."
+      taxYear={organizerTaxYear}
+      progress={progress}
+      completedSections={completedSections}
+      totalSections={totalSections}
+      currentSectionTitle="Personal Information"
+      navigationItems={navigationItems}
+    >
+      <section className="space-y-8">
+        <OrganizerPageHeader
+          eyebrow={`${organizerTaxYear} Tax Organizer`}
+          title="Personal Information"
+          description="Review and update your legal name, contact details, filing information, and address before continuing."
+        />
 
-      <OrganizerCard>
-        <form
-          className="space-y-10 p-8"
+        <OrganizerCard>
+          <form
+            className="space-y-10 p-8"
           onSubmit={(event) => {
             event.preventDefault()
 
             void handleSave(false)
           }}
         >
-          <OrganizerProgressBar
-            progress={progress}
-          />
+          <div className="rounded-xl bg-slate-50 p-5">
+            <p className="text-sm font-semibold text-slate-500">
+              Save status
+            </p>
 
-          <div className="grid gap-6 rounded-xl bg-slate-50 p-6 md:grid-cols-3">
-            <div>
-              <p className="text-sm font-semibold text-slate-500">
-                Completed
-              </p>
-
-              <p className="mt-2 text-3xl font-bold text-emerald-700">
-                {completedSections}
-              </p>
-            </div>
-
-            <div>
-              <p className="text-sm font-semibold text-slate-500">
-                Remaining
-              </p>
-
-              <p className="mt-2 text-3xl font-bold text-slate-900">
-                {remainingSections}
-              </p>
-            </div>
-
-            <div>
-              <p className="text-sm font-semibold text-slate-500">
-                Save status
-              </p>
-
-              <p
-                className={[
-                  "mt-2 text-lg font-bold",
-                  hasUnsavedChanges
-                    ? "text-amber-700"
-                    : "text-emerald-700",
-                ].join(" ")}
-              >
-                {hasUnsavedChanges
-                  ? "Unsaved Changes"
-                  : "All Changes Saved"}
-              </p>
-            </div>
+            <p
+              className={[
+                "mt-2 text-lg font-bold",
+                hasUnsavedChanges
+                  ? "text-amber-700"
+                  : "text-emerald-700",
+              ].join(" ")}
+            >
+              {hasUnsavedChanges
+                ? "Unsaved Changes"
+                : "All Changes Saved"}
+            </p>
           </div>
 
           {(
@@ -909,8 +915,9 @@ export function OrganizerPersonalInformationPage() {
               void handleSave(true)
             }}
           />
-        </form>
-      </OrganizerCard>
-    </section>
+          </form>
+        </OrganizerCard>
+      </section>
+    </OrganizerWorkspace>
   )
 }
