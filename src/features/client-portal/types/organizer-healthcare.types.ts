@@ -65,3 +65,45 @@ export interface OrganizerHealthcareCoverage {
 
   updatedAt: string
 }
+
+export interface CreateOrganizerHealthcareCoverageRequest {
+  organizerId: string
+
+  providerName: string
+
+  coverageType:
+    HealthcareCoverageType
+
+  coveredPersonName: string
+
+  policyNumber:
+    string | null
+
+  startMonth:
+    number | null
+
+  endMonth:
+    number | null
+
+  isFullYearCoverage:
+    boolean
+
+  documentReceived:
+    boolean
+
+  documentType:
+    HealthcareDocumentType | null
+
+  notes: string
+}
+
+export interface UpdateOrganizerHealthcareCoverageRequest
+  extends CreateOrganizerHealthcareCoverageRequest {
+  coverageId: string
+}
+
+export interface DeleteOrganizerHealthcareCoverageRequest {
+  organizerId: string
+
+  coverageId: string
+}

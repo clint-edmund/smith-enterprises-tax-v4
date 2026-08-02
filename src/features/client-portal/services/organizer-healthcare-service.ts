@@ -17,7 +17,7 @@ export interface OrganizerHealthcareFilters {
 }
 
 interface HealthcareCoverageRow {
-  id: string
+  coverage_id: string
 
   organizer_id: string
 
@@ -48,11 +48,9 @@ interface HealthcareCoverageRow {
   notes:
     string | null
 
-  record_status:
-    string
+  record_status: string
 
-  display_order:
-    number
+  display_order: number
 
   created_at: string
 
@@ -65,7 +63,7 @@ function mapHealthcareCoverage(
 ): OrganizerHealthcareCoverage {
   return {
     coverageId:
-      row.id,
+      row.coverage_id,
 
     organizerId:
       row.organizer_id,
@@ -114,35 +112,41 @@ function mapHealthcareCoverage(
   }
 }
 
-export async function
-getOrganizerHealthcareCoverages(
+export async function getOrganizerHealthcareCoverages(
   organizerId: string,
-): Promise<
-  OrganizerHealthcareCoverage[]
-> {
+): Promise<OrganizerHealthcareCoverage[]> {
+  const normalizedOrganizerId =
+    organizerId.trim()
+
+  if (!normalizedOrganizerId) {
+    throw new Error(
+      "An organizer identifier is required.",
+    )
+  }
+
   const {
     data,
     error,
-  } =
-    await supabase
-      .from(
-        "client_tax_organizer_healthcare_coverages",
-      )
-      .select("*")
-      .eq(
-        "organizer_id",
-        organizerId,
-      )
-      .order(
-        "display_order",
-      )
+  } = await supabase.rpc(
+    "get_client_organizer_healthcare_coverages",
+    {
+      requested_organizer_id:
+        normalizedOrganizerId,
+    },
+  )
 
   if (error) {
-    throw error
+    throw new Error(
+      error.message,
+    )
   }
 
   return (
-    data ?? []
+    (
+      data as
+        | HealthcareCoverageRow[]
+        | null
+    ) ?? []
   ).map(
     mapHealthcareCoverage,
   )
