@@ -25,6 +25,10 @@ import {
   MaskedSecretDisplay,
 } from "./masked-secret-display"
 
+import {
+  validateVaultSecret,
+} from "@/features/security/vault/vault-validation"
+
 interface SecureTextFieldProps {
   organizerId: string
   label: string
@@ -90,15 +94,32 @@ export function SecureTextField({
     setValidationMessage(null)
     setSuccessMessage(null)
 
-    const trimmedValue = value.trim()
-    const trimmedConfirmation = confirmationValue.trim()
+   const validation =
+    validateVaultSecret(
+      value,
+      secretType,
+    )
 
-    if (!trimmedValue) {
-      setValidationMessage(`${label} is required.`)
-      return
-    }
+  if (!validation.valid) {
+    setValidationMessage(
+      validation.errorMessage ??
+        `${label} is invalid.`,
+    )
 
-    if (confirmValue && trimmedValue !== trimmedConfirmation) {
+    return
+  }
+
+  const confirmation =
+    validateVaultSecret(
+      confirmationValue,
+      secretType,
+    )
+
+  if (
+    confirmValue &&
+    validation.normalizedValue !==
+      confirmation.normalizedValue
+  ) {
       setValidationMessage(`${label} entries do not match.`)
       return
     }
@@ -107,7 +128,8 @@ export function SecureTextField({
       await saveSecret({
         organizerId,
         secretType,
-        plainTextValue: trimmedValue,
+        plainTextValue:
+          validation.normalizedValue,
       })
 
       clearPlaintextState()

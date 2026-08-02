@@ -21,6 +21,7 @@ import type {
   VaultSecretType,
 } from "../_shared/vault/types.ts"
 import {
+  normalizeSecretValue,
   validateSecret,
 } from "../_shared/vault/validation.ts"
 
@@ -46,27 +47,6 @@ function isVaultSecretType(
       value as VaultSecretType,
     )
   )
-}
-
-function normalizeSecretValue(
-  value: string,
-  secretType:
-    VaultSecretType,
-): string {
-  switch (secretType) {
-    case "social_security_number":
-    case "itin":
-    case "routing_number":
-    case "identity_protection_pin":
-    case "employer_identification_number":
-      return value.replace(
-        /\D/g,
-        "",
-      )
-
-    default:
-      return value.trim()
-  }
 }
 
 Deno.serve(

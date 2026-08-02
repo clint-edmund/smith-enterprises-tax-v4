@@ -6,6 +6,8 @@ export type VaultSecretType =
   | "state_identification"
   | "routing_number"
   | "bank_account_number"
+  | "identity_protection_pin"
+  | "employer_identification_number"
 
 export interface VaultRecord {
   id: string
