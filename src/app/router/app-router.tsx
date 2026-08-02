@@ -76,6 +76,10 @@ import {
 } from "@/features/client-portal/pages/organizer-identity-information-page"
 
 import {
+  OrganizerBankingInformationPage,
+} from "@/features/client-portal/pages/organizer-banking-information-page"
+
+import {
   OrganizerProvider,
 } from "@/features/client-portal/context/organizer/organizer-provider"
 
@@ -162,6 +166,12 @@ export const appRouter =
                       path: "/client/organizer/identity",
                       element: (
                         <OrganizerIdentityInformationPage />
+                      ),
+                    },
+                    {
+                      path: "/client/organizer/banking",
+                      element: (
+                        <OrganizerBankingInformationPage />
                       ),
                     },
                   ],

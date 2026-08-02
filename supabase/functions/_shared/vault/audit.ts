@@ -4,7 +4,7 @@ import type {
 
 import type {
   VaultSecretType,
-} from "./types"
+} from "./types.ts"
 
 interface WriteVaultAuditEventOptions {
   serviceClient:
@@ -17,6 +17,9 @@ interface WriteVaultAuditEventOptions {
     string | null
 
   organizerId?:
+    string | null
+
+  dependentId?:
     string | null
 
   secretType?:
@@ -57,6 +60,7 @@ export async function writeVaultAuditEvent({
   vaultSecretId = null,
   clientId = null,
   organizerId = null,
+  dependentId = null,
   secretType = null,
   actorUserId = null,
   action,
@@ -92,7 +96,7 @@ export async function writeVaultAuditEvent({
   const {
     error,
   } = await serviceClient.rpc(
-    "write_vault_audit_event",
+    "write_vault_audit_event_v2",
     {
       requested_vault_secret_id:
         vaultSecretId,
@@ -102,6 +106,9 @@ export async function writeVaultAuditEvent({
 
       requested_organizer_id:
         organizerId,
+
+      requested_dependent_id:
+        dependentId,
 
       requested_secret_type:
         secretType,

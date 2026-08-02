@@ -11,6 +11,7 @@ export function maskSecret(
 
   switch (secretType) {
     case "social_security_number":
+    case "dependent_social_security_number":
       return `***-**-${trimmed.slice(-4)}`
 
     case "bank_account_number":

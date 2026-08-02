@@ -1,5 +1,6 @@
 export type VaultSecretType =
   | "social_security_number"
+  | "dependent_social_security_number"
   | "itin"
   | "drivers_license"
   | "passport"
@@ -11,7 +12,12 @@ export type VaultSecretType =
 
 export interface SaveVaultSecretRequest {
   organizerId?: string
-  secretType: VaultSecretType
+
+  dependentId?: string
+
+  secretType:
+    VaultSecretType
+
   plainTextValue: string
 }
 
@@ -28,11 +34,16 @@ export interface SaveVaultSecretResponse {
 
 export interface GetVaultMetadataRequest {
   organizerId?: string
-  secretType: VaultSecretType
+
+  dependentId?: string
+
+  secretType:
+    VaultSecretType
 }
 
 export interface VaultSecretMetadata {
   vaultSecretId: string
+  dependentId: string | null
   secretType: VaultSecretType
   maskedValue: string
   status:

@@ -1,7 +1,12 @@
 import {
   NavLink,
   Outlet,
+  useNavigate,
 } from "react-router-dom"
+
+import {
+  useClientAuth,
+} from "@/features/client-portal/hooks/use-client-auth"
 
 const navigation = [
   {
@@ -35,6 +40,13 @@ const navigation = [
 ]
 
 export function ClientPortalLayout() {
+  const navigate =
+    useNavigate()
+
+  const {
+    signOut,
+  } =
+    useClientAuth()
   return (
     <div className="min-h-screen bg-slate-50">
       <header className="border-b bg-white shadow-sm">
@@ -50,7 +62,18 @@ export function ClientPortalLayout() {
           </div>
 
           <button
+            type="button"
             className="rounded-lg border px-4 py-2 text-sm hover:bg-slate-100"
+            onClick={async () => {
+              await signOut()
+
+              navigate(
+                "/client/login",
+                {
+                  replace: true,
+                },
+              )
+            }}
           >
             Logout
           </button>

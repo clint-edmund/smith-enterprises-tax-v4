@@ -343,6 +343,50 @@ export type Database = {
           },
         ]
       }
+      client_tax_organizer_banking_information: {
+        Row: {
+          account_holder_name: string | null
+          account_type: string | null
+          authorize_direct_debit: boolean | null
+          bank_name: string | null
+          created_at: string
+          id: string
+          organizer_id: string
+          updated_at: string
+          use_direct_deposit: boolean | null
+        }
+        Insert: {
+          account_holder_name?: string | null
+          account_type?: string | null
+          authorize_direct_debit?: boolean | null
+          bank_name?: string | null
+          created_at?: string
+          id?: string
+          organizer_id: string
+          updated_at?: string
+          use_direct_deposit?: boolean | null
+        }
+        Update: {
+          account_holder_name?: string | null
+          account_type?: string | null
+          authorize_direct_debit?: boolean | null
+          bank_name?: string | null
+          created_at?: string
+          id?: string
+          organizer_id?: string
+          updated_at?: string
+          use_direct_deposit?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_tax_organizer_banking_information_organizer_id_fkey"
+            columns: ["organizer_id"]
+            isOneToOne: true
+            referencedRelation: "client_tax_organizers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_tax_organizer_identity_information: {
         Row: {
           citizenship_status: string | null
@@ -1725,6 +1769,209 @@ export type Database = {
           },
         ]
       }
+      vault_audit_log: {
+        Row: {
+          action: string
+          actor_user_id: string | null
+          client_id: string | null
+          created_at: string
+          id: string
+          ip_address: unknown
+          metadata: Json
+          organizer_id: string | null
+          outcome: string
+          reason: string | null
+          request_id: string | null
+          secret_type: string | null
+          session_id: string | null
+          source: string
+          user_agent: string | null
+          vault_secret_id: string | null
+        }
+        Insert: {
+          action: string
+          actor_user_id?: string | null
+          client_id?: string | null
+          created_at?: string
+          id?: string
+          ip_address?: unknown
+          metadata?: Json
+          organizer_id?: string | null
+          outcome?: string
+          reason?: string | null
+          request_id?: string | null
+          secret_type?: string | null
+          session_id?: string | null
+          source?: string
+          user_agent?: string | null
+          vault_secret_id?: string | null
+        }
+        Update: {
+          action?: string
+          actor_user_id?: string | null
+          client_id?: string | null
+          created_at?: string
+          id?: string
+          ip_address?: unknown
+          metadata?: Json
+          organizer_id?: string | null
+          outcome?: string
+          reason?: string | null
+          request_id?: string | null
+          secret_type?: string | null
+          session_id?: string | null
+          source?: string
+          user_agent?: string | null
+          vault_secret_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vault_audit_log_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vault_audit_log_organizer_id_fkey"
+            columns: ["organizer_id"]
+            isOneToOne: false
+            referencedRelation: "client_tax_organizers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vault_audit_log_vault_secret_id_fkey"
+            columns: ["vault_secret_id"]
+            isOneToOne: false
+            referencedRelation: "vault_secrets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vault_key_versions: {
+        Row: {
+          activated_at: string | null
+          active: boolean
+          algorithm: string
+          created_at: string
+          description: string | null
+          id: string
+          key_version: number
+          retired_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          activated_at?: string | null
+          active?: boolean
+          algorithm: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          key_version: number
+          retired_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          activated_at?: string | null
+          active?: boolean
+          algorithm?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          key_version?: number
+          retired_at?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      vault_secrets: {
+        Row: {
+          archive_reason: string | null
+          archived_at: string | null
+          archived_by: string | null
+          authentication_tag: string
+          client_id: string
+          created_at: string
+          created_by: string | null
+          encrypted_value: string
+          id: string
+          initialization_vector: string
+          key_version: number
+          masked_value: string
+          organizer_id: string | null
+          secret_type: string
+          status: string
+          updated_at: string
+          updated_by: string | null
+          verified_at: string | null
+          verified_by: string | null
+        }
+        Insert: {
+          archive_reason?: string | null
+          archived_at?: string | null
+          archived_by?: string | null
+          authentication_tag: string
+          client_id: string
+          created_at?: string
+          created_by?: string | null
+          encrypted_value: string
+          id?: string
+          initialization_vector: string
+          key_version: number
+          masked_value: string
+          organizer_id?: string | null
+          secret_type: string
+          status?: string
+          updated_at?: string
+          updated_by?: string | null
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Update: {
+          archive_reason?: string | null
+          archived_at?: string | null
+          archived_by?: string | null
+          authentication_tag?: string
+          client_id?: string
+          created_at?: string
+          created_by?: string | null
+          encrypted_value?: string
+          id?: string
+          initialization_vector?: string
+          key_version?: number
+          masked_value?: string
+          organizer_id?: string | null
+          secret_type?: string
+          status?: string
+          updated_at?: string
+          updated_by?: string | null
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vault_secrets_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vault_secrets_key_version_fkey"
+            columns: ["key_version"]
+            isOneToOne: false
+            referencedRelation: "vault_key_versions"
+            referencedColumns: ["key_version"]
+          },
+          {
+            foreignKeyName: "vault_secrets_organizer_id_fkey"
+            columns: ["organizer_id"]
+            isOneToOne: false
+            referencedRelation: "client_tax_organizers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -2100,6 +2347,14 @@ export type Database = {
         }[]
       }
       generate_payment_receipt_number: { Args: never; Returns: string }
+      get_active_vault_key_version: {
+        Args: never
+        Returns: {
+          activated_at: string
+          algorithm: string
+          key_version: number
+        }[]
+      }
       get_client_document_activity: {
         Args: { requested_client_id: string; requested_limit?: number }
         Returns: {
@@ -2111,6 +2366,23 @@ export type Database = {
           entity_type: string
           id: string
           occurred_at: string
+        }[]
+      }
+      get_client_organizer_banking_information: {
+        Args: { requested_organizer_id: string }
+        Returns: {
+          account_holder_name: string
+          account_type: string
+          authorize_direct_debit: boolean
+          bank_account_number_masked: string
+          bank_name: string
+          created_at: string
+          has_bank_account_number: boolean
+          has_routing_number: boolean
+          organizer_id: string
+          routing_number_masked: string
+          updated_at: string
+          use_direct_deposit: boolean
         }[]
       }
       get_client_organizer_identity_information: {
@@ -3167,6 +3439,23 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      save_client_organizer_banking_information: {
+        Args: {
+          requested_account_holder_name: string
+          requested_account_type: string
+          requested_authorize_direct_debit: boolean
+          requested_bank_name: string
+          requested_organizer_id: string
+          requested_use_direct_deposit: boolean
+        }
+        Returns: {
+          organizer_id: string
+          organizer_progress_percentage: number
+          saved_at: string
+          section_progress_percentage: number
+          section_status: Database["public"]["Enums"]["tax_organizer_section_status"]
+        }[]
+      }
       save_client_organizer_identity_information: {
         Args: {
           requested_citizenship_status: string
@@ -3271,6 +3560,27 @@ export type Database = {
           tax_form: Database["public"]["Enums"]["tax_form_type"]
           tax_year: number
           updated_at: string
+        }[]
+      }
+      store_vault_secret: {
+        Args: {
+          requested_actor_user_id: string
+          requested_authentication_tag: string
+          requested_client_id: string
+          requested_encrypted_value: string
+          requested_initialization_vector: string
+          requested_key_version: number
+          requested_masked_value: string
+          requested_organizer_id: string
+          requested_secret_type: string
+        }
+        Returns: {
+          key_version: number
+          masked_value: string
+          replaced_existing_secret: boolean
+          status: string
+          updated_at: string
+          vault_secret_id: string
         }[]
       }
       toggle_client_document_favorite: {
@@ -3511,6 +3821,25 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      write_vault_audit_event: {
+        Args: {
+          requested_action: string
+          requested_actor_user_id: string
+          requested_client_id: string
+          requested_ip_address: unknown
+          requested_metadata: Json
+          requested_organizer_id: string
+          requested_outcome: string
+          requested_reason: string
+          requested_request_id: string
+          requested_secret_type: string
+          requested_session_id: string
+          requested_source: string
+          requested_user_agent: string
+          requested_vault_secret_id: string
+        }
+        Returns: string
       }
     }
     Enums: {

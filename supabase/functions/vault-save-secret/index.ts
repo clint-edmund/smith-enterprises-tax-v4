@@ -28,6 +28,7 @@ import {
 const allowedSecretTypes =
   new Set<VaultSecretType>([
     "social_security_number",
+    "dependent_social_security_number",
     "itin",
     "drivers_license",
     "passport",
@@ -96,6 +97,9 @@ Deno.serve(
     let organizerId:
       string | null = null
 
+    let dependentId:
+      string | null = null
+
     let secretType:
       VaultSecretType | null =
         null
@@ -131,6 +135,10 @@ Deno.serve(
         body.organizerId?.trim() ||
         null
 
+      dependentId =
+        body.dependentId?.trim() ||
+        null
+
       if (
         !isVaultSecretType(
           body.secretType,
@@ -150,6 +158,35 @@ Deno.serve(
       ) {
         throw new Error(
           "A secure value is required.",
+        )
+      }
+
+      if (
+        secretType ===
+          "dependent_social_security_number" &&
+        !dependentId
+      ) {
+        throw new Error(
+          "A dependent identifier is required.",
+        )
+      }
+
+      if (
+        dependentId &&
+        secretType !==
+          "dependent_social_security_number"
+      ) {
+        throw new Error(
+          "The requested secure-information type is not supported for a dependent.",
+        )
+      }
+
+      if (
+        dependentId &&
+        !organizerId
+      ) {
+        throw new Error(
+          "An organizer identifier is required for dependent secure information.",
         )
       }
 
@@ -196,6 +233,7 @@ Deno.serve(
               serviceClient,
               clientId,
               organizerId,
+              dependentId,
               secretType,
               actorUserId,
               action:
@@ -217,6 +255,66 @@ Deno.serve(
 
           return errorResponse(
             "The requested organizer was not found.",
+            403,
+            requestId,
+          )
+        }
+      }
+
+      if (dependentId) {
+        const {
+          data: dependent,
+          error:
+            dependentError,
+        } =
+          await serviceClient
+            .from(
+              "client_tax_organizer_dependents",
+            )
+            .select(
+              "id, organizer_id",
+            )
+            .eq(
+              "id",
+              dependentId,
+            )
+            .eq(
+              "organizer_id",
+              organizerId,
+            )
+            .maybeSingle()
+
+        if (
+          dependentError ||
+          !dependent
+        ) {
+          await writeVaultAuditEvent(
+            {
+              serviceClient,
+              clientId,
+              organizerId,
+              dependentId,
+              secretType,
+              actorUserId,
+              action:
+                "access_denied",
+              outcome:
+                "denied",
+              reason:
+                "Dependent ownership verification failed.",
+              source:
+                "client_portal",
+              requestId,
+              request,
+              metadata: {
+                operation:
+                  "save_secret",
+              },
+            },
+          )
+
+          return errorResponse(
+            "The requested dependent was not found.",
             403,
             requestId,
           )
@@ -260,13 +358,16 @@ Deno.serve(
         error: storeError,
       } =
         await serviceClient.rpc(
-          "store_vault_secret",
+          "store_vault_secret_v2",
           {
             requested_client_id:
               clientId,
 
             requested_organizer_id:
               organizerId,
+
+            requested_dependent_id:
+              dependentId,
 
             requested_secret_type:
               secretType,
@@ -310,6 +411,7 @@ Deno.serve(
             storedRecord.vault_secret_id,
           clientId,
           organizerId,
+          dependentId,
           secretType,
           actorUserId,
           action:
@@ -319,7 +421,9 @@ Deno.serve(
           outcome:
             "success",
           reason:
-            "Secure information submitted through the client portal.",
+            dependentId
+              ? "Dependent secure information submitted through the client portal."
+              : "Secure information submitted through the client portal.",
           source:
             "client_portal",
           requestId,
@@ -333,6 +437,13 @@ Deno.serve(
 
             replaced_existing:
               storedRecord.replaced_existing_secret,
+
+            ownership_scope:
+              dependentId
+                ? "dependent"
+                : organizerId
+                  ? "organizer"
+                  : "client",
           },
         },
       )
@@ -372,14 +483,13 @@ Deno.serve(
           ? error.message
           : "Secure information could not be saved."
 
-      if (
-        serviceClient
-      ) {
+      if (serviceClient) {
         await writeVaultAuditEvent(
           {
             serviceClient,
             clientId,
             organizerId,
+            dependentId,
             secretType,
             actorUserId,
             action:
@@ -395,6 +505,13 @@ Deno.serve(
             metadata: {
               operation:
                 "save_secret",
+
+              ownership_scope:
+                dependentId
+                  ? "dependent"
+                  : organizerId
+                    ? "organizer"
+                    : "client",
             },
           },
         )
@@ -412,7 +529,11 @@ Deno.serve(
           "session",
         )
           ? 401
-          : 400
+          : message.includes(
+                "not found",
+              )
+            ? 403
+            : 400
 
       return errorResponse(
         message,

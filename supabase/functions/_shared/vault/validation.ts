@@ -17,6 +17,7 @@ export function normalizeSecretValue(
 ): string {
   switch (secretType) {
     case "social_security_number":
+    case "dependent_social_security_number":
     case "itin":
     case "routing_number":
     case "bank_account_number":
@@ -81,6 +82,7 @@ export function validateSecret(
 
   switch (secretType) {
     case "social_security_number":
+    case "dependent_social_security_number":
       if (!/^\d{9}$/.test(value)) {
         throw new Error(
           "A Social Security number must contain exactly nine digits.",

@@ -19,6 +19,7 @@ import type {
 const allowedSecretTypes =
   new Set<VaultSecretType>([
     "social_security_number",
+    "dependent_social_security_number",
     "itin",
     "drivers_license",
     "passport",
@@ -44,16 +45,23 @@ Deno.serve(
   async (
     request: Request,
   ): Promise<Response> => {
-    if (request.method === "OPTIONS") {
+    if (
+      request.method ===
+      "OPTIONS"
+    ) {
       return new Response(
         "ok",
         {
-          headers: corsHeaders,
+          headers:
+            corsHeaders,
         },
       )
     }
 
-    if (request.method !== "POST") {
+    if (
+      request.method !==
+      "POST"
+    ) {
       return errorResponse(
         "Method not allowed.",
         405,
@@ -78,6 +86,9 @@ Deno.serve(
       string | null = null
 
     let organizerId:
+      string | null = null
+
+    let dependentId:
       string | null = null
 
     let secretType:
@@ -115,6 +126,10 @@ Deno.serve(
         body.organizerId?.trim() ||
         null
 
+      dependentId =
+        body.dependentId?.trim() ||
+        null
+
       if (
         !isVaultSecretType(
           body.secretType,
@@ -128,6 +143,35 @@ Deno.serve(
       secretType =
         body.secretType
 
+      if (
+        secretType ===
+          "dependent_social_security_number" &&
+        !dependentId
+      ) {
+        throw new Error(
+          "A dependent identifier is required.",
+        )
+      }
+
+      if (
+        dependentId &&
+        secretType !==
+          "dependent_social_security_number"
+      ) {
+        throw new Error(
+          "The requested secure-information type is not supported for a dependent.",
+        )
+      }
+
+      if (
+        dependentId &&
+        !organizerId
+      ) {
+        throw new Error(
+          "An organizer identifier is required for dependent secure information.",
+        )
+      }
+
       if (organizerId) {
         const {
           data: organizer,
@@ -139,7 +183,7 @@ Deno.serve(
               "client_tax_organizers",
             )
             .select(
-              "id",
+              "id, client_id",
             )
             .eq(
               "id",
@@ -160,6 +204,7 @@ Deno.serve(
               serviceClient,
               clientId,
               organizerId,
+              dependentId,
               secretType,
               actorUserId,
               action:
@@ -187,6 +232,66 @@ Deno.serve(
         }
       }
 
+      if (dependentId) {
+        const {
+          data: dependent,
+          error:
+            dependentError,
+        } =
+          await serviceClient
+            .from(
+              "client_tax_organizer_dependents",
+            )
+            .select(
+              "id, organizer_id",
+            )
+            .eq(
+              "id",
+              dependentId,
+            )
+            .eq(
+              "organizer_id",
+              organizerId,
+            )
+            .maybeSingle()
+
+        if (
+          dependentError ||
+          !dependent
+        ) {
+          await writeVaultAuditEvent(
+            {
+              serviceClient,
+              clientId,
+              organizerId,
+              dependentId,
+              secretType,
+              actorUserId,
+              action:
+                "access_denied",
+              outcome:
+                "denied",
+              reason:
+                "Dependent ownership verification failed.",
+              source:
+                "client_portal",
+              requestId,
+              request,
+              metadata: {
+                operation:
+                  "get_metadata",
+              },
+            },
+          )
+
+          return errorResponse(
+            "The requested dependent was not found.",
+            403,
+            requestId,
+          )
+        }
+      }
+
       let query =
         serviceClient
           .from(
@@ -195,6 +300,7 @@ Deno.serve(
           .select(
             [
               "id",
+              "dependent_id",
               "secret_type",
               "masked_value",
               "status",
@@ -231,6 +337,20 @@ Deno.serve(
           )
       }
 
+      if (dependentId) {
+        query =
+          query.eq(
+            "dependent_id",
+            dependentId,
+          )
+      } else {
+        query =
+          query.is(
+            "dependent_id",
+            null,
+          )
+      }
+
       const {
         data: record,
         error: recordError,
@@ -261,6 +381,9 @@ Deno.serve(
         VaultSecretMetadata = {
           vaultSecretId:
             record.id,
+
+          dependentId:
+            record.dependent_id,
 
           secretType:
             record.secret_type as VaultSecretType,
@@ -297,6 +420,7 @@ Deno.serve(
             record.id,
           clientId,
           organizerId,
+          dependentId,
           secretType,
           actorUserId,
           action:
@@ -304,7 +428,9 @@ Deno.serve(
           outcome:
             "success",
           reason:
-            "Masked secure-information metadata loaded in the client portal.",
+            dependentId
+              ? "Masked dependent secure-information metadata loaded in the client portal."
+              : "Masked secure-information metadata loaded in the client portal.",
           source:
             "client_portal",
           requestId,
@@ -315,6 +441,13 @@ Deno.serve(
 
             status:
               record.status,
+
+            ownership_scope:
+              dependentId
+                ? "dependent"
+                : organizerId
+                  ? "organizer"
+                  : "client",
           },
         },
       )
@@ -342,6 +475,7 @@ Deno.serve(
             serviceClient,
             clientId,
             organizerId,
+            dependentId,
             secretType,
             actorUserId,
             action:
@@ -357,6 +491,13 @@ Deno.serve(
             metadata: {
               operation:
                 "get_metadata",
+
+              ownership_scope:
+                dependentId
+                  ? "dependent"
+                  : organizerId
+                    ? "organizer"
+                    : "client",
             },
           },
         )
@@ -374,7 +515,11 @@ Deno.serve(
           "session",
         )
           ? 401
-          : 400
+          : message.includes(
+                "not found",
+              )
+            ? 403
+            : 400
 
       return errorResponse(
         message,
