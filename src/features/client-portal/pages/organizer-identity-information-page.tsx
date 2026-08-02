@@ -56,6 +56,9 @@ import {
   type OrganizerIdentityValidationErrors,
   validateOrganizerIdentityInformation,
 } from "@/features/client-portal/utils/organizer-identity-validation"
+import {
+  SecureTextField,
+} from "@/features/security/vault/components/secure-text-field"
 
 interface IdentityFormState {
   identificationType:
@@ -687,16 +690,50 @@ export function OrganizerIdentityInformationPage() {
               </div>
             </OrganizerSection>
 
+            <div className="border-t border-slate-200" />
+
+            <OrganizerSection
+              title="Taxpayer Identification"
+              description="Securely provide the Social Security number used for your federal tax return."
+            >
+              <div className="space-y-5 md:col-span-2">
+                <SecureTextField
+                  organizerId={organizerId}
+                  label="Social Security Number"
+                  secretType="social_security_number"
+                  placeholder="123-45-6789"
+                  inputMode="numeric"
+                  autoComplete="off"
+                  maxLength={11}
+                  confirmValue
+                  disabled={isSaving}
+                  helpText="Enter all nine digits. You may include the dashes. After saving, only the final four digits will be displayed."
+                />
+
+                <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                  <p className="text-sm font-semibold text-slate-800">
+                    Name verification
+                  </p>
+
+                  <p className="mt-2 text-sm leading-6 text-slate-600">
+                    Confirm that your legal name on the Personal Information page matches
+                    the name printed on your Social Security card. Name corrections will be
+                    handled through the secure identity-review workflow.
+                  </p>
+                </div>
+              </div>
+            </OrganizerSection>
+
             <div className="rounded-xl border border-blue-200 bg-blue-50 p-5">
               <p className="text-sm font-semibold text-blue-900">
                 Restricted sensitive data
               </p>
 
               <p className="mt-2 text-sm leading-6 text-blue-800">
-                Social Security numbers, identification numbers, and document
-                images are intentionally excluded from this standard organizer
-                record. They will be submitted through the encrypted secure
-                vault with masked display and audited access.
+                Social Security numbers are encrypted and stored in the Secure Vault.
+                Identification numbers and document images will be added through the same
+                restricted workflow in a later phase. Full protected values are never
+                displayed in the ordinary client portal.
               </p>
             </div>
             
