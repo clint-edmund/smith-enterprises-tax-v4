@@ -5,6 +5,7 @@ import type {
 import {
   OrganizerCrudHeader,
   OrganizerEmptyState,
+  OrganizerSummaryDashboard,
 } from "@/features/client-portal/components/organizer/shared"
 
 import {
@@ -62,6 +63,18 @@ export function IncomeSourceList({
         "complete",
     ).length
 
+  const needsAttentionCount =
+    incomeSources.length -
+    completeRecordCount
+
+  const completionPercentage =
+    incomeSources.length === 0
+      ? 0
+      : (
+          completeRecordCount /
+          incomeSources.length
+        ) * 100
+
   return (
     <section className="space-y-6">
       <OrganizerCrudHeader
@@ -73,51 +86,55 @@ export function IncomeSourceList({
         }
       />
 
-      <div className="grid gap-4 sm:grid-cols-3">
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-          <p className="text-sm font-medium text-slate-600">
-            Total Sources
-          </p>
-
-          <p className="mt-2 text-3xl font-semibold text-slate-950">
-            {
-              incomeSources.length
-            }
-          </p>
-        </div>
-
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-          <p className="text-sm font-medium text-slate-600">
-            Documents Received
-          </p>
-
-          <p className="mt-2 text-3xl font-semibold text-slate-950">
-            {receivedDocumentCount}
-            <span className="ml-1 text-base font-medium text-slate-500">
-              /{" "}
-              {
-                incomeSources.length
-              }
-            </span>
-          </p>
-        </div>
-
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-          <p className="text-sm font-medium text-slate-600">
-            Complete Records
-          </p>
-
-          <p className="mt-2 text-3xl font-semibold text-slate-950">
-            {completeRecordCount}
-            <span className="ml-1 text-base font-medium text-slate-500">
-              /{" "}
-              {
-                incomeSources.length
-              }
-            </span>
-          </p>
-        </div>
-      </div>
+      <OrganizerSummaryDashboard
+        title="Income Summary"
+        description="Monitor the completion status of this organizer's income information."
+        progressPercentage={
+          completionPercentage
+        }
+        metrics={[
+          {
+            key:
+              "sources",
+            label:
+              "Income Sources",
+            value:
+              incomeSources.length,
+            description:
+              "Total income records",
+          },
+          {
+            key:
+              "complete",
+            label:
+              "Completed",
+            value:
+              completeRecordCount,
+            description:
+              "Ready for review",
+          },
+          {
+            key:
+              "documents",
+            label:
+              "Documents",
+            value:
+              `${receivedDocumentCount}/${incomeSources.length}`,
+            description:
+              "Supporting documents received",
+          },
+          {
+            key:
+              "attention",
+            label:
+              "Needs Attention",
+            value:
+              needsAttentionCount,
+            description:
+              "Records still in progress",
+          },
+        ]}
+      />
 
       <div className="grid gap-5 xl:grid-cols-2">
         {incomeSources.map(

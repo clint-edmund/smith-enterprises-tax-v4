@@ -17,3 +17,7 @@ export {
 export {
   OrganizerLoadingState,
 } from "./organizer-loading-state"
+
+export {
+  OrganizerSummaryDashboard,
+} from "./organizer-summary-dashboard"
