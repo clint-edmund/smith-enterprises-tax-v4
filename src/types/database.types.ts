@@ -12,31 +12,6 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.5"
   }
-  graphql_public: {
-    Tables: {
-      [_ in never]: never
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      graphql: {
-        Args: {
-          extensions?: Json
-          operationName?: string
-          query?: string
-          variables?: Json
-        }
-        Returns: Json
-      }
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-  }
   public: {
     Tables: {
       audit_logs: {
@@ -2416,6 +2391,39 @@ export type Database = {
           updated_at: string
         }[]
       }
+      create_client_organizer_healthcare_coverage: {
+        Args: {
+          requested_coverage_type: string
+          requested_covered_person_name: string
+          requested_document_received: boolean
+          requested_document_type: string
+          requested_end_month: number
+          requested_is_full_year_coverage: boolean
+          requested_notes: string
+          requested_organizer_id: string
+          requested_policy_number: string
+          requested_provider_name: string
+          requested_start_month: number
+        }
+        Returns: {
+          coverage_id: string
+          coverage_type: string
+          covered_person_name: string
+          created_at: string
+          display_order: number
+          document_received: boolean
+          document_type: string
+          end_month: number
+          is_full_year_coverage: boolean
+          notes: string
+          organizer_id: string
+          policy_number: string
+          provider_name: string
+          record_status: string
+          start_month: number
+          updated_at: string
+        }[]
+      }
       create_client_organizer_income_source: {
         Args: {
           requested_income_type: string
@@ -2664,6 +2672,16 @@ export type Database = {
           section_status: Database["public"]["Enums"]["tax_organizer_section_status"]
         }[]
       }
+      delete_client_organizer_healthcare_coverage: {
+        Args: { requested_coverage_id: string; requested_organizer_id: string }
+        Returns: {
+          coverage_id: string
+          deleted_at: string
+          organizer_id: string
+          provider_name: string
+          remaining_coverage_count: number
+        }[]
+      }
       delete_client_organizer_income_source: {
         Args: {
           requested_income_source_id: string
@@ -2757,6 +2775,27 @@ export type Database = {
           suffix: string
           updated_at: string
           us_citizen_or_resident: boolean
+        }[]
+      }
+      get_client_organizer_healthcare_coverages: {
+        Args: { requested_organizer_id: string }
+        Returns: {
+          coverage_id: string
+          coverage_type: string
+          covered_person_name: string
+          created_at: string
+          display_order: number
+          document_received: boolean
+          document_type: string
+          end_month: number
+          is_full_year_coverage: boolean
+          notes: string
+          organizer_id: string
+          policy_number: string
+          provider_name: string
+          record_status: string
+          start_month: number
+          updated_at: string
         }[]
       }
       get_client_organizer_identity_information: {
@@ -4148,6 +4187,40 @@ export type Database = {
           us_citizen_or_resident: boolean
         }[]
       }
+      update_client_organizer_healthcare_coverage: {
+        Args: {
+          requested_coverage_id: string
+          requested_coverage_type: string
+          requested_covered_person_name: string
+          requested_document_received: boolean
+          requested_document_type: string
+          requested_end_month: number
+          requested_is_full_year_coverage: boolean
+          requested_notes: string
+          requested_organizer_id: string
+          requested_policy_number: string
+          requested_provider_name: string
+          requested_start_month: number
+        }
+        Returns: {
+          coverage_id: string
+          coverage_type: string
+          covered_person_name: string
+          created_at: string
+          display_order: number
+          document_received: boolean
+          document_type: string
+          end_month: number
+          is_full_year_coverage: boolean
+          notes: string
+          organizer_id: string
+          policy_number: string
+          provider_name: string
+          record_status: string
+          start_month: number
+          updated_at: string
+        }[]
+      }
       update_client_organizer_income_source: {
         Args: {
           requested_document_received: boolean
@@ -4620,9 +4693,6 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
-  graphql_public: {
-    Enums: {},
-  },
   public: {
     Enums: {
       app_role: [
