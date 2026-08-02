@@ -95,6 +95,10 @@ import {
   OrganizerOverviewPage,
 } from "@/features/client-portal/pages/organizer-overview-page"
 
+import {
+  HealthcarePage,
+} from "@/features/client-portal/pages/organizer/healthcare-page"
+
 export const appRouter =
   createBrowserRouter([
     {
@@ -202,6 +206,12 @@ export const appRouter =
                       path: "/client/organizer/overview",
                       element: (
                         <OrganizerOverviewPage />
+                      ),
+                    },
+                    {
+                      path: "/client/organizer/healthcare",
+                      element: (
+                        <HealthcarePage />
                       ),
                     },
                   ],

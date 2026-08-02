@@ -1,4 +1,8 @@
 export {
+  calculateHealthcareHealth,
+} from "./healthcare-health"
+
+export {
   calculateIncomeHealth,
 } from "./income-health"
 
