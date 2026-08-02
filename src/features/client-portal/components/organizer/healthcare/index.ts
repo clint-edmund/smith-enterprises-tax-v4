@@ -9,3 +9,7 @@ export {
 export {
   HealthcareCoverageList,
 } from "./healthcare-coverage-list"
+
+export {
+  HealthcareDialog,
+} from "./healthcare-dialog"
