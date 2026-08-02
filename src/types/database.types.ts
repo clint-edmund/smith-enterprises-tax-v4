@@ -508,6 +508,118 @@ export type Database = {
           },
         ]
       }
+      client_tax_organizer_income_sources: {
+        Row: {
+          created_at: string
+          display_order: number
+          document_received: boolean
+          id: string
+          income_type: string
+          notes: string | null
+          organizer_id: string
+          payer_name: string
+          recipient_type: string
+          record_status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number
+          document_received?: boolean
+          id?: string
+          income_type: string
+          notes?: string | null
+          organizer_id: string
+          payer_name: string
+          recipient_type?: string
+          record_status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          document_received?: boolean
+          id?: string
+          income_type?: string
+          notes?: string | null
+          organizer_id?: string
+          payer_name?: string
+          recipient_type?: string
+          record_status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_tax_organizer_income_sources_organizer_id_fkey"
+            columns: ["organizer_id"]
+            isOneToOne: false
+            referencedRelation: "client_tax_organizers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_tax_organizer_income_w2_details: {
+        Row: {
+          created_at: string
+          employer_identification_number: string | null
+          federal_income_tax_withheld: number | null
+          income_source_id: string
+          local_income_tax_withheld: number | null
+          local_wages: number | null
+          medicare_tax_withheld: number | null
+          medicare_wages: number | null
+          social_security_tax_withheld: number | null
+          social_security_wages: number | null
+          state_code: string | null
+          state_income_tax_withheld: number | null
+          state_wages: number | null
+          updated_at: string
+          wages: number | null
+        }
+        Insert: {
+          created_at?: string
+          employer_identification_number?: string | null
+          federal_income_tax_withheld?: number | null
+          income_source_id: string
+          local_income_tax_withheld?: number | null
+          local_wages?: number | null
+          medicare_tax_withheld?: number | null
+          medicare_wages?: number | null
+          social_security_tax_withheld?: number | null
+          social_security_wages?: number | null
+          state_code?: string | null
+          state_income_tax_withheld?: number | null
+          state_wages?: number | null
+          updated_at?: string
+          wages?: number | null
+        }
+        Update: {
+          created_at?: string
+          employer_identification_number?: string | null
+          federal_income_tax_withheld?: number | null
+          income_source_id?: string
+          local_income_tax_withheld?: number | null
+          local_wages?: number | null
+          medicare_tax_withheld?: number | null
+          medicare_wages?: number | null
+          social_security_tax_withheld?: number | null
+          social_security_wages?: number | null
+          state_code?: string | null
+          state_income_tax_withheld?: number | null
+          state_wages?: number | null
+          updated_at?: string
+          wages?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_tax_organizer_income_w2_details_income_source_id_fkey"
+            columns: ["income_source_id"]
+            isOneToOne: true
+            referencedRelation: "client_tax_organizer_income_sources"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_tax_organizer_personal_information: {
         Row: {
           address_changed_this_year: boolean | null
@@ -2239,6 +2351,28 @@ export type Database = {
           updated_at: string
         }[]
       }
+      create_client_organizer_income_source: {
+        Args: {
+          requested_income_type: string
+          requested_notes: string
+          requested_organizer_id: string
+          requested_payer_name: string
+          requested_recipient_type: string
+        }
+        Returns: {
+          created_at: string
+          display_order: number
+          document_received: boolean
+          income_source_id: string
+          income_type: string
+          notes: string
+          organizer_id: string
+          payer_name: string
+          recipient_type: string
+          record_status: string
+          updated_at: string
+        }[]
+      }
       create_client_portal_account: {
         Args: {
           requested_client_id: string
@@ -2465,6 +2599,19 @@ export type Database = {
           section_status: Database["public"]["Enums"]["tax_organizer_section_status"]
         }[]
       }
+      delete_client_organizer_income_source: {
+        Args: {
+          requested_income_source_id: string
+          requested_organizer_id: string
+        }
+        Returns: {
+          deleted_at: string
+          income_source_id: string
+          organizer_id: string
+          payer_name: string
+          remaining_income_source_count: number
+        }[]
+      }
       describe_tax_return_change: {
         Args: {
           new_record: Database["public"]["Tables"]["tax_returns"]["Row"]
@@ -2561,6 +2708,45 @@ export type Database = {
           is_us_citizen: boolean
           result_organizer_id: string
           updated_at: string
+        }[]
+      }
+      get_client_organizer_income_sources: {
+        Args: { requested_organizer_id: string }
+        Returns: {
+          created_at: string
+          display_order: number
+          document_received: boolean
+          income_source_id: string
+          income_type: string
+          notes: string
+          organizer_id: string
+          payer_name: string
+          recipient_type: string
+          record_status: string
+          updated_at: string
+        }[]
+      }
+      get_client_organizer_income_w2_details: {
+        Args: {
+          requested_income_source_id: string
+          requested_organizer_id: string
+        }
+        Returns: {
+          created_at: string
+          employer_identification_number: string
+          federal_income_tax_withheld: number
+          income_source_id: string
+          local_income_tax_withheld: number
+          local_wages: number
+          medicare_tax_withheld: number
+          medicare_wages: number
+          social_security_tax_withheld: number
+          social_security_wages: number
+          state_code: string
+          state_income_tax_withheld: number
+          state_wages: number
+          updated_at: string
+          wages: number
         }[]
       }
       get_client_organizer_personal_information: {
@@ -3638,6 +3824,52 @@ export type Database = {
           section_status: Database["public"]["Enums"]["tax_organizer_section_status"]
         }[]
       }
+      save_client_organizer_income_w2_details: {
+        Args: {
+          requested_document_received: boolean
+          requested_employer_identification_number: string
+          requested_federal_income_tax_withheld: number
+          requested_income_source_id: string
+          requested_local_income_tax_withheld: number
+          requested_local_wages: number
+          requested_medicare_tax_withheld: number
+          requested_medicare_wages: number
+          requested_organizer_id: string
+          requested_social_security_tax_withheld: number
+          requested_social_security_wages: number
+          requested_state_code: string
+          requested_state_income_tax_withheld: number
+          requested_state_wages: number
+          requested_wages: number
+        }
+        Returns: {
+          display_order: number
+          document_received: boolean
+          employer_identification_number: string
+          federal_income_tax_withheld: number
+          income_created_at: string
+          income_source_id: string
+          income_type: string
+          income_updated_at: string
+          local_income_tax_withheld: number
+          local_wages: number
+          medicare_tax_withheld: number
+          medicare_wages: number
+          notes: string
+          organizer_id: string
+          payer_name: string
+          recipient_type: string
+          record_status: string
+          social_security_tax_withheld: number
+          social_security_wages: number
+          state_code: string
+          state_income_tax_withheld: number
+          state_wages: number
+          w2_created_at: string
+          w2_updated_at: string
+          wages: number
+        }[]
+      }
       save_client_organizer_personal_information: {
         Args: {
           requested_address_changed_this_year: boolean
@@ -3849,6 +4081,30 @@ export type Database = {
           suffix: string
           updated_at: string
           us_citizen_or_resident: boolean
+        }[]
+      }
+      update_client_organizer_income_source: {
+        Args: {
+          requested_document_received: boolean
+          requested_income_source_id: string
+          requested_notes: string
+          requested_organizer_id: string
+          requested_payer_name: string
+          requested_recipient_type: string
+          requested_record_status: string
+        }
+        Returns: {
+          created_at: string
+          display_order: number
+          document_received: boolean
+          income_source_id: string
+          income_type: string
+          notes: string
+          organizer_id: string
+          payer_name: string
+          recipient_type: string
+          record_status: string
+          updated_at: string
         }[]
       }
       update_client_record: {

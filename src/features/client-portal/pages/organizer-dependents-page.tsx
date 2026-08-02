@@ -26,6 +26,10 @@ import type {
   UpdateOrganizerDependentRequest,
 } from "@/features/client-portal/types/organizer-dependent.types"
 
+import {
+  OrganizerLoadingState,
+} from "@/features/client-portal/components/organizer/shared"
+
 export function OrganizerDependentsPage() {
   const {
     organizer,
@@ -171,9 +175,9 @@ export function OrganizerDependentsPage() {
         )}
 
         {isLoading ? (
-          <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-600 shadow-sm">
-            Loading dependents...
-          </div>
+          <OrganizerLoadingState
+            message="Loading your dependents..."
+          />
         ) : isAdding ? (
           <DependentForm
             organizerId={

@@ -87,6 +87,10 @@ import {
   OrganizerDependentsPage,
 } from "@/features/client-portal/pages/organizer-dependents-page"
 
+import {
+  OrganizerIncomePage,
+} from "@/features/client-portal/pages/organizer-income-page"
+
 export const appRouter =
   createBrowserRouter([
     {
@@ -182,6 +186,12 @@ export const appRouter =
                       path: "/client/organizer/dependents",
                       element: (
                         <OrganizerDependentsPage />
+                      ),
+                    },
+                    {
+                      path: "/client/organizer/income",
+                      element: (
+                        <OrganizerIncomePage />
                       ),
                     },
                   ],
