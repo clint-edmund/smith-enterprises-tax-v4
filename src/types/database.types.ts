@@ -455,6 +455,71 @@ export type Database = {
           },
         ]
       }
+      client_tax_organizer_healthcare_coverages: {
+        Row: {
+          coverage_type: string
+          covered_person_name: string
+          created_at: string
+          display_order: number
+          document_received: boolean
+          document_type: string | null
+          end_month: number | null
+          id: string
+          is_full_year_coverage: boolean
+          notes: string | null
+          organizer_id: string
+          policy_number: string | null
+          provider_name: string
+          record_status: string
+          start_month: number | null
+          updated_at: string
+        }
+        Insert: {
+          coverage_type: string
+          covered_person_name: string
+          created_at?: string
+          display_order?: number
+          document_received?: boolean
+          document_type?: string | null
+          end_month?: number | null
+          id?: string
+          is_full_year_coverage?: boolean
+          notes?: string | null
+          organizer_id: string
+          policy_number?: string | null
+          provider_name: string
+          record_status?: string
+          start_month?: number | null
+          updated_at?: string
+        }
+        Update: {
+          coverage_type?: string
+          covered_person_name?: string
+          created_at?: string
+          display_order?: number
+          document_received?: boolean
+          document_type?: string | null
+          end_month?: number | null
+          id?: string
+          is_full_year_coverage?: boolean
+          notes?: string | null
+          organizer_id?: string
+          policy_number?: string | null
+          provider_name?: string
+          record_status?: string
+          start_month?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_tax_organizer_healthcare_coverages_organizer_id_fkey"
+            columns: ["organizer_id"]
+            isOneToOne: false
+            referencedRelation: "client_tax_organizers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_tax_organizer_identity_information: {
         Row: {
           citizenship_status: string | null

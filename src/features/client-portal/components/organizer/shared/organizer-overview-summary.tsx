@@ -121,110 +121,115 @@ export function OrganizerOverviewSummary({
 
       <section
         className={[
-          "rounded-2xl border p-5",
+          "rounded-2xl border p-6",
           health.isReadyForReview
             ? "border-emerald-200 bg-emerald-50"
             : "border-amber-200 bg-amber-50",
         ].join(" ")}
       >
-        <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex items-start gap-4">
-            <div
-              className={[
-                "flex h-12 w-12 shrink-0 items-center justify-center rounded-xl",
-                health.isReadyForReview
-                  ? "bg-emerald-100 text-emerald-700"
-                  : "bg-amber-100 text-amber-700",
-              ].join(" ")}
-            >
-              {health.isReadyForReview ? (
-                <CheckCircle2
-                  className="h-6 w-6"
-                  aria-hidden="true"
-                />
-              ) : (
-                <CircleX
-                  className="h-6 w-6"
-                  aria-hidden="true"
-                />
-              )}
-            </div>
-
-            <div>
-              <h2 className="text-lg font-semibold text-slate-950">
-                {health.isReadyForReview
-                  ? "Organizer Ready for Review"
-                  : "Organizer Not Yet Ready for Review"}
-              </h2>
-
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-700">
-                {health.isReadyForReview
-                  ? "Every included section is complete and no blocking issues remain."
-                  : "Complete the outstanding sections and resolve all blocking issues before submitting the organizer for tax-preparer review."}
-              </p>
-
-              <p className="mt-2 text-xs text-slate-500">
-                Last updated:{" "}
-                {formatLastUpdated(
-                  health.lastUpdatedAt,
-                )}
-              </p>
-            </div>
+        <div className="flex items-start gap-4">
+          <div
+            className={[
+              "flex h-12 w-12 shrink-0 items-center justify-center rounded-xl",
+              health.isReadyForReview
+                ? "bg-emerald-100 text-emerald-700"
+                : "bg-amber-100 text-amber-700",
+            ].join(" ")}
+          >
+            {health.isReadyForReview ? (
+              <CheckCircle2
+                className="h-6 w-6"
+                aria-hidden="true"
+              />
+            ) : (
+              <CircleX
+                className="h-6 w-6"
+                aria-hidden="true"
+              />
+            )}
           </div>
 
-          <dl className="grid gap-3 sm:grid-cols-3 lg:min-w-[470px]">
-            <div className="rounded-xl bg-white/80 p-4 shadow-sm">
-              <dt className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-slate-500">
-                <ListChecks
-                  className="h-4 w-4"
-                  aria-hidden="true"
-                />
+          <div className="min-w-0 flex-1">
+            <h2 className="text-xl font-semibold text-slate-950">
+              {health.isReadyForReview
+                ? "Organizer Ready for Review"
+                : "Organizer Not Yet Ready for Review"}
+            </h2>
 
-                In Progress
-              </dt>
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-700">
+              {health.isReadyForReview
+                ? "Every included section is complete and no blocking issues remain."
+                : "Complete the outstanding sections and resolve all blocking issues before submitting the organizer for tax-preparer review."}
+            </p>
 
-              <dd className="mt-2 text-2xl font-semibold text-slate-950">
-                {
-                  health.inProgressSectionCount
-                }
-              </dd>
-            </div>
-
-            <div className="rounded-xl bg-white/80 p-4 shadow-sm">
-              <dt className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-slate-500">
-                <AlertTriangle
-                  className="h-4 w-4"
-                  aria-hidden="true"
-                />
-
-                Total Issues
-              </dt>
-
-              <dd className="mt-2 text-2xl font-semibold text-slate-950">
-                {
-                  health.totalIssueCount
-                }
-              </dd>
-            </div>
-
-            <div className="rounded-xl bg-white/80 p-4 shadow-sm">
-              <dt className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-slate-500">
-                <FileWarning
-                  className="h-4 w-4"
-                  aria-hidden="true"
-                />
-
-                Missing Docs
-              </dt>
-
-              <dd className="mt-2 text-2xl font-semibold text-slate-950">
-                {
-                  health.missingDocumentCount
-                }
-              </dd>
-            </div>
-          </dl>
+            <p className="mt-2 text-xs text-slate-500">
+              Last updated:{" "}
+              {formatLastUpdated(
+                health.lastUpdatedAt,
+              )}
+            </p>
+          </div>
         </div>
+
+        <dl className="mt-6 grid gap-4 border-t border-slate-200/80 pt-6 sm:grid-cols-3">
+          <div className="flex items-center justify-between gap-4 rounded-xl bg-white/80 px-4 py-4 shadow-sm">
+            <dt className="flex items-center gap-3 text-sm font-medium text-slate-600">
+              <ListChecks
+                className="h-5 w-5 text-blue-700"
+                aria-hidden="true"
+              />
+
+              In Progress
+            </dt>
+
+            <dd className="text-xl font-semibold text-slate-950">
+              {
+                health.inProgressSectionCount
+              }
+            </dd>
+          </div>
+
+          <div className="flex items-center justify-between gap-4 rounded-xl bg-white/80 px-4 py-4 shadow-sm">
+            <dt className="flex items-center gap-3 text-sm font-medium text-slate-600">
+              <AlertTriangle
+                className="h-5 w-5 text-amber-700"
+                aria-hidden="true"
+              />
+
+              Total Issues
+            </dt>
+
+            <dd className="text-xl font-semibold text-amber-700">
+              {
+                health.totalIssueCount
+              }
+            </dd>
+          </div>
+
+          <div className="flex items-center justify-between gap-4 rounded-xl bg-white/80 px-4 py-4 shadow-sm">
+            <dt className="flex items-center gap-3 text-sm font-medium text-slate-600">
+              <FileWarning
+                className="h-5 w-5 text-red-700"
+                aria-hidden="true"
+              />
+
+              Missing Documents
+            </dt>
+
+            <dd
+              className={[
+                "text-xl font-semibold",
+                health.missingDocumentCount > 0
+                  ? "text-red-700"
+                  : "text-slate-950",
+              ].join(" ")}
+            >
+              {
+                health.missingDocumentCount
+              }
+            </dd>
+          </div>
+        </dl>
       </section>
     </div>
   )

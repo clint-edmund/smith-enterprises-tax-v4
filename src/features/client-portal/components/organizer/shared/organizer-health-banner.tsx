@@ -3,6 +3,9 @@ import {
   CheckCircle2,
   CircleDashed,
   Clock3,
+  FileWarning,
+  ListChecks,
+  ShieldCheck,
 } from "lucide-react"
 
 import {
@@ -12,10 +15,6 @@ import {
 import type {
   OrganizerSectionHealth,
 } from "@/features/client-portal/types/organizer-health.types"
-
-import {
-  OrganizerMetricCard,
-} from "./organizer-metric-card"
 
 interface OrganizerHealthBannerProps {
   health:
@@ -30,6 +29,8 @@ const healthStyles = {
       "bg-slate-200 text-slate-700",
     badge:
       "bg-slate-200 text-slate-700",
+    progress:
+      "bg-slate-600",
   },
 
   in_progress: {
@@ -39,6 +40,8 @@ const healthStyles = {
       "bg-blue-100 text-blue-700",
     badge:
       "bg-blue-100 text-blue-700",
+    progress:
+      "bg-blue-700",
   },
 
   needs_attention: {
@@ -48,6 +51,8 @@ const healthStyles = {
       "bg-amber-100 text-amber-700",
     badge:
       "bg-amber-100 text-amber-800",
+    progress:
+      "bg-amber-600",
   },
 
   complete: {
@@ -57,6 +62,8 @@ const healthStyles = {
       "bg-emerald-100 text-emerald-700",
     badge:
       "bg-emerald-100 text-emerald-800",
+    progress:
+      "bg-emerald-600",
   },
 } as const
 
@@ -145,7 +152,7 @@ export function OrganizerHealthBanner({
           />
         </div>
 
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-3">
             <h2 className="text-xl font-semibold text-slate-950">
               {health.sectionTitle} Health
@@ -174,55 +181,19 @@ export function OrganizerHealthBanner({
         </div>
       </div>
 
-      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-        <OrganizerMetricCard
-          label="Progress"
-          value={`${health.progressPercentage}%`}
-        />
-
-        <OrganizerMetricCard
-          label="Records"
-          value={health.recordCount}
-        />
-
-        <OrganizerMetricCard
-          label="Completed"
-          value={health.completedRecordCount}
-        />
-
-        <OrganizerMetricCard
-          label="Issues"
-          value={health.issueCount}
-        />
-
-        <OrganizerMetricCard
-          label="Missing Docs"
-          value={health.missingDocumentCount}
-        />
-
-        <OrganizerMetricCard
-          label="Ready"
-          value={
-            health.isReadyForReview
-              ? "Yes"
-              : "No"
-          }
-        />
-      </div>
-
-      <div className="mt-6">
+      <div className="mt-6 border-t border-slate-200/80 pt-6">
         <div className="flex items-center justify-between gap-4">
           <span className="text-sm font-medium text-slate-700">
             Section completion
           </span>
 
-          <span className="text-sm font-semibold text-slate-950">
+          <span className="text-lg font-semibold text-slate-950">
             {health.progressPercentage}%
           </span>
         </div>
 
         <div
-          className="mt-2 h-2.5 overflow-hidden rounded-full bg-white/80"
+          className="mt-3 h-3 overflow-hidden rounded-full bg-white/90"
           role="progressbar"
           aria-label={`${health.sectionTitle} completion`}
           aria-valuemin={0}
@@ -232,7 +203,10 @@ export function OrganizerHealthBanner({
           }
         >
           <div
-            className="h-full rounded-full bg-blue-700 transition-[width]"
+            className={[
+              "h-full rounded-full transition-[width]",
+              styles.progress,
+            ].join(" ")}
             style={{
               width:
                 `${health.progressPercentage}%`,
@@ -241,8 +215,101 @@ export function OrganizerHealthBanner({
         </div>
       </div>
 
+      <dl className="mt-6 grid gap-x-8 gap-y-4 border-t border-slate-200/80 pt-6 sm:grid-cols-2 xl:grid-cols-5">
+        <div className="flex items-center justify-between gap-4 rounded-xl bg-white/70 px-4 py-3">
+          <dt className="flex items-center gap-3 text-sm font-medium text-slate-600">
+            <ListChecks
+              className="h-5 w-5 text-blue-700"
+              aria-hidden="true"
+            />
+
+            Records
+          </dt>
+
+          <dd className="text-lg font-semibold text-slate-950">
+            {health.recordCount}
+          </dd>
+        </div>
+
+        <div className="flex items-center justify-between gap-4 rounded-xl bg-white/70 px-4 py-3">
+          <dt className="flex items-center gap-3 text-sm font-medium text-slate-600">
+            <CheckCircle2
+              className="h-5 w-5 text-emerald-700"
+              aria-hidden="true"
+            />
+
+            Completed
+          </dt>
+
+          <dd className="text-lg font-semibold text-emerald-700">
+            {health.completedRecordCount}
+          </dd>
+        </div>
+
+        <div className="flex items-center justify-between gap-4 rounded-xl bg-white/70 px-4 py-3">
+          <dt className="flex items-center gap-3 text-sm font-medium text-slate-600">
+            <AlertTriangle
+              className="h-5 w-5 text-amber-700"
+              aria-hidden="true"
+            />
+
+            Issues
+          </dt>
+
+          <dd className="text-lg font-semibold text-amber-700">
+            {health.issueCount}
+          </dd>
+        </div>
+
+        <div className="flex items-center justify-between gap-4 rounded-xl bg-white/70 px-4 py-3">
+          <dt className="flex items-center gap-3 text-sm font-medium text-slate-600">
+            <FileWarning
+              className="h-5 w-5 text-red-700"
+              aria-hidden="true"
+            />
+
+            Missing Documents
+          </dt>
+
+          <dd
+            className={[
+              "text-lg font-semibold",
+              health.missingDocumentCount > 0
+                ? "text-red-700"
+                : "text-slate-950",
+            ].join(" ")}
+          >
+            {health.missingDocumentCount}
+          </dd>
+        </div>
+
+        <div className="flex items-center justify-between gap-4 rounded-xl bg-white/70 px-4 py-3">
+          <dt className="flex items-center gap-3 text-sm font-medium text-slate-600">
+            <ShieldCheck
+              className="h-5 w-5 text-slate-700"
+              aria-hidden="true"
+            />
+
+            Ready for Review
+          </dt>
+
+          <dd
+            className={[
+              "text-lg font-semibold",
+              health.isReadyForReview
+                ? "text-emerald-700"
+                : "text-slate-950",
+            ].join(" ")}
+          >
+            {health.isReadyForReview
+              ? "Yes"
+              : "No"}
+          </dd>
+        </div>
+      </dl>
+
       {health.blockingIssueCount > 0 && (
-        <div className="mt-5 flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">
+        <div className="mt-6 flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">
           <AlertTriangle
             className="mt-0.5 h-5 w-5 shrink-0"
             aria-hidden="true"
