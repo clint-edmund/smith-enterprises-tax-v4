@@ -53,3 +53,7 @@ export {
 export {
   OrganizerMetricCard,
 } from "./organizer-metric-card"
+
+export {
+  OrganizerSectionLayout,
+} from "./organizer-section-layout"
