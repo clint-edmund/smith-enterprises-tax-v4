@@ -9,7 +9,8 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "supabase:types": "supabase gen types typescript --linked --schema public > src/types/database.types.ts",
-    "supabase:push": "supabase db push"
+    "supabase:push": "supabase db push",
+    "publish:develop": "./scripts/publish-develop.sh"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",
