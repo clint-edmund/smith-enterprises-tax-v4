@@ -25,3 +25,35 @@ export interface SaveVaultSecretResponse {
   updatedAt: string
   requestId: string
 }
+
+export interface GetVaultMetadataRequest {
+  organizerId?: string
+  secretType: VaultSecretType
+}
+
+export interface VaultSecretMetadata {
+  vaultSecretId: string
+  secretType: VaultSecretType
+  maskedValue: string
+  status:
+    | "collected"
+    | "pending_verification"
+    | "verified"
+    | "rejected"
+    | "replaced"
+    | "archived"
+
+  keyVersion: number
+  hasValue: true
+  verified: boolean
+  verifiedAt: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export interface GetVaultMetadataResponse {
+  success: true
+  hasValue: boolean
+  secret: VaultSecretMetadata | null
+  requestId: string
+}
