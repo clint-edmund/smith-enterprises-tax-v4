@@ -3,7 +3,14 @@ import {
 } from "@/services/supabase"
 
 import type {
+  Database,
+} from "@/types/database.types"
+
+import type {
+  CreateOrganizerHealthcareCoverageRequest,
+  DeleteOrganizerHealthcareCoverageRequest,
   OrganizerHealthcareCoverage,
+  UpdateOrganizerHealthcareCoverageRequest,
 } from "@/features/client-portal/types/organizer-healthcare.types"
 
 export interface OrganizerHealthcareFilters {
@@ -100,7 +107,7 @@ function mapHealthcareCoverage(
     notes:
       row.notes ?? "",
 
-   recordStatus:
+    recordStatus:
       row.record_status as
         OrganizerHealthcareCoverage["recordStatus"],
 
@@ -110,6 +117,22 @@ function mapHealthcareCoverage(
     updatedAt:
       row.updated_at,
   }
+}
+
+function getFirstHealthcareCoverageRow(
+  data:
+    HealthcareCoverageRow[] | null,
+): HealthcareCoverageRow {
+  const row =
+    data?.[0]
+
+  if (!row) {
+    throw new Error(
+      "The healthcare coverage was not returned by the server.",
+    )
+  }
+
+  return row
 }
 
 export async function getOrganizerHealthcareCoverages(
@@ -150,4 +173,163 @@ export async function getOrganizerHealthcareCoverages(
   ).map(
     mapHealthcareCoverage,
   )
+}
+
+export async function createOrganizerHealthcareCoverage(
+  request:
+    CreateOrganizerHealthcareCoverageRequest,
+): Promise<OrganizerHealthcareCoverage> {
+  const rpcArgs =
+  {
+    requested_organizer_id:
+      request.organizerId,
+
+    requested_provider_name:
+      request.providerName,
+
+    requested_coverage_type:
+      request.coverageType,
+
+    requested_covered_person_name:
+      request.coveredPersonName,
+
+    requested_policy_number:
+      request.policyNumber,
+
+    requested_start_month:
+      request.startMonth,
+
+    requested_end_month:
+      request.endMonth,
+
+    requested_is_full_year_coverage:
+      request.isFullYearCoverage,
+
+    requested_document_received:
+      request.documentReceived,
+
+    requested_document_type:
+      request.documentType,
+
+    requested_notes:
+      request.notes,
+  } as unknown as Database["public"]["Functions"]["create_client_organizer_healthcare_coverage"]["Args"]
+
+const {
+  data,
+  error,
+} = await supabase.rpc(
+  "create_client_organizer_healthcare_coverage",
+  rpcArgs,
+)
+
+  if (error) {
+    throw new Error(
+      error.message,
+    )
+  }
+
+  const row =
+    getFirstHealthcareCoverageRow(
+      data as
+        | HealthcareCoverageRow[]
+        | null,
+    )
+
+  return mapHealthcareCoverage(
+    row,
+  )
+}
+
+export async function updateOrganizerHealthcareCoverage(
+  request:
+    UpdateOrganizerHealthcareCoverageRequest,
+): Promise<OrganizerHealthcareCoverage> {
+  const rpcArgs =
+  {
+    requested_organizer_id:
+      request.organizerId,
+
+    requested_coverage_id:
+      request.coverageId,
+
+    requested_provider_name:
+      request.providerName,
+
+    requested_coverage_type:
+      request.coverageType,
+
+    requested_covered_person_name:
+      request.coveredPersonName,
+
+    requested_policy_number:
+      request.policyNumber,
+
+    requested_start_month:
+      request.startMonth,
+
+    requested_end_month:
+      request.endMonth,
+
+    requested_is_full_year_coverage:
+      request.isFullYearCoverage,
+
+    requested_document_received:
+      request.documentReceived,
+
+    requested_document_type:
+      request.documentType,
+
+    requested_notes:
+      request.notes,
+  } as unknown as Database["public"]["Functions"]["update_client_organizer_healthcare_coverage"]["Args"]
+
+const {
+  data,
+  error,
+} = await supabase.rpc(
+  "update_client_organizer_healthcare_coverage",
+  rpcArgs,
+)
+
+  if (error) {
+    throw new Error(
+      error.message,
+    )
+  }
+
+  const row =
+    getFirstHealthcareCoverageRow(
+      data as
+        | HealthcareCoverageRow[]
+        | null,
+    )
+
+  return mapHealthcareCoverage(
+    row,
+  )
+}
+
+export async function deleteOrganizerHealthcareCoverage(
+  request:
+    DeleteOrganizerHealthcareCoverageRequest,
+): Promise<void> {
+  const {
+    error,
+  } = await supabase.rpc(
+    "delete_client_organizer_healthcare_coverage",
+    {
+      requested_organizer_id:
+        request.organizerId,
+
+      requested_coverage_id:
+        request.coverageId,
+    },
+  )
+
+  if (error) {
+    throw new Error(
+      error.message,
+    )
+  }
 }
