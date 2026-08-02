@@ -215,65 +215,73 @@ export function OrganizerHealthBanner({
         </div>
       </div>
 
-      <dl className="mt-6 grid gap-x-8 gap-y-4 border-t border-slate-200/80 pt-6 sm:grid-cols-2 xl:grid-cols-5">
-        <div className="flex items-center justify-between gap-4 rounded-xl bg-white/70 px-4 py-3">
-          <dt className="flex items-center gap-3 text-sm font-medium text-slate-600">
+      <dl className="mt-6 grid gap-4 border-t border-slate-200/80 pt-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="flex min-w-0 items-center justify-between gap-4 rounded-xl bg-white/80 px-4 py-4 shadow-sm">
+          <dt className="flex min-w-0 items-center gap-3 text-sm font-medium text-slate-600">
             <ListChecks
-              className="h-5 w-5 text-blue-700"
+              className="h-5 w-5 shrink-0 text-blue-700"
               aria-hidden="true"
             />
 
-            Records
+            <span className="truncate">
+              Records
+            </span>
           </dt>
 
-          <dd className="text-lg font-semibold text-slate-950">
+          <dd className="shrink-0 text-xl font-semibold text-slate-950">
             {health.recordCount}
           </dd>
         </div>
 
-        <div className="flex items-center justify-between gap-4 rounded-xl bg-white/70 px-4 py-3">
-          <dt className="flex items-center gap-3 text-sm font-medium text-slate-600">
+        <div className="flex min-w-0 items-center justify-between gap-4 rounded-xl bg-white/80 px-4 py-4 shadow-sm">
+          <dt className="flex min-w-0 items-center gap-3 text-sm font-medium text-slate-600">
             <CheckCircle2
-              className="h-5 w-5 text-emerald-700"
+              className="h-5 w-5 shrink-0 text-emerald-700"
               aria-hidden="true"
             />
 
-            Completed
+            <span className="truncate">
+              Completed
+            </span>
           </dt>
 
-          <dd className="text-lg font-semibold text-emerald-700">
+          <dd className="shrink-0 text-xl font-semibold text-emerald-700">
             {health.completedRecordCount}
           </dd>
         </div>
 
-        <div className="flex items-center justify-between gap-4 rounded-xl bg-white/70 px-4 py-3">
-          <dt className="flex items-center gap-3 text-sm font-medium text-slate-600">
+        <div className="flex min-w-0 items-center justify-between gap-4 rounded-xl bg-white/80 px-4 py-4 shadow-sm">
+          <dt className="flex min-w-0 items-center gap-3 text-sm font-medium text-slate-600">
             <AlertTriangle
-              className="h-5 w-5 text-amber-700"
+              className="h-5 w-5 shrink-0 text-amber-700"
               aria-hidden="true"
             />
 
-            Issues
+            <span className="truncate">
+              Issues
+            </span>
           </dt>
 
-          <dd className="text-lg font-semibold text-amber-700">
+          <dd className="shrink-0 text-xl font-semibold text-amber-700">
             {health.issueCount}
           </dd>
         </div>
 
-        <div className="flex items-center justify-between gap-4 rounded-xl bg-white/70 px-4 py-3">
-          <dt className="flex items-center gap-3 text-sm font-medium text-slate-600">
+        <div className="flex min-w-0 items-center justify-between gap-4 rounded-xl bg-white/80 px-4 py-4 shadow-sm sm:col-span-2 lg:col-span-2">
+          <dt className="flex min-w-0 items-center gap-3 text-sm font-medium text-slate-600">
             <FileWarning
-              className="h-5 w-5 text-red-700"
+              className="h-5 w-5 shrink-0 text-red-700"
               aria-hidden="true"
             />
 
-            Missing Documents
+            <span className="truncate">
+              Missing Documents
+            </span>
           </dt>
 
           <dd
             className={[
-              "text-lg font-semibold",
+              "shrink-0 text-xl font-semibold",
               health.missingDocumentCount > 0
                 ? "text-red-700"
                 : "text-slate-950",
@@ -283,19 +291,21 @@ export function OrganizerHealthBanner({
           </dd>
         </div>
 
-        <div className="flex items-center justify-between gap-4 rounded-xl bg-white/70 px-4 py-3">
-          <dt className="flex items-center gap-3 text-sm font-medium text-slate-600">
+        <div className="flex min-w-0 items-center justify-between gap-4 rounded-xl bg-white/80 px-4 py-4 shadow-sm">
+          <dt className="flex min-w-0 items-center gap-3 text-sm font-medium text-slate-600">
             <ShieldCheck
-              className="h-5 w-5 text-slate-700"
+              className="h-5 w-5 shrink-0 text-slate-700"
               aria-hidden="true"
             />
 
-            Ready for Review
+            <span className="truncate">
+              Ready for Review
+            </span>
           </dt>
 
           <dd
             className={[
-              "text-lg font-semibold",
+              "shrink-0 text-xl font-semibold",
               health.isReadyForReview
                 ? "text-emerald-700"
                 : "text-slate-950",
