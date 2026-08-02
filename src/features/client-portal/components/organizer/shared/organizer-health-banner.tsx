@@ -3,7 +3,6 @@ import {
   CheckCircle2,
   CircleDashed,
   Clock3,
-  FileWarning,
 } from "lucide-react"
 
 import {
@@ -134,101 +133,81 @@ export function OrganizerHealthBanner({
       ].join(" ")}
     >
       <div className="flex items-start gap-4">
-        <div className="flex items-start gap-4">
-          <div
-            className={[
-              "flex h-12 w-12 shrink-0 items-center justify-center rounded-xl",
-              styles.icon,
-            ].join(" ")}
-          >
-            <HealthIcon
-              className="h-6 w-6"
-              aria-hidden="true"
-            />
-          </div>
-
-          <div>
-            <div className="flex flex-wrap items-center gap-3">
-              <h2 className="text-xl font-semibold text-slate-950">
-                {health.sectionTitle} Health
-              </h2>
-
-              <span
-                className={[
-                  "rounded-full px-3 py-1 text-xs font-semibold",
-                  styles.badge,
-                ].join(" ")}
-              >
-                {metadata.label}
-              </span>
-            </div>
-
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-700">
-              {metadata.description}
-            </p>
-
-            <p className="mt-2 text-xs text-slate-500">
-              Last updated:{" "}
-              {formatLastUpdated(
-                health.lastUpdatedAt,
-              )}
-            </p>
-          </div>
+        <div
+          className={[
+            "flex h-12 w-12 shrink-0 items-center justify-center rounded-xl",
+            styles.icon,
+          ].join(" ")}
+        >
+          <HealthIcon
+            className="h-6 w-6"
+            aria-hidden="true"
+          />
         </div>
 
-        <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-6">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-3">
+            <h2 className="text-xl font-semibold text-slate-950">
+              {health.sectionTitle} Health
+            </h2>
 
-  <OrganizerMetricCard
-    label="Progress"
-    value={`${health.progressPercentage}%`}
-  />
-
-  <OrganizerMetricCard
-    label="Records"
-    value={health.recordCount}
-  />
-
-  <OrganizerMetricCard
-    label="Completed"
-    value={health.completedRecordCount}
-  />
-
-  <OrganizerMetricCard
-    label="Issues"
-    value={health.issueCount}
-  />
-
-  <OrganizerMetricCard
-    label="Missing Docs"
-    value={health.missingDocumentCount}
-  />
-
-  <OrganizerMetricCard
-    label="Ready"
-    value={
-      health.isReadyForReview
-        ? "Yes"
-        : "No"
-    }
-  />
-
-</div>
-
-          <div className="rounded-xl bg-white/80 p-4 shadow-sm">
-            <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-slate-500">
-              <FileWarning
-                className="h-4 w-4"
-                aria-hidden="true"
-              />
-
-              Missing Docs
-            </div>
-
-            <p className="mt-1 text-2xl font-semibold text-slate-950">
-              {health.missingDocumentCount}
-            </p>
+            <span
+              className={[
+                "rounded-full px-3 py-1 text-xs font-semibold",
+                styles.badge,
+              ].join(" ")}
+            >
+              {metadata.label}
+            </span>
           </div>
+
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-700">
+            {metadata.description}
+          </p>
+
+          <p className="mt-2 text-xs text-slate-500">
+            Last updated:{" "}
+            {formatLastUpdated(
+              health.lastUpdatedAt,
+            )}
+          </p>
         </div>
+      </div>
+
+      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+        <OrganizerMetricCard
+          label="Progress"
+          value={`${health.progressPercentage}%`}
+        />
+
+        <OrganizerMetricCard
+          label="Records"
+          value={health.recordCount}
+        />
+
+        <OrganizerMetricCard
+          label="Completed"
+          value={health.completedRecordCount}
+        />
+
+        <OrganizerMetricCard
+          label="Issues"
+          value={health.issueCount}
+        />
+
+        <OrganizerMetricCard
+          label="Missing Docs"
+          value={health.missingDocumentCount}
+        />
+
+        <OrganizerMetricCard
+          label="Ready"
+          value={
+            health.isReadyForReview
+              ? "Yes"
+              : "No"
+          }
+        />
       </div>
 
       <div className="mt-6">
@@ -243,7 +222,7 @@ export function OrganizerHealthBanner({
         </div>
 
         <div
-          className="mt-2 h-3 overflow-hidden rounded-full bg-white/80"
+          className="mt-2 h-2.5 overflow-hidden rounded-full bg-white/80"
           role="progressbar"
           aria-label={`${health.sectionTitle} completion`}
           aria-valuemin={0}
