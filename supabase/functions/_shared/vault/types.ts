@@ -6,57 +6,22 @@ export type VaultSecretType =
   | "state_identification"
   | "routing_number"
   | "bank_account_number"
-
-export interface VaultRecord {
-  id: string
-
-  organizerId: string
-
-  clientId: string
-
-  secretType: VaultSecretType
-
-  maskedValue: string
-
-  hasValue: boolean
-
-  verified: boolean
-
-  keyVersion: number
-
-  createdAt: string
-
-  updatedAt: string
-}
+  | "identity_protection_pin"
+  | "employer_identification_number"
 
 export interface SaveVaultSecretRequest {
-  organizerId: string
-
+  organizerId?: string
   secretType: VaultSecretType
-
   plainTextValue: string
 }
 
 export interface SaveVaultSecretResponse {
   success: true
-
   vaultSecretId: string
-
   maskedValue: string
-
   keyVersion: number
-
-  status:
-    | "collected"
-    | "pending_verification"
-    | "verified"
-    | "rejected"
-    | "replaced"
-    | "archived"
-
+  status: string
   replacedExistingSecret: boolean
-
   updatedAt: string
-
   requestId: string
 }

@@ -699,7 +699,7 @@ export function OrganizerIdentityInformationPage() {
                 vault with masked display and audited access.
               </p>
             </div>
-
+            
             <OrganizerSaveBar
               isSaving={isSaving}
               saveMessage={
