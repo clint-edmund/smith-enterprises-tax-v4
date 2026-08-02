@@ -14,6 +14,10 @@ import type {
   OrganizerSectionHealth,
 } from "@/features/client-portal/types/organizer-health.types"
 
+import {
+  OrganizerMetricCard,
+} from "./organizer-metric-card"
+
 interface OrganizerHealthBannerProps {
   health:
     OrganizerSectionHealth
@@ -129,7 +133,7 @@ export function OrganizerHealthBanner({
         styles.container,
       ].join(" ")}
     >
-      <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+      <div className="flex items-start gap-4">
         <div className="flex items-start gap-4">
           <div
             className={[
@@ -172,26 +176,43 @@ export function OrganizerHealthBanner({
           </div>
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-3 lg:min-w-[430px]">
-          <div className="rounded-xl bg-white/80 p-4 shadow-sm">
-            <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
-              Progress
-            </p>
+        <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-6">
 
-            <p className="mt-1 text-2xl font-semibold text-slate-950">
-              {health.progressPercentage}%
-            </p>
-          </div>
+  <OrganizerMetricCard
+    label="Progress"
+    value={`${health.progressPercentage}%`}
+  />
 
-          <div className="rounded-xl bg-white/80 p-4 shadow-sm">
-            <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
-              Issues
-            </p>
+  <OrganizerMetricCard
+    label="Records"
+    value={health.recordCount}
+  />
 
-            <p className="mt-1 text-2xl font-semibold text-slate-950">
-              {health.issueCount}
-            </p>
-          </div>
+  <OrganizerMetricCard
+    label="Completed"
+    value={health.completedRecordCount}
+  />
+
+  <OrganizerMetricCard
+    label="Issues"
+    value={health.issueCount}
+  />
+
+  <OrganizerMetricCard
+    label="Missing Docs"
+    value={health.missingDocumentCount}
+  />
+
+  <OrganizerMetricCard
+    label="Ready"
+    value={
+      health.isReadyForReview
+        ? "Yes"
+        : "No"
+    }
+  />
+
+</div>
 
           <div className="rounded-xl bg-white/80 p-4 shadow-sm">
             <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-slate-500">
