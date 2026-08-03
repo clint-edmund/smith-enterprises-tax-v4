@@ -13,3 +13,7 @@ export {
 export {
   OrganizerReviewIssueList,
 } from "./organizer-review-issue-list"
+
+export {
+  OrganizerReviewClientCard,
+} from "./organizer-review-client-card"
