@@ -9,3 +9,7 @@ export {
 export {
   OrganizerReviewSectionList,
 } from "./organizer-review-section-list"
+
+export {
+  OrganizerReviewIssueList,
+} from "./organizer-review-issue-list"
