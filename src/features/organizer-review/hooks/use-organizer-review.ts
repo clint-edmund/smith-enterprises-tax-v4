@@ -1,11 +1,12 @@
 import {
   useCallback,
   useEffect,
+  useMemo,
   useState,
 } from "react"
 
 import {
-  getOrganizerReviewOverview,
+  getOrganizerReviewRepository,
 } from "../services"
 
 import type {
@@ -49,7 +50,14 @@ export function useOrganizerReview(
     useState<string | null>(
       null,
     )
-
+  
+  const repository =
+    useMemo(
+      () =>
+        getOrganizerReviewRepository(),
+      [],
+    )
+  
   const load =
     useCallback(
       async () => {
@@ -64,7 +72,7 @@ export function useOrganizerReview(
           setErrorMessage(null)
 
           const result =
-            await getOrganizerReviewOverview(
+            await repository.getOverview(
               clientId,
               taxYear,
             )
@@ -84,6 +92,7 @@ export function useOrganizerReview(
       },
       [
         clientId,
+        repository,
         taxYear,
       ],
     )
