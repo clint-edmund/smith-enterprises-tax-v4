@@ -1,4 +1,5 @@
 import {
+  useMemo,
   useState,
 } from "react"
 
@@ -13,6 +14,13 @@ import {
 } from "@/features/client-portal/components/organizer/dependents"
 
 import {
+  OrganizerDeleteDialog,
+  OrganizerHealthBanner,
+  OrganizerLoadingState,
+  OrganizerSectionLayout,
+} from "@/features/client-portal/components/organizer/shared"
+
+import {
   useOrganizer,
 } from "@/features/client-portal/context/organizer/use-organizer"
 
@@ -20,15 +28,15 @@ import {
   useOrganizerDependents,
 } from "@/features/client-portal/hooks/use-organizer-dependents"
 
+import {
+  calculateDependentsHealth,
+} from "@/features/client-portal/services/organizer-health"
+
 import type {
   AddOrganizerDependentRequest,
   OrganizerDependent,
   UpdateOrganizerDependentRequest,
 } from "@/features/client-portal/types/organizer-dependent.types"
-
-import {
-  OrganizerLoadingState,
-} from "@/features/client-portal/components/organizer/shared"
 
 export function OrganizerDependentsPage() {
   const {
@@ -76,6 +84,16 @@ export function OrganizerDependentsPage() {
       null,
     )
 
+  const dependentsHealth =
+    useMemo(
+      () =>
+        calculateDependentsHealth({
+          dependents,
+        }),
+      [
+        dependents,
+      ],
+    )
 
   async function handleAdd(
     request:
@@ -124,16 +142,24 @@ export function OrganizerDependentsPage() {
     )
   }
 
+  function openAddForm() {
+    clearMessages()
+    setSelectedDependent(null)
+    setIsAdding(true)
+  }
+
   function handleEdit(
-  dependent:
-    OrganizerDependent,
-) {
-  clearMessages()
-  setSelectedDependent(
-    dependent,
-  )
-  setIsAdding(true)
-}
+    dependent:
+      OrganizerDependent,
+  ) {
+    clearMessages()
+
+    setSelectedDependent(
+      dependent,
+    )
+
+    setIsAdding(true)
+  }
 
   function handleDelete(
     dependent:
@@ -145,6 +171,28 @@ export function OrganizerDependentsPage() {
       dependent,
     )
   }
+
+  function closeForm() {
+    if (isSaving) {
+      return
+    }
+
+    clearMessages()
+    setIsAdding(false)
+    setSelectedDependent(null)
+  }
+
+  const dependentToDeleteName =
+    dependentToDelete
+      ? [
+          dependentToDelete.firstName,
+          dependentToDelete.middleName,
+          dependentToDelete.lastName,
+          dependentToDelete.suffix,
+        ]
+          .filter(Boolean)
+          .join(" ")
+      : ""
 
   return (
     <OrganizerPage
@@ -189,11 +237,9 @@ export function OrganizerDependentsPage() {
             isSaving={
               isSaving
             }
-            onCancel={() => {
-              clearMessages()
-              setIsAdding(false)
-              setSelectedDependent(null)
-            }}
+            onCancel={
+              closeForm
+            }
             onAdd={
               handleAdd
             }
@@ -202,77 +248,50 @@ export function OrganizerDependentsPage() {
             }
           />
         ) : (
-          <DependentList
-            dependents={
-              dependents
+          <OrganizerSectionLayout
+            title="Dependent Information"
+            description="Add each child, relative, or other person who may qualify as a dependent for this tax year."
+            health={
+              <OrganizerHealthBanner
+                health={
+                  dependentsHealth
+                }
+              />
             }
-            onAdd={() => {
-              clearMessages()
-              setSelectedDependent(null)
-              setIsAdding(true)
-            }}
-            onEdit={
-              handleEdit
-            }
-            onDelete={
-              handleDelete
-            }
-          />
-        )}
-        {dependentToDelete && (
-          <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="delete-dependent-title"
           >
-            <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
-              <h2
-                id="delete-dependent-title"
-                className="text-xl font-semibold text-slate-950"
-              >
-                Delete Dependent?
-              </h2>
+            <DependentList
+              dependents={
+                dependents
+              }
+              onAdd={
+                openAddForm
+              }
+              onEdit={
+                handleEdit
+              }
+              onDelete={
+                handleDelete
+              }
+            />
+          </OrganizerSectionLayout>
+        )}
 
-              <p className="mt-3 text-sm leading-6 text-slate-600">
-                Are you sure you want to delete{" "}
-                <span className="font-semibold text-slate-900">
-                  {dependentToDelete.firstName}{" "}
-                  {dependentToDelete.lastName}
-                </span>
-                ? This also removes any dependent-level Secure Vault records associated
-                with this dependent.
-              </p>
-
-              <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-                <button
-                  type="button"
-                  disabled={isDeleting}
-                  onClick={() => {
-                    setDependentToDelete(
-                      null,
-                    )
-                  }}
-                  className="rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  Cancel
-                </button>
-
-                <button
-                  type="button"
-                  disabled={isDeleting}
-                  onClick={() => {
-                    void confirmDelete()
-                  }}
-                  className="rounded-xl bg-red-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-red-800 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  {isDeleting
-                    ? "Deleting..."
-                    : "Delete Dependent"}
-                </button>
-              </div>
-            </div>
-          </div>
+        {dependentToDelete && (
+          <OrganizerDeleteDialog
+            title="Delete Dependent?"
+            message={`Are you sure you want to delete ${dependentToDeleteName}? This also removes any dependent-level Secure Vault records associated with this dependent. This action cannot be undone.`}
+            isDeleting={
+              isDeleting
+            }
+            onCancel={() => {
+              setDependentToDelete(
+                null,
+              )
+            }}
+            onConfirm={() => {
+              void confirmDelete()
+            }}
+          />
         )}
       </div>
     </OrganizerPage>
