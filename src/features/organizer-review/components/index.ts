@@ -17,3 +17,7 @@ export {
 export {
   OrganizerReviewClientCard,
 } from "./organizer-review-client-card"
+
+export {
+  OrganizerReviewActions,
+} from "./organizer-review-actions"
