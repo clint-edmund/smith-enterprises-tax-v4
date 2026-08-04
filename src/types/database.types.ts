@@ -3352,6 +3352,34 @@ export type Database = {
           updated_at: string
         }[]
       }
+      get_staff_organizer_income_review: {
+        Args: { requested_client_id: string; requested_tax_year: number }
+        Returns: {
+          created_at: string
+          display_order: number
+          document_received: boolean
+          employer_identification_number: string
+          federal_income_tax_withheld: number
+          income_source_id: string
+          income_type: string
+          local_income_tax_withheld: number
+          local_wages: number
+          medicare_tax_withheld: number
+          medicare_wages: number
+          notes: string
+          organizer_id: string
+          payer_name: string
+          recipient_type: string
+          record_status: string
+          social_security_tax_withheld: number
+          social_security_wages: number
+          state_code: string
+          state_income_tax_withheld: number
+          state_wages: number
+          updated_at: string
+          wages: number
+        }[]
+      }
       get_staff_organizer_summary: {
         Args: { requested_client_id: string; requested_tax_year: number }
         Returns: Json

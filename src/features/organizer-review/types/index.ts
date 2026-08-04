@@ -19,3 +19,11 @@ export type {
   OrganizerReviewHealthcareDocumentType,
   OrganizerReviewHealthcareRecordStatus,
 } from "./organizer-review-healthcare.types"
+
+export type {
+  OrganizerReviewIncomeRecipientType,
+  OrganizerReviewIncomeRecordStatus,
+  OrganizerReviewIncomeSource,
+  OrganizerReviewIncomeType,
+  OrganizerReviewIncomeW2Details,
+} from "./organizer-review-income.types"

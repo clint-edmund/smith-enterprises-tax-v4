@@ -21,3 +21,7 @@ export type {
 export {
   getOrganizerReviewHealthcare,
 } from "./organizer-review-healthcare-service"
+
+export {
+  getOrganizerReviewIncome,
+} from "./organizer-review-income-service"
