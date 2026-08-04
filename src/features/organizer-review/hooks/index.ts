@@ -7,3 +7,6 @@ export {
 export {
   useOrganizerReviewIncome,
 } from "./use-organizer-review-income"
+export {
+  useOrganizerReviewDependents,
+} from "./use-organizer-review-dependents"
