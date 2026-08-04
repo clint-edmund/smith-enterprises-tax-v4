@@ -55,4 +55,5 @@ export type {
   StaffIncomeReviewSource,
   StaffIncomeReviewSummary,
   StaffIncomeReviewW2Details,
+  StaffIncomeReviewStatus,
 } from "./staff-income-review.types"

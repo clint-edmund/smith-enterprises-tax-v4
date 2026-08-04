@@ -28,6 +28,12 @@ export type StaffIncomeReviewOrganizerStatus =
   | "submitted"
   | "returned"
 
+export type StaffIncomeReviewStatus =
+  | "pending"
+  | "reviewed"
+  | "needs_follow_up"
+  | "returned_to_client"
+
 export interface StaffIncomeReviewOrganizer {
   organizerId: string
   clientId: string
@@ -170,6 +176,17 @@ export interface StaffIncomeReviewSource {
   hasRequiredPrimaryAmount:
     boolean
 
+  reviewStatus:
+    StaffIncomeReviewStatus
+
+  internalNotes: string
+  reviewedBy: string | null
+  reviewedByName: string | null
+  reviewedAt: string | null
+  followUpRequestedAt: string | null
+  returnedToClientAt: string | null
+  reviewUpdatedAt: string | null
+
   w2Details:
     StaffIncomeReviewW2Details | null
 
@@ -199,13 +216,6 @@ export interface GetStaffIncomeReviewRequest {
   taxYear: number
 }
 
-/*
- * Compatibility aliases
- *
- * The existing Income Review page already imports these names.
- * The aliases allow the page to keep compiling while the service
- * and hook are transitioned to the unified staff review payload.
- */
 export type OrganizerReviewIncomeType =
   StaffIncomeReviewIncomeType
 

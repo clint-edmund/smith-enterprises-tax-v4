@@ -63,10 +63,7 @@ function isRecord(
 function requireRecord(
   value: unknown,
   label: string,
-): Record<
-  string,
-  unknown
-> {
+): Record<string, unknown> {
   if (!isRecord(value)) {
     throw new Error(
       `${label} was not returned in the expected format.`,
@@ -350,67 +347,54 @@ function mapW2Details(
       optionalString(
         row.employerIdentificationNumber,
       ),
-
     wages:
       optionalNumber(
         row.wages,
       ),
-
     federalIncomeTaxWithheld:
       optionalNumber(
         row.federalIncomeTaxWithheld,
       ),
-
     socialSecurityWages:
       optionalNumber(
         row.socialSecurityWages,
       ),
-
     socialSecurityTaxWithheld:
       optionalNumber(
         row.socialSecurityTaxWithheld,
       ),
-
     medicareWages:
       optionalNumber(
         row.medicareWages,
       ),
-
     medicareTaxWithheld:
       optionalNumber(
         row.medicareTaxWithheld,
       ),
-
     stateCode:
       optionalString(
         row.stateCode,
       ),
-
     stateWages:
       optionalNumber(
         row.stateWages,
       ),
-
     stateIncomeTaxWithheld:
       optionalNumber(
         row.stateIncomeTaxWithheld,
       ),
-
     localWages:
       optionalNumber(
         row.localWages,
       ),
-
     localIncomeTaxWithheld:
       optionalNumber(
         row.localIncomeTaxWithheld,
       ),
-
     createdAt:
       optionalString(
         row.createdAt,
       ),
-
     updatedAt:
       optionalString(
         row.updatedAt,
@@ -436,96 +420,78 @@ function map1099IntDetails(
       optionalString(
         row.payerIdentificationNumber,
       ),
-
     interestIncome:
       optionalNumber(
         row.interestIncome,
       ),
-
     earlyWithdrawalPenalty:
       optionalNumber(
         row.earlyWithdrawalPenalty,
       ),
-
     interestOnUsSavingsBondsAndTreasuryObligations:
       optionalNumber(
         row
           .interestOnUsSavingsBondsAndTreasuryObligations,
       ),
-
     federalIncomeTaxWithheld:
       optionalNumber(
         row.federalIncomeTaxWithheld,
       ),
-
     investmentExpenses:
       optionalNumber(
         row.investmentExpenses,
       ),
-
     foreignTaxPaid:
       optionalNumber(
         row.foreignTaxPaid,
       ),
-
     foreignCountryOrUsPossession:
       optionalString(
         row.foreignCountryOrUsPossession,
       ),
-
     taxExemptInterest:
       optionalNumber(
         row.taxExemptInterest,
       ),
-
     specifiedPrivateActivityBondInterest:
       optionalNumber(
         row
           .specifiedPrivateActivityBondInterest,
       ),
-
     marketDiscount:
       optionalNumber(
         row.marketDiscount,
       ),
-
     bondPremium:
       optionalNumber(
         row.bondPremium,
       ),
-
     bondPremiumOnTreasuryObligations:
       optionalNumber(
         row
           .bondPremiumOnTreasuryObligations,
       ),
-
     bondPremiumOnTaxExemptBond:
       optionalNumber(
         row
           .bondPremiumOnTaxExemptBond,
       ),
-
     stateCode:
       optionalString(
         row.stateCode,
       ),
-
     stateIdentificationNumber:
       optionalString(
         row.stateIdentificationNumber,
       ),
-
     stateTaxWithheld:
       optionalNumber(
         row.stateTaxWithheld,
       ),
-
     createdAt:
       optionalString(
         row.createdAt,
       ),
-
     updatedAt:
       optionalString(
         row.updatedAt,
@@ -551,111 +517,90 @@ function map1099DivDetails(
       optionalString(
         row.payerIdentificationNumber,
       ),
-
     totalOrdinaryDividends:
       optionalNumber(
         row.totalOrdinaryDividends,
       ),
-
     qualifiedDividends:
       optionalNumber(
         row.qualifiedDividends,
       ),
-
     totalCapitalGainDistributions:
       optionalNumber(
         row
           .totalCapitalGainDistributions,
       ),
-
     unrecapturedSection1250Gain:
       optionalNumber(
         row.unrecapturedSection1250Gain,
       ),
-
     section1202Gain:
       optionalNumber(
         row.section1202Gain,
       ),
-
     collectibles28PercentRateGain:
       optionalNumber(
         row
           .collectibles28PercentRateGain,
       ),
-
     section897OrdinaryDividends:
       optionalNumber(
         row
           .section897OrdinaryDividends,
       ),
-
     section897CapitalGain:
       optionalNumber(
         row.section897CapitalGain,
       ),
-
     nondividendDistributions:
       optionalNumber(
         row.nondividendDistributions,
       ),
-
     federalIncomeTaxWithheld:
       optionalNumber(
         row.federalIncomeTaxWithheld,
       ),
-
     section199aDividends:
       optionalNumber(
         row.section199aDividends,
       ),
-
     investmentExpenses:
       optionalNumber(
         row.investmentExpenses,
       ),
-
     foreignTaxPaid:
       optionalNumber(
         row.foreignTaxPaid,
       ),
-
     foreignCountryOrUsPossession:
       optionalString(
         row.foreignCountryOrUsPossession,
       ),
-
     exemptInterestDividends:
       optionalNumber(
         row.exemptInterestDividends,
       ),
-
     specifiedPrivateActivityBondInterestDividends:
       optionalNumber(
         row
           .specifiedPrivateActivityBondInterestDividends,
       ),
-
     stateCode:
       optionalString(
         row.stateCode,
       ),
-
     stateIdentificationNumber:
       optionalString(
         row.stateIdentificationNumber,
       ),
-
     stateTaxWithheld:
       optionalNumber(
         row.stateTaxWithheld,
       ),
-
     createdAt:
       optionalString(
         row.createdAt,
       ),
-
     updatedAt:
       optionalString(
         row.updatedAt,
@@ -744,6 +689,47 @@ function mapIncomeSource(
         "Primary amount status",
       ),
 
+    reviewStatus:
+      requireString(
+        row.reviewStatus,
+        "Income review status",
+      ) as StaffIncomeReviewSource["reviewStatus"],
+
+    internalNotes:
+      normalizedString(
+        row.internalNotes,
+      ),
+
+    reviewedBy:
+      optionalString(
+        row.reviewedBy,
+      ),
+
+    reviewedByName:
+      optionalString(
+        row.reviewedByName,
+      ),
+
+    reviewedAt:
+      optionalString(
+        row.reviewedAt,
+      ),
+
+    followUpRequestedAt:
+      optionalString(
+        row.followUpRequestedAt,
+      ),
+
+    returnedToClientAt:
+      optionalString(
+        row.returnedToClientAt,
+      ),
+
+    reviewUpdatedAt:
+      optionalString(
+        row.reviewUpdatedAt,
+      ),
+
     w2Details:
       mapW2Details(
         row.w2Details,
@@ -770,14 +756,6 @@ function mapStaffIncomeReview(
       "Staff Income Review",
     )
 
-  const incomeSources =
-    requireArray(
-      row.incomeSources,
-      "Income sources",
-    ).map(
-      mapIncomeSource,
-    )
-
   return {
     organizer:
       mapOrganizer(
@@ -794,7 +772,13 @@ function mapStaffIncomeReview(
         row.summary,
       ),
 
-    incomeSources,
+    incomeSources:
+      requireArray(
+        row.incomeSources,
+        "Income sources",
+      ).map(
+        mapIncomeSource,
+      ),
   }
 }
 
