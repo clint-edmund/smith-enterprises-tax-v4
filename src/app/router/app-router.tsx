@@ -103,6 +103,10 @@ import {
   OrganizerReviewPage,
 } from "@/features/organizer-review/pages/organizer-review-page"
 
+import {
+  HealthcareReviewPage,
+} from "@/features/organizer-review/pages/healthcare-review-page"
+
 export const appRouter =
   createBrowserRouter([
     {
@@ -349,6 +353,21 @@ export const appRouter =
                         "/clients/:clientId/organizer-review/:taxYear",
                       element:
                         <OrganizerReviewPage />,
+                    },
+                  ],
+                },
+                {
+                  element: (
+                    <PermissionRoute
+                      permission={permissions.clients.view}
+                    />
+                  ),
+                  children: [
+                    {
+                      path:
+                        "/clients/:clientId/organizer-review/:taxYear/healthcare",
+                      element:
+                        <HealthcareReviewPage />,
                     },
                   ],
                 },
