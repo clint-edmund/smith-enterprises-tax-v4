@@ -2977,6 +2977,65 @@ export type Database = {
           updated_at: string
         }[]
       }
+      get_client_organizer_income_1099_div_details: {
+        Args: {
+          requested_income_source_id: string
+          requested_organizer_id: string
+        }
+        Returns: {
+          collectibles_28_percent_rate_gain: number
+          created_at: string
+          exempt_interest_dividends: number
+          federal_income_tax_withheld: number
+          foreign_country_or_us_possession: string
+          foreign_tax_paid: number
+          income_source_id: string
+          investment_expenses: number
+          nondividend_distributions: number
+          payer_identification_number: string
+          qualified_dividends: number
+          section_1202_gain: number
+          section_199a_dividends: number
+          section_897_capital_gain: number
+          section_897_ordinary_dividends: number
+          specified_private_activity_bond_interest_dividends: number
+          state_code: string
+          state_identification_number: string
+          state_tax_withheld: number
+          total_capital_gain_distributions: number
+          total_ordinary_dividends: number
+          unrecaptured_section_1250_gain: number
+          updated_at: string
+        }[]
+      }
+      get_client_organizer_income_1099_int_details: {
+        Args: {
+          requested_income_source_id: string
+          requested_organizer_id: string
+        }
+        Returns: {
+          bond_premium: number
+          bond_premium_on_tax_exempt_bond: number
+          bond_premium_on_treasury_obligations: number
+          created_at: string
+          early_withdrawal_penalty: number
+          federal_income_tax_withheld: number
+          foreign_country_or_us_possession: string
+          foreign_tax_paid: number
+          income_source_id: string
+          interest_income: number
+          interest_on_us_savings_bonds_and_treasury_obligations: number
+          investment_expenses: number
+          market_discount: number
+          payer_identification_number: string
+          specified_private_activity_bond_interest: number
+          state_code: string
+          state_identification_number: string
+          state_tax_withheld: number
+          tax_exempt_interest: number
+          updated_at: string
+        }[]
+      }
       get_client_organizer_income_sources: {
         Args: { requested_organizer_id: string }
         Returns: {
@@ -4164,6 +4223,124 @@ export type Database = {
           result_organizer_id: string
           section_progress_percentage: number
           section_status: Database["public"]["Enums"]["tax_organizer_section_status"]
+        }[]
+      }
+      save_client_organizer_income_1099_div_details: {
+        Args: {
+          requested_collectibles_28_percent_rate_gain: number
+          requested_document_received: boolean
+          requested_exempt_interest_dividends: number
+          requested_federal_income_tax_withheld: number
+          requested_foreign_country_or_us_possession: string
+          requested_foreign_tax_paid: number
+          requested_income_source_id: string
+          requested_investment_expenses: number
+          requested_nondividend_distributions: number
+          requested_organizer_id: string
+          requested_payer_identification_number: string
+          requested_qualified_dividends: number
+          requested_section_1202_gain: number
+          requested_section_199a_dividends: number
+          requested_section_897_capital_gain: number
+          requested_section_897_ordinary_dividends: number
+          requested_specified_private_activity_bond_interest_dividends: number
+          requested_state_code: string
+          requested_state_identification_number: string
+          requested_state_tax_withheld: number
+          requested_total_capital_gain_distributions: number
+          requested_total_ordinary_dividends: number
+          requested_unrecaptured_section_1250_gain: number
+        }
+        Returns: {
+          collectibles_28_percent_rate_gain: number
+          details_created_at: string
+          details_updated_at: string
+          display_order: number
+          document_received: boolean
+          exempt_interest_dividends: number
+          federal_income_tax_withheld: number
+          foreign_country_or_us_possession: string
+          foreign_tax_paid: number
+          income_created_at: string
+          income_source_id: string
+          income_type: string
+          income_updated_at: string
+          investment_expenses: number
+          nondividend_distributions: number
+          notes: string
+          organizer_id: string
+          payer_identification_number: string
+          payer_name: string
+          qualified_dividends: number
+          recipient_type: string
+          record_status: string
+          section_1202_gain: number
+          section_199a_dividends: number
+          section_897_capital_gain: number
+          section_897_ordinary_dividends: number
+          specified_private_activity_bond_interest_dividends: number
+          state_code: string
+          state_identification_number: string
+          state_tax_withheld: number
+          total_capital_gain_distributions: number
+          total_ordinary_dividends: number
+          unrecaptured_section_1250_gain: number
+        }[]
+      }
+      save_client_organizer_income_1099_int_details: {
+        Args: {
+          requested_bond_premium: number
+          requested_bond_premium_on_tax_exempt_bond: number
+          requested_bond_premium_on_treasury_obligations: number
+          requested_document_received: boolean
+          requested_early_withdrawal_penalty: number
+          requested_federal_income_tax_withheld: number
+          requested_foreign_country_or_us_possession: string
+          requested_foreign_tax_paid: number
+          requested_income_source_id: string
+          requested_interest_income: number
+          requested_interest_on_us_savings_bonds_and_treasury_obligations: number
+          requested_investment_expenses: number
+          requested_market_discount: number
+          requested_organizer_id: string
+          requested_payer_identification_number: string
+          requested_specified_private_activity_bond_interest: number
+          requested_state_code: string
+          requested_state_identification_number: string
+          requested_state_tax_withheld: number
+          requested_tax_exempt_interest: number
+        }
+        Returns: {
+          bond_premium: number
+          bond_premium_on_tax_exempt_bond: number
+          bond_premium_on_treasury_obligations: number
+          details_created_at: string
+          details_updated_at: string
+          display_order: number
+          document_received: boolean
+          early_withdrawal_penalty: number
+          federal_income_tax_withheld: number
+          foreign_country_or_us_possession: string
+          foreign_tax_paid: number
+          income_created_at: string
+          income_source_id: string
+          income_type: string
+          income_updated_at: string
+          interest_income: number
+          interest_on_us_savings_bonds_and_treasury_obligations: number
+          investment_expenses: number
+          market_discount: number
+          notes: string
+          organizer_id: string
+          payer_identification_number: string
+          payer_name: string
+          recipient_type: string
+          record_status: string
+          specified_private_activity_bond_interest: number
+          state_code: string
+          state_identification_number: string
+          state_tax_withheld: number
+          tax_exempt_interest: number
         }[]
       }
       save_client_organizer_income_w2_details: {
