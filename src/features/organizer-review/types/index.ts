@@ -32,3 +32,9 @@ export type {
   OrganizerReviewDependent,
   OrganizerReviewDependentRelationship,
 } from "./organizer-review-dependent.types"
+
+export type {
+  OrganizerReviewProgress,
+  OrganizerReviewProgressSection,
+  OrganizerReviewProgressSectionStatus,
+} from "./organizer-review-progress.types"

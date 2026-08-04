@@ -29,3 +29,8 @@ export {
 export {
   getOrganizerReviewDependents,
 } from "./organizer-review-dependents-service"
+
+export {
+  getOrganizerReviewProgress,
+  getOrganizerReviewSectionRoute,
+} from "./organizer-review-progress-service"
