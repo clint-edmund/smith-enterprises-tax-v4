@@ -548,6 +548,169 @@ export type Database = {
           },
         ]
       }
+      client_tax_organizer_income_1099_div_details: {
+        Row: {
+          collectibles_28_percent_rate_gain: number | null
+          created_at: string
+          exempt_interest_dividends: number | null
+          federal_income_tax_withheld: number | null
+          foreign_country_or_us_possession: string | null
+          foreign_tax_paid: number | null
+          income_source_id: string
+          investment_expenses: number | null
+          nondividend_distributions: number | null
+          payer_identification_number: string | null
+          qualified_dividends: number | null
+          section_1202_gain: number | null
+          section_199a_dividends: number | null
+          section_897_capital_gain: number | null
+          section_897_ordinary_dividends: number | null
+          specified_private_activity_bond_interest_dividends: number | null
+          state_code: string | null
+          state_identification_number: string | null
+          state_tax_withheld: number | null
+          total_capital_gain_distributions: number | null
+          total_ordinary_dividends: number | null
+          unrecaptured_section_1250_gain: number | null
+          updated_at: string
+        }
+        Insert: {
+          collectibles_28_percent_rate_gain?: number | null
+          created_at?: string
+          exempt_interest_dividends?: number | null
+          federal_income_tax_withheld?: number | null
+          foreign_country_or_us_possession?: string | null
+          foreign_tax_paid?: number | null
+          income_source_id: string
+          investment_expenses?: number | null
+          nondividend_distributions?: number | null
+          payer_identification_number?: string | null
+          qualified_dividends?: number | null
+          section_1202_gain?: number | null
+          section_199a_dividends?: number | null
+          section_897_capital_gain?: number | null
+          section_897_ordinary_dividends?: number | null
+          specified_private_activity_bond_interest_dividends?: number | null
+          state_code?: string | null
+          state_identification_number?: string | null
+          state_tax_withheld?: number | null
+          total_capital_gain_distributions?: number | null
+          total_ordinary_dividends?: number | null
+          unrecaptured_section_1250_gain?: number | null
+          updated_at?: string
+        }
+        Update: {
+          collectibles_28_percent_rate_gain?: number | null
+          created_at?: string
+          exempt_interest_dividends?: number | null
+          federal_income_tax_withheld?: number | null
+          foreign_country_or_us_possession?: string | null
+          foreign_tax_paid?: number | null
+          income_source_id?: string
+          investment_expenses?: number | null
+          nondividend_distributions?: number | null
+          payer_identification_number?: string | null
+          qualified_dividends?: number | null
+          section_1202_gain?: number | null
+          section_199a_dividends?: number | null
+          section_897_capital_gain?: number | null
+          section_897_ordinary_dividends?: number | null
+          specified_private_activity_bond_interest_dividends?: number | null
+          state_code?: string | null
+          state_identification_number?: string | null
+          state_tax_withheld?: number | null
+          total_capital_gain_distributions?: number | null
+          total_ordinary_dividends?: number | null
+          unrecaptured_section_1250_gain?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_tax_organizer_income_1099_div_deta_income_source_id_fkey"
+            columns: ["income_source_id"]
+            isOneToOne: true
+            referencedRelation: "client_tax_organizer_income_sources"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_tax_organizer_income_1099_int_details: {
+        Row: {
+          bond_premium: number | null
+          bond_premium_on_tax_exempt_bond: number | null
+          bond_premium_on_treasury_obligations: number | null
+          created_at: string
+          early_withdrawal_penalty: number | null
+          federal_income_tax_withheld: number | null
+          foreign_country_or_us_possession: string | null
+          foreign_tax_paid: number | null
+          income_source_id: string
+          interest_income: number | null
+          interest_on_us_savings_bonds_and_treasury_obligations: number | null
+          investment_expenses: number | null
+          market_discount: number | null
+          payer_identification_number: string | null
+          specified_private_activity_bond_interest: number | null
+          state_code: string | null
+          state_identification_number: string | null
+          state_tax_withheld: number | null
+          tax_exempt_interest: number | null
+          updated_at: string
+        }
+        Insert: {
+          bond_premium?: number | null
+          bond_premium_on_tax_exempt_bond?: number | null
+          bond_premium_on_treasury_obligations?: number | null
+          created_at?: string
+          early_withdrawal_penalty?: number | null
+          federal_income_tax_withheld?: number | null
+          foreign_country_or_us_possession?: string | null
+          foreign_tax_paid?: number | null
+          income_source_id: string
+          interest_income?: number | null
+          interest_on_us_savings_bonds_and_treasury_obligations?: number | null
+          investment_expenses?: number | null
+          market_discount?: number | null
+          payer_identification_number?: string | null
+          specified_private_activity_bond_interest?: number | null
+          state_code?: string | null
+          state_identification_number?: string | null
+          state_tax_withheld?: number | null
+          tax_exempt_interest?: number | null
+          updated_at?: string
+        }
+        Update: {
+          bond_premium?: number | null
+          bond_premium_on_tax_exempt_bond?: number | null
+          bond_premium_on_treasury_obligations?: number | null
+          created_at?: string
+          early_withdrawal_penalty?: number | null
+          federal_income_tax_withheld?: number | null
+          foreign_country_or_us_possession?: string | null
+          foreign_tax_paid?: number | null
+          income_source_id?: string
+          interest_income?: number | null
+          interest_on_us_savings_bonds_and_treasury_obligations?: number | null
+          investment_expenses?: number | null
+          market_discount?: number | null
+          payer_identification_number?: string | null
+          specified_private_activity_bond_interest?: number | null
+          state_code?: string | null
+          state_identification_number?: string | null
+          state_tax_withheld?: number | null
+          tax_exempt_interest?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_tax_organizer_income_1099_int_deta_income_source_id_fkey"
+            columns: ["income_source_id"]
+            isOneToOne: true
+            referencedRelation: "client_tax_organizer_income_sources"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_tax_organizer_income_sources: {
         Row: {
           created_at: string
