@@ -65,3 +65,7 @@ export type {
 export {
   ReviewMetricCard,
 } from "./review-metric-card"
+
+export {
+  ReviewRecordCard,
+} from "./review-record-card"
