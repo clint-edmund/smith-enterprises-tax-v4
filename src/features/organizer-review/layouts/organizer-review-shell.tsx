@@ -131,6 +131,9 @@ export function OrganizerReviewShell({
           currentSection={
             currentSection
           }
+          overviewHref={
+            `/clients/${clientId}/organizer-review/${taxYear}`
+          }
         />
 
         {showReadinessCard && (

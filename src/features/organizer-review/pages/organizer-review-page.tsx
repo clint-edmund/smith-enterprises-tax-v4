@@ -18,6 +18,7 @@ import {
   OrganizerReviewClientCard,
   OrganizerReviewHeader,
   OrganizerReviewIssueList,
+  OrganizerReviewProgressSidebar,
   OrganizerReviewSectionList,
   OrganizerReviewSummary,
 } from "@/features/organizer-review/components"
@@ -226,30 +227,45 @@ export function OrganizerReviewPage() {
         }
       />
 
-      <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1.6fr)_minmax(320px,0.8fr)]">
-        <main className="min-w-0 space-y-6">
-          <OrganizerReviewSectionList
-            overview={
-              overview
-            }
-          />
-
-          <OrganizerReviewIssueList
-            overview={
-              overview
-            }
-          />
-        </main>
-
+      <div className="grid items-start gap-6 xl:grid-cols-[minmax(260px,0.72fr)_minmax(0,2fr)]">
         <aside className="space-y-6 xl:sticky xl:top-6">
-          <OrganizerReviewClientCard
-            overview={
-              overview
+          <OrganizerReviewProgressSidebar
+            clientId={
+              overview.clientId
+            }
+            taxYear={
+              overview.taxYear
             }
           />
-
-          <OrganizerReviewActions />
         </aside>
+
+        <main className="min-w-0 space-y-6">
+          <div className="grid items-start gap-6 2xl:grid-cols-[minmax(0,1.6fr)_minmax(320px,0.8fr)]">
+            <div className="min-w-0 space-y-6">
+              <OrganizerReviewSectionList
+                overview={
+                  overview
+                }
+              />
+
+              <OrganizerReviewIssueList
+                overview={
+                  overview
+                }
+              />
+            </div>
+
+            <aside className="space-y-6 2xl:sticky 2xl:top-6">
+              <OrganizerReviewClientCard
+                overview={
+                  overview
+                }
+              />
+
+              <OrganizerReviewActions />
+            </aside>
+          </div>
+        </main>
       </div>
     </section>
   )

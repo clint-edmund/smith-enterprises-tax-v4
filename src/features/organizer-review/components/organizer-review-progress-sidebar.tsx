@@ -3,6 +3,7 @@ import {
   CheckCircle2,
   Circle,
   Clock3,
+  LayoutDashboard,
   LockKeyhole,
 } from "lucide-react"
 
@@ -23,21 +24,19 @@ import type {
   OrganizerReviewProgressSection,
 } from "@/features/organizer-review/types"
 
-interface OrganizerReviewProgressSidebarViewProps {
-  progress:
-    OrganizerReviewProgress
-
+interface OrganizerReviewProgressSidebarProps {
+  clientId: string
+  taxYear: number
   currentSection?:
     OrganizerReviewWorkflowSectionKey
 }
 
-interface OrganizerReviewProgressSidebarProps {
-  clientId: string
-
-  taxYear: number
-
+interface OrganizerReviewProgressSidebarViewProps {
+  progress:
+    OrganizerReviewProgress
   currentSection?:
     OrganizerReviewWorkflowSectionKey
+  overviewHref: string
 }
 
 function getSectionIcon(
@@ -53,10 +52,7 @@ function getSectionIcon(
     )
   }
 
-  if (
-    section.status ===
-    "complete"
-  ) {
+  if (section.status === "complete") {
     return (
       <CheckCircle2
         className="h-4 w-4"
@@ -110,10 +106,7 @@ function getSectionTone(
     return "border-slate-200 bg-slate-50 text-slate-400"
   }
 
-  if (
-    section.status ===
-    "complete"
-  ) {
+  if (section.status === "complete") {
     return "border-emerald-200 bg-emerald-50 text-emerald-900"
   }
 
@@ -142,10 +135,7 @@ function getStatusLabel(
     return "Planned"
   }
 
-  if (
-    section.status ===
-    "complete"
-  ) {
+  if (section.status === "complete") {
     return "Complete"
   }
 
@@ -169,7 +159,11 @@ function getStatusLabel(
 export function OrganizerReviewProgressSidebarView({
   progress,
   currentSection,
+  overviewHref,
 }: OrganizerReviewProgressSidebarViewProps) {
+  const isOverviewCurrent =
+    !currentSection
+
   return (
     <aside className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
       <div>
@@ -178,10 +172,7 @@ export function OrganizerReviewProgressSidebarView({
         </p>
 
         <p className="mt-1 text-sm text-slate-600">
-          Tax Year{" "}
-          {
-            progress.taxYear
-          }
+          Tax Year {progress.taxYear}
         </p>
       </div>
 
@@ -192,10 +183,7 @@ export function OrganizerReviewProgressSidebarView({
           </span>
 
           <span className="font-bold text-slate-950">
-            {
-              progress.progressPercentage
-            }
-            %
+            {progress.progressPercentage}%
           </span>
         </div>
 
@@ -219,13 +207,8 @@ export function OrganizerReviewProgressSidebarView({
         </div>
 
         <p className="mt-2 text-xs text-slate-500">
-          {
-            progress.completedRequiredSectionCount
-          }{" "}
-          of{" "}
-          {
-            progress.requiredSectionCount
-          }{" "}
+          {progress.completedRequiredSectionCount} of{" "}
+          {progress.requiredSectionCount}{" "}
           required sections complete
         </p>
       </div>
@@ -234,6 +217,40 @@ export function OrganizerReviewProgressSidebarView({
         className="mt-6 space-y-2"
         aria-label="Organizer review sections"
       >
+        <Link
+          to={
+            overviewHref
+          }
+          className={[
+            "flex w-full items-start gap-3 rounded-xl border p-3 text-left transition",
+            isOverviewCurrent
+              ? "border-blue-300 bg-blue-50 text-blue-950"
+              : "border-slate-200 bg-white text-slate-800 hover:border-blue-300 hover:bg-blue-50",
+          ].join(" ")}
+          aria-current={
+            isOverviewCurrent
+              ? "page"
+              : undefined
+          }
+        >
+          <span className="mt-0.5 shrink-0">
+            <LayoutDashboard
+              className="h-4 w-4"
+              aria-hidden="true"
+            />
+          </span>
+
+          <span className="min-w-0 flex-1">
+            <span className="block font-semibold">
+              Overview
+            </span>
+
+            <span className="mt-0.5 block text-xs opacity-80">
+              Organizer summary and review status
+            </span>
+          </span>
+        </Link>
+
         {progress.sections.map(
           (section) => {
             const isCurrent =
@@ -254,35 +271,26 @@ export function OrganizerReviewProgressSidebarView({
             const content = (
               <>
                 <span className="mt-0.5 shrink-0">
-                  {
-                    getSectionIcon(
-                      section,
-                    )
-                  }
+                  {getSectionIcon(
+                    section,
+                  )}
                 </span>
 
                 <span className="min-w-0 flex-1">
                   <span className="block font-semibold">
-                    {
-                      section.title
-                    }
+                    {section.title}
                   </span>
 
                   <span className="mt-0.5 block text-xs opacity-80">
-                    {
-                      getStatusLabel(
-                        section,
-                      )
-                    }
+                    {getStatusLabel(
+                      section,
+                    )}
 
                     {section.issueCount >
                       0 && (
                       <>
-                        {" "}
-                        ·{" "}
-                        {
-                          section.issueCount
-                        }{" "}
+                        {" "}·{" "}
+                        {section.issueCount}{" "}
                         issue
                         {section.issueCount ===
                         1
@@ -300,46 +308,69 @@ export function OrganizerReviewProgressSidebarView({
             ) {
               return (
                 <div
-                  key={
-                    section.key
-                  }
-                  className={
-                    className
-                  }
+                  key={section.key}
+                  className={className}
                   aria-disabled="true"
                 >
-                  {
-                    content
-                  }
+                  {content}
                 </div>
               )
             }
 
             return (
               <Link
-                key={
-                  section.key
-                }
-                to={
-                  section.href
-                }
-                className={
-                  className
-                }
+                key={section.key}
+                to={section.href}
+                className={className}
                 aria-current={
                   isCurrent
                     ? "page"
                     : undefined
                 }
               >
-                {
-                  content
-                }
+                {content}
               </Link>
             )
           },
         )}
       </nav>
+
+      <div className="mt-6 border-t border-slate-200 pt-5">
+        {progress.isReadyForPreparation ? (
+          <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+            <p className="font-semibold text-emerald-950">
+              Ready for Preparation
+            </p>
+
+            <p className="mt-1 text-sm leading-6 text-emerald-900">
+              All required organizer review sections are complete.
+            </p>
+          </div>
+        ) : progress.nextSection ? (
+          <div className="rounded-xl border border-blue-200 bg-blue-50 p-4">
+            <p className="text-xs font-semibold uppercase tracking-wide text-blue-700">
+              Next Recommended
+            </p>
+
+            <p className="mt-1 font-semibold text-blue-950">
+              {progress.nextSection.title}
+            </p>
+
+            {progress.nextSection.isImplemented ? (
+              <Link
+                to={progress.nextSection.href}
+                className="mt-3 inline-flex min-h-10 items-center justify-center rounded-xl bg-blue-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-800"
+              >
+                Continue Review
+              </Link>
+            ) : (
+              <p className="mt-2 text-sm leading-6 text-blue-900">
+                This review section is planned but has not been implemented yet.
+              </p>
+            )}
+          </div>
+        ) : null}
+      </div>
     </aside>
   )
 }
@@ -365,24 +396,16 @@ export function OrganizerReviewProgressSidebar({
       <aside className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
         <div className="animate-pulse space-y-4">
           <div className="h-5 w-40 rounded bg-slate-200" />
-
           <div className="h-3 w-full rounded bg-slate-100" />
 
           {Array.from({
             length: 5,
-          }).map(
-            (
-              _,
-              index,
-            ) => (
-              <div
-                key={
-                  index
-                }
-                className="h-14 rounded-xl bg-slate-100"
-              />
-            ),
-          )}
+          }).map((_, index) => (
+            <div
+              key={index}
+              className="h-14 rounded-xl bg-slate-100"
+            />
+          ))}
         </div>
       </aside>
     )
@@ -423,6 +446,9 @@ export function OrganizerReviewProgressSidebar({
       }
       currentSection={
         currentSection
+      }
+      overviewHref={
+        `/clients/${clientId}/organizer-review/${taxYear}`
       }
     />
   )
