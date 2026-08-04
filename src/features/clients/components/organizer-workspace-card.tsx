@@ -1,4 +1,8 @@
 import {
+  Link,
+} from "react-router-dom"
+
+import {
   ArrowRight,
   BriefcaseBusiness,
   CheckCircle2,
@@ -154,6 +158,11 @@ export function OrganizerWorkspaceCard({
       .reviewPercentage ??
     0
 
+  const organizerReviewPath =
+    organizer
+      ? `/clients/${organizer.clientId}/organizer-review/${organizer.taxYear}`
+      : null
+
   if (isLoading) {
     return (
       <section className="rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-sm">
@@ -250,22 +259,33 @@ export function OrganizerWorkspaceCard({
               Refresh
             </button>
 
-            <button
-              type="button"
-              disabled
-              title={
-                hasOrganizer
-                  ? "Organizer Review navigation will be enabled in the next phase."
-                  : "No organizer is available to review."
-              }
-              className="inline-flex min-h-11 cursor-not-allowed items-center justify-center gap-2 rounded-xl bg-white/10 px-4 py-2.5 text-sm font-semibold text-slate-300 ring-1 ring-white/20"
-            >
-              Open Organizer Review
-              <ArrowRight
-                className="size-4"
-                aria-hidden="true"
-              />
-            </button>
+            {organizerReviewPath ? (
+              <Link
+                to={
+                  organizerReviewPath
+                }
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-slate-950 shadow-sm transition hover:bg-blue-50"
+              >
+                Open Organizer Review
+                <ArrowRight
+                  className="size-4"
+                  aria-hidden="true"
+                />
+              </Link>
+            ) : (
+              <button
+                type="button"
+                disabled
+                title="No organizer is available to review."
+                className="inline-flex min-h-11 cursor-not-allowed items-center justify-center gap-2 rounded-xl bg-white/10 px-4 py-2.5 text-sm font-semibold text-slate-300 ring-1 ring-white/20"
+              >
+                Open Organizer Review
+                <ArrowRight
+                  className="size-4"
+                  aria-hidden="true"
+                />
+              </button>
+            )}
           </div>
         </div>
       </div>
