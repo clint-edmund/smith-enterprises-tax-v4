@@ -534,6 +534,9 @@ export function HealthcareReviewPage() {
   ) {
     return (
       <OrganizerReviewLayout
+        clientId={clientId}
+        taxYear={taxYear ?? undefined}
+        currentSection="healthcare"
         breadcrumbs={
           breadcrumbs
         }
@@ -566,6 +569,9 @@ export function HealthcareReviewPage() {
   if (isLoading) {
     return (
       <OrganizerReviewLayout
+        clientId={clientId}
+        taxYear={taxYear}
+        currentSection="healthcare"
         breadcrumbs={
           breadcrumbs
         }
@@ -594,6 +600,9 @@ export function HealthcareReviewPage() {
   if (errorMessage) {
     return (
       <OrganizerReviewLayout
+        clientId={clientId}
+        taxYear={taxYear}
+        currentSection="healthcare"
         breadcrumbs={
           breadcrumbs
         }
@@ -682,6 +691,9 @@ export function HealthcareReviewPage() {
 
   return (
     <OrganizerReviewLayout
+      clientId={clientId}
+      taxYear={taxYear}
+      currentSection="healthcare"
       breadcrumbs={
         breadcrumbs
       }

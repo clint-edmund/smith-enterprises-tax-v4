@@ -604,6 +604,9 @@ export function DependentsReviewPage() {
   ) {
     return (
       <OrganizerReviewLayout
+        clientId={clientId}
+        taxYear={taxYear ?? undefined}
+        currentSection="dependents"
         breadcrumbs={
           breadcrumbs
         }
@@ -636,6 +639,9 @@ export function DependentsReviewPage() {
   if (isLoading) {
     return (
       <OrganizerReviewLayout
+        clientId={clientId}
+        taxYear={taxYear}
+        currentSection="dependents"
         breadcrumbs={
           breadcrumbs
         }
@@ -664,6 +670,9 @@ export function DependentsReviewPage() {
   if (errorMessage) {
     return (
       <OrganizerReviewLayout
+        clientId={clientId}
+        taxYear={taxYear}
+        currentSection="dependents"
         breadcrumbs={
           breadcrumbs
         }
@@ -700,6 +709,9 @@ export function DependentsReviewPage() {
 
   return (
     <OrganizerReviewLayout
+      clientId={clientId}
+      taxYear={taxYear}
+      currentSection="dependents"
       breadcrumbs={
         breadcrumbs
       }

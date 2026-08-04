@@ -630,6 +630,9 @@ export function IncomeReviewPage() {
   ) {
     return (
       <OrganizerReviewLayout
+        clientId={clientId}
+        taxYear={taxYear ?? undefined}
+        currentSection="income"
         breadcrumbs={
           breadcrumbs
         }
@@ -662,6 +665,9 @@ export function IncomeReviewPage() {
   if (isLoading) {
     return (
       <OrganizerReviewLayout
+        clientId={clientId}
+        taxYear={taxYear}
+        currentSection="income"
         breadcrumbs={
           breadcrumbs
         }
@@ -690,6 +696,9 @@ export function IncomeReviewPage() {
   if (errorMessage) {
     return (
       <OrganizerReviewLayout
+        clientId={clientId}
+        taxYear={taxYear}
+        currentSection="income"
         breadcrumbs={
           breadcrumbs
         }
@@ -726,6 +735,9 @@ export function IncomeReviewPage() {
 
   return (
     <OrganizerReviewLayout
+      clientId={clientId}
+      taxYear={taxYear}
+      currentSection="income"
       breadcrumbs={
         breadcrumbs
       }

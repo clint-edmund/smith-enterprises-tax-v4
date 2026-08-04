@@ -2,6 +2,14 @@ import type {
   ReactNode,
 } from "react"
 
+import {
+  OrganizerReviewProgressSidebar,
+} from "@/features/organizer-review/components"
+
+import type {
+  OrganizerReviewWorkflowSectionKey,
+} from "@/features/organizer-review/constants"
+
 interface OrganizerReviewLayoutProps {
   breadcrumbs?: ReactNode
 
@@ -12,6 +20,13 @@ interface OrganizerReviewLayoutProps {
   children: ReactNode
 
   sidebar?: ReactNode
+
+  clientId?: string
+
+  taxYear?: number
+
+  currentSection?:
+    OrganizerReviewWorkflowSectionKey
 }
 
 export function OrganizerReviewLayout({
@@ -20,7 +35,38 @@ export function OrganizerReviewLayout({
   actions,
   children,
   sidebar,
+  clientId,
+  taxYear,
+  currentSection,
 }: OrganizerReviewLayoutProps) {
+  const shouldShowProgressSidebar =
+    Boolean(
+      clientId &&
+      taxYear &&
+      currentSection,
+    )
+
+  const resolvedSidebar =
+    sidebar ??
+    (
+      shouldShowProgressSidebar &&
+      clientId &&
+      taxYear &&
+      currentSection ? (
+        <OrganizerReviewProgressSidebar
+          clientId={
+            clientId
+          }
+          taxYear={
+            taxYear
+          }
+          currentSection={
+            currentSection
+          }
+        />
+      ) : null
+    )
+
   return (
     <section className="mx-auto max-w-7xl space-y-6 p-6 sm:p-8">
       {breadcrumbs}
@@ -31,15 +77,17 @@ export function OrganizerReviewLayout({
         {actions}
       </div>
 
-      {sidebar ? (
-        <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1.6fr)_minmax(320px,0.8fr)]">
+      {resolvedSidebar ? (
+        <div className="grid items-start gap-6 xl:grid-cols-[minmax(260px,0.72fr)_minmax(0,2fr)]">
+          <aside className="space-y-6 xl:sticky xl:top-6">
+            {
+              resolvedSidebar
+            }
+          </aside>
+
           <main className="min-w-0 space-y-6">
             {children}
           </main>
-
-          <aside className="space-y-6 xl:sticky xl:top-6">
-            {sidebar}
-          </aside>
         </div>
       ) : (
         <main className="space-y-6">
