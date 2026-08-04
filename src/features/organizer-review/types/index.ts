@@ -27,3 +27,8 @@ export type {
   OrganizerReviewIncomeType,
   OrganizerReviewIncomeW2Details,
 } from "./organizer-review-income.types"
+
+export type {
+  OrganizerReviewDependent,
+  OrganizerReviewDependentRelationship,
+} from "./organizer-review-dependent.types"

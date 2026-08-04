@@ -25,3 +25,7 @@ export {
 export {
   getOrganizerReviewIncome,
 } from "./organizer-review-income-service"
+
+export {
+  getOrganizerReviewDependents,
+} from "./organizer-review-dependents-service"
