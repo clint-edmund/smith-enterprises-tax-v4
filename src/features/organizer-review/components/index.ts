@@ -72,6 +72,7 @@ export {
 
 export {
   OrganizerReviewProgressSidebar,
+  OrganizerReviewProgressSidebarView,
 } from "./organizer-review-progress-sidebar"
 
 export {
