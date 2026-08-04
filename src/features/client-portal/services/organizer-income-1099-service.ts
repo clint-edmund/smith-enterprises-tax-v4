@@ -14,7 +14,10 @@ import type {
 interface RpcResponse {
   data: unknown
   error: {
+    code?: string
     message: string
+    details?: string
+    hint?: string
   } | null
 }
 
@@ -26,9 +29,18 @@ type RpcCaller = (
   >,
 ) => Promise<RpcResponse>
 
-const callRpc =
-  supabase.rpc as unknown as
-    RpcCaller
+const callRpc: RpcCaller = (
+  functionName,
+  argumentsValue,
+) =>
+  (
+    supabase.rpc as unknown as
+      RpcCaller
+  ).call(
+    supabase,
+    functionName,
+    argumentsValue,
+  )
 
 interface Income1099IntRow {
   income_source_id: string
@@ -294,8 +306,20 @@ export async function getOrganizerIncome1099IntDetails(
   )
 
   if (error) {
-    throw new Error(error.message)
-  }
+      console.error(
+        "1099-INT RPC ERROR",
+        {
+          code: error.code,
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+        },
+      )
+
+      throw new Error(
+        error.message,
+      )
+    }
 
   return map1099IntDetails(
     firstRow<Income1099IntRow>(
