@@ -61,3 +61,7 @@ export {
 export type {
   ReviewStatus,
 } from "./review-status-badge"
+
+export {
+  ReviewMetricCard,
+} from "./review-metric-card"
