@@ -69,3 +69,7 @@ export {
 export {
   ReviewRecordCard,
 } from "./review-record-card"
+
+export {
+  OrganizerReviewProgressSidebar,
+} from "./organizer-review-progress-sidebar"
