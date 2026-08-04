@@ -4,3 +4,6 @@ export {
 export {
   HealthcareReviewPage,
 } from "./healthcare-review-page"
+export {
+  IncomeReviewPage,
+} from "./income-review-page"
