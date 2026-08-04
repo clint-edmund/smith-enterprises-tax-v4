@@ -90,6 +90,10 @@ import {
   OrganizerWorkspaceCard,
 } from "@/features/clients/components/organizer-workspace-card"
 
+import {
+  useClientOrganizerWorkspace,
+} from "@/features/clients/hooks/use-client-organizer-workspace"
+
 
 
 export function ClientDetailsPage() {
@@ -98,6 +102,22 @@ export function ClientDetailsPage() {
     hasPermission,
     permissions,
   } = useAuthorization()
+
+  const {
+    workspace:
+      organizerWorkspace,
+    isLoading:
+      isOrganizerWorkspaceLoading,
+    isRefreshing:
+      isOrganizerWorkspaceRefreshing,
+    errorMessage:
+      organizerWorkspaceError,
+    refresh:
+      refreshOrganizerWorkspace,
+  } =
+    useClientOrganizerWorkspace(
+      clientId ?? "",
+    )
 
   const [client, setClient] =
     useState<ClientRecord | null>(null)
@@ -677,14 +697,29 @@ export function ClientDetailsPage() {
             client,
           )
         }
-        taxYear={
+        workspace={
+          organizerWorkspace
+        }
+        isLoading={
+          isOrganizerWorkspaceLoading
+        }
+        isRefreshing={
+          isOrganizerWorkspaceRefreshing
+        }
+        errorMessage={
+          organizerWorkspaceError
+        }
+        fallbackTaxYear={
           clientSummary.latestTaxYear ??
           new Date().getFullYear()
         }
-        assignedPreparer={
+        fallbackAssignedPreparer={
           clientSummary.preparerNames[0] ??
           null
         }
+        onRefresh={() => {
+          void refreshOrganizerWorkspace()
+        }}
       />
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.75fr)]">
