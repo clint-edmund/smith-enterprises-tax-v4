@@ -3331,6 +3331,28 @@ export type Database = {
           workflow_percent: number
         }[]
       }
+      get_staff_organizer_dependents_review: {
+        Args: { requested_client_id: string; requested_tax_year: number }
+        Returns: {
+          birth_date: string
+          claimed_by_another_taxpayer: boolean
+          created_at: string
+          dependent_id: string
+          display_order: number
+          first_name: string
+          is_full_time_student: boolean
+          is_permanently_disabled: boolean
+          last_name: string
+          lived_with_taxpayer_all_year: boolean
+          middle_name: string
+          months_lived_with_taxpayer: number
+          organizer_id: string
+          relationship: string
+          suffix: string
+          updated_at: string
+          us_citizen_or_resident: boolean
+        }[]
+      }
       get_staff_organizer_healthcare_review: {
         Args: { requested_client_id: string; requested_tax_year: number }
         Returns: {
