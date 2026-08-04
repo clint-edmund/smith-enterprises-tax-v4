@@ -17,3 +17,7 @@ export {
 export type {
   OrganizerReviewRepository,
 } from "./organizer-review-repository"
+
+export {
+  getOrganizerReviewHealthcare,
+} from "./organizer-review-healthcare-service"

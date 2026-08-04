@@ -12,3 +12,10 @@ export type {
 export {
   organizerReviewSectionKeys,
 } from "./organizer-review.types"
+
+export type {
+  OrganizerReviewHealthcareCoverage,
+  OrganizerReviewHealthcareCoverageType,
+  OrganizerReviewHealthcareDocumentType,
+  OrganizerReviewHealthcareRecordStatus,
+} from "./organizer-review-healthcare.types"

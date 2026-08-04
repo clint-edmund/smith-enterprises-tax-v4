@@ -3331,6 +3331,27 @@ export type Database = {
           workflow_percent: number
         }[]
       }
+      get_staff_organizer_healthcare_review: {
+        Args: { requested_client_id: string; requested_tax_year: number }
+        Returns: {
+          coverage_id: string
+          coverage_type: string
+          covered_person_name: string
+          created_at: string
+          display_order: number
+          document_received: boolean
+          document_type: string
+          end_month: number
+          is_full_year_coverage: boolean
+          notes: string
+          organizer_id: string
+          policy_number: string
+          provider_name: string
+          record_status: string
+          start_month: number
+          updated_at: string
+        }[]
+      }
       get_staff_organizer_summary: {
         Args: { requested_client_id: string; requested_tax_year: number }
         Returns: Json
