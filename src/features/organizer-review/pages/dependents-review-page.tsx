@@ -41,6 +41,7 @@ import {
 
 import {
   OrganizerReviewLayout,
+  OrganizerReviewShell,
 } from "@/features/organizer-review/layouts"
 
 import type {
@@ -708,7 +709,7 @@ export function DependentsReviewPage() {
   }
 
   return (
-    <OrganizerReviewLayout
+    <OrganizerReviewShell
       clientId={clientId}
       taxYear={taxYear}
       currentSection="dependents"
@@ -859,6 +860,6 @@ export function DependentsReviewPage() {
           )}
         </div>
       )}
-    </OrganizerReviewLayout>
+    </OrganizerReviewShell>
   )
 }
