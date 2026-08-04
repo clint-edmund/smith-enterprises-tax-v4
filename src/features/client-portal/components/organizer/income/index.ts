@@ -17,3 +17,11 @@ export {
 export {
   IncomeW2Form,
 } from "./income-w2-form"
+
+export {
+  Income1099IntForm,
+} from "./income-1099-int-form"
+
+export {
+  Income1099DivForm,
+} from "./income-1099-div-form"
