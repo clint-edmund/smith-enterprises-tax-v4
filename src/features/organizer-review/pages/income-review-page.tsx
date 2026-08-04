@@ -631,9 +631,6 @@ export function IncomeReviewPage() {
   ) {
     return (
       <OrganizerReviewLayout
-        clientId={clientId}
-        taxYear={taxYear ?? undefined}
-        currentSection="income"
         breadcrumbs={
           breadcrumbs
         }
