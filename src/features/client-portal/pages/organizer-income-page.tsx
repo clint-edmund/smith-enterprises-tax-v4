@@ -8,6 +8,8 @@ import {
 } from "@/features/client-portal/components/organizer"
 
 import {
+  Income1099DivForm,
+  Income1099IntForm,
   IncomeSourceForm,
   IncomeSourceList,
   IncomeTypeSelector,
@@ -27,6 +29,19 @@ import {
   useOrganizerIncome,
 } from "@/features/client-portal/hooks/use-organizer-income"
 
+import {
+  useOrganizerIncome1099Div,
+} from "@/features/client-portal/hooks/use-organizer-income-1099-div"
+
+import {
+  useOrganizerIncome1099Int,
+} from "@/features/client-portal/hooks/use-organizer-income-1099-int"
+
+import type {
+  SaveOrganizerIncome1099DivRequest,
+  SaveOrganizerIncome1099IntRequest,
+} from "@/features/client-portal/types/organizer-income-1099.types"
+
 import type {
   CreateIncomeSourceRequest,
   IncomeType,
@@ -40,6 +55,8 @@ type IncomePageMode =
   | "select_type"
   | "source_form"
   | "w2_form"
+  | "1099_int_form"
+  | "1099_div_form"
 
 export function OrganizerIncomePage() {
   const {
@@ -71,6 +88,42 @@ export function OrganizerIncomePage() {
     useOrganizerIncome(
       organizerId,
     )
+
+  const {
+    details:
+      selected1099IntDetails,
+    isLoading:
+      isLoading1099Int,
+    isSaving:
+      isSaving1099Int,
+    errorMessage:
+      error1099Int,
+    load:
+      load1099IntDetails,
+    save:
+      save1099IntDetails,
+    clear:
+      clear1099IntDetails,
+  } =
+    useOrganizerIncome1099Int()
+
+  const {
+    details:
+      selected1099DivDetails,
+    isLoading:
+      isLoading1099Div,
+    isSaving:
+      isSaving1099Div,
+    errorMessage:
+      error1099Div,
+    load:
+      load1099DivDetails,
+    save:
+      save1099DivDetails,
+    clear:
+      clear1099DivDetails,
+  } =
+    useOrganizerIncome1099Div()
 
   const [
     mode,
@@ -104,8 +157,14 @@ export function OrganizerIncomePage() {
       null,
     )
 
-  function returnToList() {
+  function clearDetailSelections() {
     clearSelectedW2Details()
+    clear1099IntDetails()
+    clear1099DivDetails()
+  }
+
+  function returnToList() {
+    clearDetailSelections()
     setSelectedIncomeSource(null)
     setSelectedIncomeType(null)
     setMode("list")
@@ -113,7 +172,7 @@ export function OrganizerIncomePage() {
 
   function beginAddIncomeSource() {
     clearMessages()
-    clearSelectedW2Details()
+    clearDetailSelections()
     setSelectedIncomeSource(null)
     setSelectedIncomeType(null)
     setMode("select_type")
@@ -124,11 +183,77 @@ export function OrganizerIncomePage() {
       IncomeType,
   ) {
     clearMessages()
+    clearDetailSelections()
+
     setSelectedIncomeType(
       incomeType,
     )
+
     setSelectedIncomeSource(null)
     setMode("source_form")
+  }
+
+  async function openDetailForm(
+    incomeSource:
+      OrganizerIncomeSource,
+    loadExisting:
+      boolean,
+  ) {
+    if (
+      incomeSource.incomeType ===
+      "w2"
+    ) {
+      if (loadExisting) {
+        await loadW2Details(
+          incomeSource.incomeSourceId,
+        )
+      } else {
+        clearSelectedW2Details()
+      }
+
+      setMode("w2_form")
+      return
+    }
+
+    if (
+      incomeSource.incomeType ===
+      "1099_int"
+    ) {
+      if (loadExisting) {
+        await load1099IntDetails(
+          organizerId,
+          incomeSource.incomeSourceId,
+        )
+      } else {
+        clear1099IntDetails()
+      }
+
+      setMode(
+        "1099_int_form",
+      )
+      return
+    }
+
+    if (
+      incomeSource.incomeType ===
+      "1099_div"
+    ) {
+      if (loadExisting) {
+        await load1099DivDetails(
+          organizerId,
+          incomeSource.incomeSourceId,
+        )
+      } else {
+        clear1099DivDetails()
+      }
+
+      setMode(
+        "1099_div_form",
+      )
+      return
+    }
+
+    returnToList()
   }
 
   async function handleCreateIncomeSource(
@@ -150,17 +275,10 @@ export function OrganizerIncomePage() {
       result.incomeType,
     )
 
-    if (
-      result.incomeType ===
-      "w2"
-    ) {
-      clearSelectedW2Details()
-      setMode("w2_form")
-
-      return
-    }
-
-    returnToList()
+    await openDetailForm(
+      result,
+      false,
+    )
   }
 
   async function handleUpdateIncomeSource(
@@ -182,28 +300,18 @@ export function OrganizerIncomePage() {
       result.incomeType,
     )
 
-    if (
-      result.incomeType ===
-      "w2"
-    ) {
-      await loadW2Details(
-        result.incomeSourceId,
-      )
-
-      setMode("w2_form")
-
-      return
-    }
-
-    returnToList()
+    await openDetailForm(
+      result,
+      true,
+    )
   }
 
-  async function handleEditIncomeSource(
+  function handleEditIncomeSource(
     incomeSource:
       OrganizerIncomeSource,
   ) {
     clearMessages()
-    clearSelectedW2Details()
+    clearDetailSelections()
 
     setSelectedIncomeSource(
       incomeSource,
@@ -265,6 +373,32 @@ export function OrganizerIncomePage() {
       SaveIncomeW2DetailsRequest,
   ) {
     await saveW2Details(
+      request,
+    )
+
+    await refreshOrganizer()
+
+    returnToList()
+  }
+
+  async function handleSave1099Int(
+    request:
+      SaveOrganizerIncome1099IntRequest,
+  ) {
+    await save1099IntDetails(
+      request,
+    )
+
+    await refreshOrganizer()
+
+    returnToList()
+  }
+
+  async function handleSave1099Div(
+    request:
+      SaveOrganizerIncome1099DivRequest,
+  ) {
+    await save1099DivDetails(
       request,
     )
 
@@ -378,6 +512,68 @@ export function OrganizerIncomePage() {
             }
             onSave={
               handleSaveW2
+            }
+          />
+        ) : mode ===
+            "1099_int_form" &&
+          selectedIncomeSource &&
+          selectedIncomeSource.incomeType ===
+            "1099_int" ? (
+          <Income1099IntForm
+            organizerId={
+              organizerId
+            }
+            incomeSource={
+              selectedIncomeSource
+            }
+            details={
+              selected1099IntDetails
+            }
+            isLoading={
+              isLoading1099Int
+            }
+            isSaving={
+              isSaving1099Int
+            }
+            errorMessage={
+              error1099Int
+            }
+            onCancel={
+              returnToList
+            }
+            onSave={
+              handleSave1099Int
+            }
+          />
+        ) : mode ===
+            "1099_div_form" &&
+          selectedIncomeSource &&
+          selectedIncomeSource.incomeType ===
+            "1099_div" ? (
+          <Income1099DivForm
+            organizerId={
+              organizerId
+            }
+            incomeSource={
+              selectedIncomeSource
+            }
+            details={
+              selected1099DivDetails
+            }
+            isLoading={
+              isLoading1099Div
+            }
+            isSaving={
+              isSaving1099Div
+            }
+            errorMessage={
+              error1099Div
+            }
+            onCancel={
+              returnToList
+            }
+            onSave={
+              handleSave1099Div
             }
           />
         ) : (
