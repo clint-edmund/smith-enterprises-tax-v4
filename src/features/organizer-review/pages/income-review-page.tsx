@@ -5,6 +5,7 @@ import {
   FileCheck2,
   FileWarning,
   RefreshCw,
+  ShieldCheck,
   UserRound,
 } from "lucide-react"
 
@@ -34,7 +35,7 @@ import {
 } from "@/features/organizer-review/components"
 
 import {
-  useOrganizerReviewIncome,
+  useStaffIncomeReview,
 } from "@/features/organizer-review/hooks"
 
 import {
@@ -43,14 +44,14 @@ import {
 } from "@/features/organizer-review/layouts"
 
 import type {
-  OrganizerReviewIncomeRecipientType,
-  OrganizerReviewIncomeSource,
-  OrganizerReviewIncomeType,
+  StaffIncomeReviewIncomeType,
+  StaffIncomeReviewRecipientType,
+  StaffIncomeReviewSource,
 } from "@/features/organizer-review/types"
 
 const incomeTypeLabels:
   Record<
-    OrganizerReviewIncomeType,
+    StaffIncomeReviewIncomeType,
     string
   > = {
     w2:
@@ -86,7 +87,7 @@ const incomeTypeLabels:
 
 const recipientLabels:
   Record<
-    OrganizerReviewIncomeRecipientType,
+    StaffIncomeReviewRecipientType,
     string
   > = {
     taxpayer:
@@ -147,9 +148,22 @@ function formatCurrency(
   )
 }
 
-function formatUpdatedAt(
-  value: string,
+function formatValue(
+  value:
+    string | null,
 ): string {
+  return value?.trim() ||
+    "Not provided"
+}
+
+function formatUpdatedAt(
+  value:
+    string | null,
+): string {
+  if (!value) {
+    return "Not available"
+  }
+
   const date =
     new Date(value)
 
@@ -182,7 +196,7 @@ function formatUpdatedAt(
 
 function getReviewStatus(
   incomeSources:
-    readonly OrganizerReviewIncomeSource[],
+    readonly StaffIncomeReviewSource[],
 ) {
   if (
     incomeSources.length === 0
@@ -195,7 +209,8 @@ function getReviewStatus(
       (source) =>
         source.recordStatus ===
           "needs_review" ||
-        !source.documentReceived,
+        !source.documentReceived ||
+        !source.hasRequiredPrimaryAmount,
     )
   ) {
     return "needs_attention" as const
@@ -214,9 +229,31 @@ function getReviewStatus(
   return "in_progress" as const
 }
 
+interface DetailItemProps {
+  label: string
+  value: string
+}
+
+function DetailItem({
+  label,
+  value,
+}: DetailItemProps) {
+  return (
+    <div>
+      <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+        {label}
+      </dt>
+
+      <dd className="mt-1 break-words font-medium text-slate-900">
+        {value}
+      </dd>
+    </div>
+  )
+}
+
 interface IncomeReviewCardProps {
   source:
-    OrganizerReviewIncomeSource
+    StaffIncomeReviewSource
 }
 
 function IncomeReviewCard({
@@ -340,6 +377,23 @@ function IncomeReviewCard({
         </div>
       </dl>
 
+      {!source.hasRequiredPrimaryAmount && (
+        <div className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-4">
+          <p className="flex items-center gap-2 text-sm font-semibold text-amber-900">
+            <FileWarning
+              className="h-4 w-4"
+              aria-hidden="true"
+            />
+
+            Primary income amount is missing
+          </p>
+
+          <p className="mt-1 text-sm leading-6 text-amber-800">
+            The client has not provided the primary amount required for this income record.
+          </p>
+        </div>
+      )}
+
       {source.w2Details && (
         <section className="mt-5 rounded-xl border border-slate-200 bg-slate-50 p-4">
           <div className="flex items-center gap-2">
@@ -354,138 +408,529 @@ function IncomeReviewCard({
           </div>
 
           <dl className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            <div>
-              <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                Employer EIN
-              </dt>
-
-              <dd className="mt-1 font-medium text-slate-900">
-                {
+            <DetailItem
+              label="Employer EIN"
+              value={
+                formatValue(
                   source.w2Details
-                    .employerIdentificationNumber ??
-                  "Not provided"
-                }
-              </dd>
-            </div>
+                    .employerIdentificationNumber,
+                )
+              }
+            />
 
-            <div>
-              <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                Wages
-              </dt>
-
-              <dd className="mt-1 font-medium text-slate-900">
-                {
-                  formatCurrency(
-                    source.w2Details
-                      .wages,
-                  )
-                }
-              </dd>
-            </div>
-
-            <div>
-              <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                Federal Withholding
-              </dt>
-
-              <dd className="mt-1 font-medium text-slate-900">
-                {
-                  formatCurrency(
-                    source.w2Details
-                      .federalIncomeTaxWithheld,
-                  )
-                }
-              </dd>
-            </div>
-
-            <div>
-              <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                Social Security Wages
-              </dt>
-
-              <dd className="mt-1 font-medium text-slate-900">
-                {
-                  formatCurrency(
-                    source.w2Details
-                      .socialSecurityWages,
-                  )
-                }
-              </dd>
-            </div>
-
-            <div>
-              <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                Medicare Wages
-              </dt>
-
-              <dd className="mt-1 font-medium text-slate-900">
-                {
-                  formatCurrency(
-                    source.w2Details
-                      .medicareWages,
-                  )
-                }
-              </dd>
-            </div>
-
-            <div>
-              <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                State
-              </dt>
-
-              <dd className="mt-1 font-medium text-slate-900">
-                {
+            <DetailItem
+              label="Wages"
+              value={
+                formatCurrency(
                   source.w2Details
-                    .stateCode ??
-                  "Not provided"
-                }
-              </dd>
-            </div>
+                    .wages,
+                )
+              }
+            />
 
-            <div>
-              <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                State Wages
-              </dt>
+            <DetailItem
+              label="Federal Withholding"
+              value={
+                formatCurrency(
+                  source.w2Details
+                    .federalIncomeTaxWithheld,
+                )
+              }
+            />
 
-              <dd className="mt-1 font-medium text-slate-900">
-                {
-                  formatCurrency(
-                    source.w2Details
-                      .stateWages,
-                  )
-                }
-              </dd>
-            </div>
+            <DetailItem
+              label="Social Security Wages"
+              value={
+                formatCurrency(
+                  source.w2Details
+                    .socialSecurityWages,
+                )
+              }
+            />
 
-            <div>
-              <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                State Withholding
-              </dt>
+            <DetailItem
+              label="Social Security Tax"
+              value={
+                formatCurrency(
+                  source.w2Details
+                    .socialSecurityTaxWithheld,
+                )
+              }
+            />
 
-              <dd className="mt-1 font-medium text-slate-900">
-                {
-                  formatCurrency(
-                    source.w2Details
-                      .stateIncomeTaxWithheld,
-                  )
-                }
-              </dd>
-            </div>
+            <DetailItem
+              label="Medicare Wages"
+              value={
+                formatCurrency(
+                  source.w2Details
+                    .medicareWages,
+                )
+              }
+            />
 
-            <div>
-              <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                Local Withholding
-              </dt>
+            <DetailItem
+              label="Medicare Tax"
+              value={
+                formatCurrency(
+                  source.w2Details
+                    .medicareTaxWithheld,
+                )
+              }
+            />
 
-              <dd className="mt-1 font-medium text-slate-900">
-                {
-                  formatCurrency(
-                    source.w2Details
-                      .localIncomeTaxWithheld,
-                  )
-                }
-              </dd>
-            </div>
+            <DetailItem
+              label="State"
+              value={
+                formatValue(
+                  source.w2Details
+                    .stateCode,
+                )
+              }
+            />
+
+            <DetailItem
+              label="State Wages"
+              value={
+                formatCurrency(
+                  source.w2Details
+                    .stateWages,
+                )
+              }
+            />
+
+            <DetailItem
+              label="State Withholding"
+              value={
+                formatCurrency(
+                  source.w2Details
+                    .stateIncomeTaxWithheld,
+                )
+              }
+            />
+
+            <DetailItem
+              label="Local Wages"
+              value={
+                formatCurrency(
+                  source.w2Details
+                    .localWages,
+                )
+              }
+            />
+
+            <DetailItem
+              label="Local Withholding"
+              value={
+                formatCurrency(
+                  source.w2Details
+                    .localIncomeTaxWithheld,
+                )
+              }
+            />
+          </dl>
+        </section>
+      )}
+
+      {source.details1099Int && (
+        <section className="mt-5 rounded-xl border border-slate-200 bg-slate-50 p-4">
+          <div className="flex items-center gap-2">
+            <BadgeDollarSign
+              className="h-5 w-5 text-blue-700"
+              aria-hidden="true"
+            />
+
+            <h3 className="font-semibold text-slate-950">
+              1099-INT Details
+            </h3>
+          </div>
+
+          <dl className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            <DetailItem
+              label="Payer TIN"
+              value={
+                formatValue(
+                  source.details1099Int
+                    .payerIdentificationNumber,
+                )
+              }
+            />
+
+            <DetailItem
+              label="Interest Income"
+              value={
+                formatCurrency(
+                  source.details1099Int
+                    .interestIncome,
+                )
+              }
+            />
+
+            <DetailItem
+              label="Federal Withholding"
+              value={
+                formatCurrency(
+                  source.details1099Int
+                    .federalIncomeTaxWithheld,
+                )
+              }
+            />
+
+            <DetailItem
+              label="Early Withdrawal Penalty"
+              value={
+                formatCurrency(
+                  source.details1099Int
+                    .earlyWithdrawalPenalty,
+                )
+              }
+            />
+
+            <DetailItem
+              label="U.S. Treasury Interest"
+              value={
+                formatCurrency(
+                  source.details1099Int
+                    .interestOnUsSavingsBondsAndTreasuryObligations,
+                )
+              }
+            />
+
+            <DetailItem
+              label="Tax-Exempt Interest"
+              value={
+                formatCurrency(
+                  source.details1099Int
+                    .taxExemptInterest,
+                )
+              }
+            />
+
+            <DetailItem
+              label="Private Activity Bond Interest"
+              value={
+                formatCurrency(
+                  source.details1099Int
+                    .specifiedPrivateActivityBondInterest,
+                )
+              }
+            />
+
+            <DetailItem
+              label="Investment Expenses"
+              value={
+                formatCurrency(
+                  source.details1099Int
+                    .investmentExpenses,
+                )
+              }
+            />
+
+            <DetailItem
+              label="Foreign Tax Paid"
+              value={
+                formatCurrency(
+                  source.details1099Int
+                    .foreignTaxPaid,
+                )
+              }
+            />
+
+            <DetailItem
+              label="Foreign Country"
+              value={
+                formatValue(
+                  source.details1099Int
+                    .foreignCountryOrUsPossession,
+                )
+              }
+            />
+
+            <DetailItem
+              label="Market Discount"
+              value={
+                formatCurrency(
+                  source.details1099Int
+                    .marketDiscount,
+                )
+              }
+            />
+
+            <DetailItem
+              label="Bond Premium"
+              value={
+                formatCurrency(
+                  source.details1099Int
+                    .bondPremium,
+                )
+              }
+            />
+
+            <DetailItem
+              label="Treasury Bond Premium"
+              value={
+                formatCurrency(
+                  source.details1099Int
+                    .bondPremiumOnTreasuryObligations,
+                )
+              }
+            />
+
+            <DetailItem
+              label="Tax-Exempt Bond Premium"
+              value={
+                formatCurrency(
+                  source.details1099Int
+                    .bondPremiumOnTaxExemptBond,
+                )
+              }
+            />
+
+            <DetailItem
+              label="State"
+              value={
+                formatValue(
+                  source.details1099Int
+                    .stateCode,
+                )
+              }
+            />
+
+            <DetailItem
+              label="State Identification Number"
+              value={
+                formatValue(
+                  source.details1099Int
+                    .stateIdentificationNumber,
+                )
+              }
+            />
+
+            <DetailItem
+              label="State Withholding"
+              value={
+                formatCurrency(
+                  source.details1099Int
+                    .stateTaxWithheld,
+                )
+              }
+            />
+          </dl>
+        </section>
+      )}
+
+      {source.details1099Div && (
+        <section className="mt-5 rounded-xl border border-slate-200 bg-slate-50 p-4">
+          <div className="flex items-center gap-2">
+            <BadgeDollarSign
+              className="h-5 w-5 text-blue-700"
+              aria-hidden="true"
+            />
+
+            <h3 className="font-semibold text-slate-950">
+              1099-DIV Details
+            </h3>
+          </div>
+
+          <dl className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            <DetailItem
+              label="Payer TIN"
+              value={
+                formatValue(
+                  source.details1099Div
+                    .payerIdentificationNumber,
+                )
+              }
+            />
+
+            <DetailItem
+              label="Ordinary Dividends"
+              value={
+                formatCurrency(
+                  source.details1099Div
+                    .totalOrdinaryDividends,
+                )
+              }
+            />
+
+            <DetailItem
+              label="Qualified Dividends"
+              value={
+                formatCurrency(
+                  source.details1099Div
+                    .qualifiedDividends,
+                )
+              }
+            />
+
+            <DetailItem
+              label="Capital Gain Distributions"
+              value={
+                formatCurrency(
+                  source.details1099Div
+                    .totalCapitalGainDistributions,
+                )
+              }
+            />
+
+            <DetailItem
+              label="Federal Withholding"
+              value={
+                formatCurrency(
+                  source.details1099Div
+                    .federalIncomeTaxWithheld,
+                )
+              }
+            />
+
+            <DetailItem
+              label="Nondividend Distributions"
+              value={
+                formatCurrency(
+                  source.details1099Div
+                    .nondividendDistributions,
+                )
+              }
+            />
+
+            <DetailItem
+              label="Section 199A Dividends"
+              value={
+                formatCurrency(
+                  source.details1099Div
+                    .section199aDividends,
+                )
+              }
+            />
+
+            <DetailItem
+              label="Section 1250 Gain"
+              value={
+                formatCurrency(
+                  source.details1099Div
+                    .unrecapturedSection1250Gain,
+                )
+              }
+            />
+
+            <DetailItem
+              label="Section 1202 Gain"
+              value={
+                formatCurrency(
+                  source.details1099Div
+                    .section1202Gain,
+                )
+              }
+            />
+
+            <DetailItem
+              label="Collectibles 28% Gain"
+              value={
+                formatCurrency(
+                  source.details1099Div
+                    .collectibles28PercentRateGain,
+                )
+              }
+            />
+
+            <DetailItem
+              label="Section 897 Ordinary Dividends"
+              value={
+                formatCurrency(
+                  source.details1099Div
+                    .section897OrdinaryDividends,
+                )
+              }
+            />
+
+            <DetailItem
+              label="Section 897 Capital Gain"
+              value={
+                formatCurrency(
+                  source.details1099Div
+                    .section897CapitalGain,
+                )
+              }
+            />
+
+            <DetailItem
+              label="Investment Expenses"
+              value={
+                formatCurrency(
+                  source.details1099Div
+                    .investmentExpenses,
+                )
+              }
+            />
+
+            <DetailItem
+              label="Foreign Tax Paid"
+              value={
+                formatCurrency(
+                  source.details1099Div
+                    .foreignTaxPaid,
+                )
+              }
+            />
+
+            <DetailItem
+              label="Foreign Country"
+              value={
+                formatValue(
+                  source.details1099Div
+                    .foreignCountryOrUsPossession,
+                )
+              }
+            />
+
+            <DetailItem
+              label="Exempt-Interest Dividends"
+              value={
+                formatCurrency(
+                  source.details1099Div
+                    .exemptInterestDividends,
+                )
+              }
+            />
+
+            <DetailItem
+              label="Private Activity Bond Dividends"
+              value={
+                formatCurrency(
+                  source.details1099Div
+                    .specifiedPrivateActivityBondInterestDividends,
+                )
+              }
+            />
+
+            <DetailItem
+              label="State"
+              value={
+                formatValue(
+                  source.details1099Div
+                    .stateCode,
+                )
+              }
+            />
+
+            <DetailItem
+              label="State Identification Number"
+              value={
+                formatValue(
+                  source.details1099Div
+                    .stateIdentificationNumber,
+                )
+              }
+            />
+
+            <DetailItem
+              label="State Withholding"
+              value={
+                formatCurrency(
+                  source.details1099Div
+                    .stateTaxWithheld,
+                )
+              }
+            />
           </dl>
         </section>
       )}
@@ -528,15 +973,20 @@ export function IncomeReviewPage() {
     )
 
   const {
+    organizer,
+    reviewer,
+    summary,
     incomeSources,
     isLoading,
+    isRefreshing,
     errorMessage,
     refresh,
   } =
-    useOrganizerReviewIncome(
+    useStaffIncomeReview({
       clientId,
-      taxYear ?? 0,
-    )
+      taxYear:
+        taxYear ?? 0,
+    })
 
   const reviewStatus =
     useMemo(
@@ -544,40 +994,6 @@ export function IncomeReviewPage() {
         getReviewStatus(
           incomeSources,
         ),
-      [
-        incomeSources,
-      ],
-    )
-
-  const summary =
-    useMemo(
-      () => {
-        const completedCount =
-          incomeSources.filter(
-            (source) =>
-              source.recordStatus ===
-              "complete",
-          ).length
-
-        const missingDocumentCount =
-          incomeSources.filter(
-            (source) =>
-              !source.documentReceived,
-          ).length
-
-        const needsReviewCount =
-          incomeSources.filter(
-            (source) =>
-              source.recordStatus ===
-              "needs_review",
-          ).length
-
-        return {
-          completedCount,
-          missingDocumentCount,
-          needsReviewCount,
-        }
-      },
       [
         incomeSources,
       ],
@@ -631,6 +1047,14 @@ export function IncomeReviewPage() {
   ) {
     return (
       <OrganizerReviewLayout
+        clientId={
+          clientId
+        }
+        taxYear={
+          taxYear ??
+          undefined
+        }
+        currentSection="income"
         breadcrumbs={
           breadcrumbs
         }
@@ -663,8 +1087,12 @@ export function IncomeReviewPage() {
   if (isLoading) {
     return (
       <OrganizerReviewLayout
-        clientId={clientId}
-        taxYear={taxYear}
+        clientId={
+          clientId
+        }
+        taxYear={
+          taxYear
+        }
         currentSection="income"
         breadcrumbs={
           breadcrumbs
@@ -694,8 +1122,12 @@ export function IncomeReviewPage() {
   if (errorMessage) {
     return (
       <OrganizerReviewLayout
-        clientId={clientId}
-        taxYear={taxYear}
+        clientId={
+          clientId
+        }
+        taxYear={
+          taxYear
+        }
         currentSection="income"
         breadcrumbs={
           breadcrumbs
@@ -733,8 +1165,12 @@ export function IncomeReviewPage() {
 
   return (
     <OrganizerReviewShell
-      clientId={clientId}
-      taxYear={taxYear}
+      clientId={
+        clientId
+      }
+      taxYear={
+        taxYear
+      }
       currentSection="income"
       breadcrumbs={
         breadcrumbs
@@ -743,7 +1179,7 @@ export function IncomeReviewPage() {
         <ReviewSectionHeader
           eyebrow={`${taxYear} Tax Organizer`}
           title="Income Review"
-          description="Review income sources, supporting documents, W-2 values, and client notes."
+          description="Review income sources, supporting documents, W-2 values, 1099 values, and client notes."
           icon={
             <CircleDollarSign
               className="h-6 w-6"
@@ -762,15 +1198,24 @@ export function IncomeReviewPage() {
               key:
                 "refresh",
               label:
-                "Refresh",
+                isRefreshing
+                  ? "Refreshing..."
+                  : "Refresh",
               icon:
                 <RefreshCw
-                  className="h-4 w-4"
+                  className={[
+                    "h-4 w-4",
+                    isRefreshing
+                      ? "animate-spin"
+                      : "",
+                  ].join(" ")}
                   aria-hidden="true"
                 />,
               onClick: () => {
                 void refresh()
               },
+              disabled:
+                isRefreshing,
             },
             {
               key:
@@ -794,10 +1239,12 @@ export function IncomeReviewPage() {
         />
       }
     >
-      <section className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+      <section className="grid gap-5 sm:grid-cols-2 xl:grid-cols-5">
         <ReviewMetricCard
           label="Income Records"
           value={
+            summary
+              ?.incomeSourceCount ??
             incomeSources.length
           }
           icon={
@@ -812,7 +1259,9 @@ export function IncomeReviewPage() {
         <ReviewMetricCard
           label="Completed"
           value={
-            summary.completedCount
+            summary
+              ?.completedSourceCount ??
+            0
           }
           icon={
             <CheckCircle2
@@ -824,9 +1273,27 @@ export function IncomeReviewPage() {
         />
 
         <ReviewMetricCard
+          label="Ready"
+          value={
+            summary
+              ?.readySourceCount ??
+            0
+          }
+          icon={
+            <ShieldCheck
+              className="h-5 w-5"
+              aria-hidden="true"
+            />
+          }
+          tone="success"
+        />
+
+        <ReviewMetricCard
           label="Missing Documents"
           value={
-            summary.missingDocumentCount
+            summary
+              ?.missingDocumentCount ??
+            0
           }
           icon={
             <FileWarning
@@ -835,8 +1302,11 @@ export function IncomeReviewPage() {
             />
           }
           tone={
-            summary.missingDocumentCount >
-            0
+            (
+              summary
+                ?.missingDocumentCount ??
+              0
+            ) > 0
               ? "warning"
               : "neutral"
           }
@@ -845,7 +1315,9 @@ export function IncomeReviewPage() {
         <ReviewMetricCard
           label="Needs Review"
           value={
-            summary.needsReviewCount
+            summary
+              ?.needsReviewSourceCount ??
+            0
           }
           icon={
             <BadgeDollarSign
@@ -854,12 +1326,99 @@ export function IncomeReviewPage() {
             />
           }
           tone={
-            summary.needsReviewCount >
-            0
+            (
+              summary
+                ?.needsReviewSourceCount ??
+              0
+            ) > 0
               ? "danger"
               : "neutral"
           }
         />
+      </section>
+
+      <section className="grid gap-5 lg:grid-cols-2">
+        <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+            Organizer
+          </p>
+
+          <dl className="mt-4 grid gap-4 sm:grid-cols-2">
+            <DetailItem
+              label="Status"
+              value={
+                organizer?.status ??
+                "Not available"
+              }
+            />
+
+            <DetailItem
+              label="Progress"
+              value={
+                organizer
+                  ? `${organizer.progressPercentage}%`
+                  : "Not available"
+              }
+            />
+
+            <DetailItem
+              label="Current Section"
+              value={
+                organizer?.currentSection ||
+                "Not available"
+              }
+            />
+
+            <DetailItem
+              label="Last Saved"
+              value={
+                formatUpdatedAt(
+                  organizer?.lastSavedAt ??
+                  null,
+                )
+              }
+            />
+          </dl>
+        </article>
+
+        <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+            Current Reviewer
+          </p>
+
+          <dl className="mt-4 grid gap-4 sm:grid-cols-2">
+            <DetailItem
+              label="Staff Member"
+              value={
+                reviewer?.displayName ??
+                "Not available"
+              }
+            />
+
+            <DetailItem
+              label="Role"
+              value={
+                reviewer?.role ??
+                "Not available"
+              }
+            />
+
+            <DetailItem
+              label="Organizer Updated"
+              value={
+                formatUpdatedAt(
+                  organizer?.updatedAt ??
+                  null,
+                )
+              }
+            />
+
+            <DetailItem
+              label="Review Access"
+              value="Active staff session"
+            />
+          </dl>
+        </article>
       </section>
 
       {incomeSources.length ===
