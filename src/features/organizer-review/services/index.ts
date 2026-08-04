@@ -35,3 +35,6 @@ export {
   getOrganizerReviewSectionRoute,
 } from "./organizer-review-progress-service"
 
+export {
+  getStaffIncomeReview,
+} from "./staff-income-review-service"
