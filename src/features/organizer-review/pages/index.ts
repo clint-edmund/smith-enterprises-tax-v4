@@ -7,3 +7,6 @@ export {
 export {
   IncomeReviewPage,
 } from "./income-review-page"
+export {
+  DependentsReviewPage,
+} from "./dependents-review-page"

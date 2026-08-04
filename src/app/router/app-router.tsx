@@ -111,6 +111,10 @@ import {
   IncomeReviewPage,
 } from "@/features/organizer-review/pages/income-review-page"
 
+import {
+  DependentsReviewPage,
+} from "@/features/organizer-review/pages/dependents-review-page"
+
 export const appRouter =
   createBrowserRouter([
     {
@@ -385,6 +389,21 @@ export const appRouter =
                             "/clients/:clientId/organizer-review/:taxYear/income",
                           element:
                             <IncomeReviewPage />,
+                        },
+                      ],
+                    },
+                    {
+                      element: (
+                        <PermissionRoute
+                          permission={permissions.clients.view}
+                        />
+                      ),
+                      children: [
+                        {
+                          path:
+                            "/clients/:clientId/organizer-review/:taxYear/dependents",
+                          element:
+                            <DependentsReviewPage />,
                         },
                       ],
                     },
