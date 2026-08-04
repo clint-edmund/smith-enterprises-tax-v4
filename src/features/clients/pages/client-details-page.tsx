@@ -86,6 +86,10 @@ import {
   DocumentWorkspace,
 } from "@/features/documents/components/document-workspace"
 
+import {
+  OrganizerWorkspaceCard,
+} from "@/features/clients/components/organizer-workspace-card"
+
 
 
 export function ClientDetailsPage() {
@@ -665,6 +669,22 @@ export function ClientDetailsPage() {
       <DocumentWorkspace
         clientId={client.id}
         title="Client Documents"
+      />
+
+      <OrganizerWorkspaceCard
+        clientName={
+          formatClientName(
+            client,
+          )
+        }
+        taxYear={
+          clientSummary.latestTaxYear ??
+          new Date().getFullYear()
+        }
+        assignedPreparer={
+          clientSummary.preparerNames[0] ??
+          null
+        }
       />
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.75fr)]">
