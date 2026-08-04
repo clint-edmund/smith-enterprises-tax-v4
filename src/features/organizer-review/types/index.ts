@@ -39,3 +39,20 @@ export type {
   OrganizerReviewProgressSectionStatus,
 } from "./organizer-review-progress.types"
 
+export type {
+  GetStaffIncomeReviewRequest,
+  OrganizerReviewIncome1099DivDetails,
+  OrganizerReviewIncome1099IntDetails,
+  StaffIncomeReview,
+  StaffIncomeReview1099DivDetails,
+  StaffIncomeReview1099IntDetails,
+  StaffIncomeReviewIncomeType,
+  StaffIncomeReviewOrganizer,
+  StaffIncomeReviewOrganizerStatus,
+  StaffIncomeReviewRecipientType,
+  StaffIncomeReviewRecordStatus,
+  StaffIncomeReviewReviewer,
+  StaffIncomeReviewSource,
+  StaffIncomeReviewSummary,
+  StaffIncomeReviewW2Details,
+} from "./staff-income-review.types"
