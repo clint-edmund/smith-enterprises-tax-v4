@@ -35,6 +35,11 @@ import {
 } from "@/features/organizer-review/components"
 
 import {
+  IncomeStaffReviewPanel,
+} from "@/features/organizer-review/components/income-staff-review-panel"
+
+import {
+  useIncomeReviewActions,
   useStaffIncomeReview,
 } from "@/features/organizer-review/hooks"
 
@@ -254,10 +259,43 @@ function DetailItem({
 interface IncomeReviewCardProps {
   source:
     StaffIncomeReviewSource
+
+  isActionRunning: (
+    incomeSourceId: string,
+    action?:
+      | "mark_reviewed"
+      | "needs_follow_up"
+      | "save_notes"
+      | "return_to_client",
+  ) => boolean
+
+  onMarkReviewed: (
+    incomeSourceId: string,
+  ) => Promise<void>
+
+  onNeedsFollowUp: (
+    incomeSourceId: string,
+    internalNotes: string,
+  ) => Promise<void>
+
+  onSaveNotes: (
+    incomeSourceId: string,
+    internalNotes: string,
+  ) => Promise<void>
+
+  onReturnToClient: (
+    incomeSourceId: string,
+    internalNotes: string,
+  ) => Promise<void>
 }
 
 function IncomeReviewCard({
   source,
+  isActionRunning,
+  onMarkReviewed,
+  onNeedsFollowUp,
+  onSaveNotes,
+  onReturnToClient,
 }: IncomeReviewCardProps) {
   const status =
     source.recordStatus ===
@@ -935,6 +973,27 @@ function IncomeReviewCard({
         </section>
       )}
 
+      <IncomeStaffReviewPanel
+        source={
+          source
+        }
+        isActionRunning={
+          isActionRunning
+        }
+        onMarkReviewed={
+          onMarkReviewed
+        }
+        onNeedsFollowUp={
+          onNeedsFollowUp
+        }
+        onSaveNotes={
+          onSaveNotes
+        }
+        onReturnToClient={
+          onReturnToClient
+        }
+      />
+
       {source.notes && (
         <div className="mt-5 rounded-xl border border-slate-200 bg-slate-50 p-4">
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
@@ -986,6 +1045,24 @@ export function IncomeReviewPage() {
       clientId,
       taxYear:
         taxYear ?? 0,
+    })
+
+  const {
+    errorMessage:
+      actionErrorMessage,
+    markReviewed,
+    markNeedsFollowUp,
+    saveNotes,
+    returnToClient,
+    isActionRunning,
+    clearError:
+      clearActionError,
+  } =
+    useIncomeReviewActions({
+      onSuccess:
+        async () => {
+          await refresh()
+        },
     })
 
   const reviewStatus =
@@ -1421,6 +1498,28 @@ export function IncomeReviewPage() {
         </article>
       </section>
 
+      {actionErrorMessage && (
+        <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">
+          <div className="flex items-start justify-between gap-4">
+            <p>
+              {
+                actionErrorMessage
+              }
+            </p>
+
+            <button
+              type="button"
+              onClick={
+                clearActionError
+              }
+              className="font-semibold text-red-900 underline"
+            >
+              Dismiss
+            </button>
+          </div>
+        </div>
+      )}
+
       {incomeSources.length ===
       0 ? (
         <ReviewEmptyState
@@ -1441,6 +1540,58 @@ export function IncomeReviewPage() {
                 }
                 source={
                   source
+                }
+                isActionRunning={
+                  isActionRunning
+                }
+                onMarkReviewed={
+                  async (
+                    incomeSourceId:
+                      string,
+                  ) => {
+                    await markReviewed(
+                      incomeSourceId,
+                    )
+                  }
+                }
+                onNeedsFollowUp={
+                  async (
+                    incomeSourceId:
+                      string,
+                    internalNotes:
+                      string,
+                  ) => {
+                    await markNeedsFollowUp(
+                      incomeSourceId,
+                      internalNotes,
+                    )
+                  }
+                }
+                onSaveNotes={
+                  async (
+                    incomeSourceId:
+                      string,
+                    internalNotes:
+                      string,
+                  ) => {
+                    await saveNotes(
+                      incomeSourceId,
+                      internalNotes,
+                    )
+                  }
+                }
+                onReturnToClient={
+                  async (
+                    incomeSourceId:
+                      string,
+                    internalNotes:
+                      string,
+                  ) => {
+                    await returnToClient(
+                      incomeSourceId,
+                      internalNotes,
+                    )
+                  }
                 }
               />
             ),
