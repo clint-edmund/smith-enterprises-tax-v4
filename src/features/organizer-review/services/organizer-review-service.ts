@@ -6,25 +6,6 @@ import type {
   OrganizerReviewOverview,
 } from "../types"
 
-interface TemporaryRpcResponse {
-  data: unknown
-
-  error:
-    | {
-        message: string
-      }
-    | null
-}
-
-type TemporaryRpcFunction = (
-  functionName: string,
-
-  args: Record<
-    string,
-    unknown
-  >,
-) => Promise<TemporaryRpcResponse>
-
 export async function getOrganizerReviewOverview(
   clientId: string,
   taxYear: number,
@@ -42,27 +23,24 @@ export async function getOrganizerReviewOverview(
     !Number.isInteger(
       taxYear,
     ) ||
-    taxYear < 1900
+    taxYear < 1900 ||
+    taxYear > 2200
   ) {
     throw new Error(
       "A valid tax year is required.",
     )
   }
 
-  const temporaryRpc =
-    supabase.rpc as unknown as
-      TemporaryRpcFunction
-
   const {
     data,
     error,
-  } = await temporaryRpc(
-    "get_staff_organizer_review_overview",
+  } = await supabase.rpc(
+    "get_staff_organizer_summary",
     {
-      p_client_id:
+      requested_client_id:
         normalizedClientId,
 
-      p_tax_year:
+      requested_tax_year:
         taxYear,
     },
   )
@@ -75,10 +53,10 @@ export async function getOrganizerReviewOverview(
 
   if (!data) {
     throw new Error(
-      "The organizer review overview was not returned.",
+      "The organizer review summary was not returned.",
     )
   }
 
-  return data as
+  return data as unknown as
     OrganizerReviewOverview
 }
