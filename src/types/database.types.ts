@@ -711,6 +711,100 @@ export type Database = {
           },
         ]
       }
+      client_tax_organizer_income_reviews: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          follow_up_requested_at: string | null
+          follow_up_requested_by: string | null
+          id: string
+          income_source_id: string
+          internal_notes: string
+          returned_to_client_at: string | null
+          returned_to_client_by: string | null
+          review_status: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          follow_up_requested_at?: string | null
+          follow_up_requested_by?: string | null
+          id?: string
+          income_source_id: string
+          internal_notes?: string
+          returned_to_client_at?: string | null
+          returned_to_client_by?: string | null
+          review_status?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          follow_up_requested_at?: string | null
+          follow_up_requested_by?: string | null
+          id?: string
+          income_source_id?: string
+          internal_notes?: string
+          returned_to_client_at?: string | null
+          returned_to_client_by?: string | null
+          review_status?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_tax_organizer_income_reviews_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_tax_organizer_income_reviews_follow_up_requested_by_fkey"
+            columns: ["follow_up_requested_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_tax_organizer_income_reviews_income_source_id_fkey"
+            columns: ["income_source_id"]
+            isOneToOne: true
+            referencedRelation: "client_tax_organizer_income_sources"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_tax_organizer_income_reviews_returned_to_client_by_fkey"
+            columns: ["returned_to_client_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_tax_organizer_income_reviews_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_tax_organizer_income_reviews_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_tax_organizer_income_sources: {
         Row: {
           created_at: string
@@ -3871,6 +3965,39 @@ export type Database = {
         Args: { p_notification_id: string }
         Returns: undefined
       }
+      mark_income_review_complete: {
+        Args: { requested_income_source_id: string }
+        Returns: {
+          follow_up_requested_at: string
+          income_source_id: string
+          internal_notes: string
+          returned_to_client_at: string
+          review_id: string
+          review_status: string
+          reviewed_at: string
+          reviewed_by: string
+          reviewed_by_name: string
+          updated_at: string
+        }[]
+      }
+      mark_income_review_needs_followup: {
+        Args: {
+          requested_income_source_id: string
+          requested_internal_notes?: string
+        }
+        Returns: {
+          follow_up_requested_at: string
+          income_source_id: string
+          internal_notes: string
+          returned_to_client_at: string
+          review_id: string
+          review_status: string
+          reviewed_at: string
+          reviewed_by: string
+          reviewed_by_name: string
+          updated_at: string
+        }[]
+      }
       record_client_portal_login: { Args: never; Returns: undefined }
       record_return_payment: {
         Args: {
@@ -4192,6 +4319,24 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      return_income_record_to_client: {
+        Args: {
+          requested_income_source_id: string
+          requested_internal_notes?: string
+        }
+        Returns: {
+          follow_up_requested_at: string
+          income_source_id: string
+          internal_notes: string
+          returned_to_client_at: string
+          review_id: string
+          review_status: string
+          reviewed_at: string
+          reviewed_by: string
+          reviewed_by_name: string
+          updated_at: string
+        }[]
+      }
       save_client_organizer_banking_information: {
         Args: {
           requested_account_holder_name: string
@@ -4421,6 +4566,24 @@ export type Database = {
           organizer_progress_percentage: number
           section_progress_percentage: number
           section_status: Database["public"]["Enums"]["tax_organizer_section_status"]
+        }[]
+      }
+      save_income_review_notes: {
+        Args: {
+          requested_income_source_id: string
+          requested_internal_notes: string
+        }
+        Returns: {
+          follow_up_requested_at: string
+          income_source_id: string
+          internal_notes: string
+          returned_to_client_at: string
+          review_id: string
+          review_status: string
+          reviewed_at: string
+          reviewed_by: string
+          reviewed_by_name: string
+          updated_at: string
         }[]
       }
       search_clients: {
