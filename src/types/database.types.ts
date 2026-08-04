@@ -3647,6 +3647,10 @@ export type Database = {
           workflow_percent: number
         }[]
       }
+      get_staff_client_organizer_workspace: {
+        Args: { requested_client_id: string }
+        Returns: Json
+      }
       get_staff_income_review: {
         Args: { requested_client_id: string; requested_tax_year: number }
         Returns: Json
