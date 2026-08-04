@@ -37,6 +37,7 @@ import {
 
 import {
   OrganizerReviewLayout,
+  OrganizerReviewShell,
 } from "@/features/organizer-review/layouts"
 
 import type {
@@ -534,9 +535,6 @@ export function HealthcareReviewPage() {
   ) {
     return (
       <OrganizerReviewLayout
-        clientId={clientId}
-        taxYear={taxYear ?? undefined}
-        currentSection="healthcare"
         breadcrumbs={
           breadcrumbs
         }
@@ -569,8 +567,12 @@ export function HealthcareReviewPage() {
   if (isLoading) {
     return (
       <OrganizerReviewLayout
-        clientId={clientId}
-        taxYear={taxYear}
+        clientId={
+          clientId
+        }
+        taxYear={
+          taxYear
+        }
         currentSection="healthcare"
         breadcrumbs={
           breadcrumbs
@@ -600,8 +602,12 @@ export function HealthcareReviewPage() {
   if (errorMessage) {
     return (
       <OrganizerReviewLayout
-        clientId={clientId}
-        taxYear={taxYear}
+        clientId={
+          clientId
+        }
+        taxYear={
+          taxYear
+        }
         currentSection="healthcare"
         breadcrumbs={
           breadcrumbs
@@ -690,9 +696,13 @@ export function HealthcareReviewPage() {
   )
 
   return (
-    <OrganizerReviewLayout
-      clientId={clientId}
-      taxYear={taxYear}
+    <OrganizerReviewShell
+      clientId={
+        clientId
+      }
+      taxYear={
+        taxYear
+      }
       currentSection="healthcare"
       breadcrumbs={
         breadcrumbs
@@ -781,6 +791,6 @@ export function HealthcareReviewPage() {
           )}
         </div>
       )}
-    </OrganizerReviewLayout>
+    </OrganizerReviewShell>
   )
 }
