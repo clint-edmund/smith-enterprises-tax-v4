@@ -57,3 +57,11 @@ export type {
   StaffIncomeReviewW2Details,
   StaffIncomeReviewStatus,
 } from "./staff-income-review.types"
+
+export type {
+  MarkIncomeReviewCompleteRequest,
+  MarkIncomeReviewNeedsFollowUpRequest,
+  ReturnIncomeRecordToClientRequest,
+  SaveIncomeReviewNotesRequest,
+  StaffIncomeReviewActionResult,
+} from "./staff-income-review-action.types"

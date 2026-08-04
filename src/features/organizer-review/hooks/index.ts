@@ -16,3 +16,6 @@ export {
 export {
   useStaffIncomeReview,
 } from "./use-staff-income-review"
+export {
+  useIncomeReviewActions,
+} from "./use-income-review-actions"

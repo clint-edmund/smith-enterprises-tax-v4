@@ -38,3 +38,10 @@ export {
 export {
   getStaffIncomeReview,
 } from "./staff-income-review-service"
+
+export {
+  markIncomeReviewComplete,
+  markIncomeReviewNeedsFollowUp,
+  returnIncomeRecordToClient,
+  saveIncomeReviewNotes,
+} from "./staff-income-review-action-service"
