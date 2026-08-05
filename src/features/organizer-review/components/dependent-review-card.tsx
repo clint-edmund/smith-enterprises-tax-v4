@@ -9,6 +9,11 @@ import {
 } from "lucide-react"
 
 import {
+  useEffect,
+  useState,
+} from "react"
+
+import {
   ReviewRecordCard,
   ReviewStatusBadge,
 } from "@/features/organizer-review/components"
@@ -229,13 +234,35 @@ export function DependentReviewCard({
     review,
     isLoading:
       isReviewLoading,
+    isSaving:
+      isReviewSaving,
     errorMessage:
       reviewErrorMessage,
+    successMessage:
+      reviewSuccessMessage,
     refresh:
       refreshReview,
+    saveNotes,
+    clearMessages:
+      clearReviewMessages,
   } = useStaffDependentReview(
     dependent.dependentId,
   )
+
+  const [
+    internalNotes,
+    setInternalNotes,
+  ] = useState("")
+
+  useEffect(() => {
+    if (review) {
+      setInternalNotes(
+        review.internalNotes,
+      )
+    }
+  }, [
+    review,
+  ])
 
   const needsReview =
     dependentRequiresReview(
@@ -247,6 +274,12 @@ export function DependentReviewCard({
       review?.reviewStatus ??
         "pending",
     )
+
+  async function handleSaveNotes() {
+    await saveNotes(
+      internalNotes,
+    )
+  }
 
   const footer = (
     <div className="flex flex-col gap-2 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between">
@@ -448,6 +481,89 @@ export function DependentReviewCard({
           </dd>
         </div>
       </dl>
+
+      <section className="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-5">
+        <div>
+          <p className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+            Staff Review
+          </p>
+
+          <h4 className="mt-1 text-base font-semibold text-slate-950">
+            Internal Notes
+          </h4>
+
+          <p className="mt-1 text-sm leading-6 text-slate-600">
+            These notes are visible to authorized staff only and are not shown
+            to the client.
+          </p>
+        </div>
+
+        <label
+          className="mt-4 block"
+          htmlFor={
+            `dependent-review-notes-${dependent.dependentId}`
+          }
+        >
+          <span className="sr-only">
+            Internal staff notes
+          </span>
+
+          <textarea
+            id={
+              `dependent-review-notes-${dependent.dependentId}`
+            }
+            value={
+              internalNotes
+            }
+            onChange={(event) => {
+              clearReviewMessages()
+
+              setInternalNotes(
+                event.target.value,
+              )
+            }}
+            disabled={
+              isReviewLoading ||
+              isReviewSaving
+            }
+            maxLength={10000}
+            rows={5}
+            placeholder="Add internal notes for this dependent review."
+            className="w-full resize-y rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm leading-6 text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 disabled:cursor-not-allowed disabled:bg-slate-100"
+          />
+        </label>
+
+        <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-xs text-slate-500">
+            {internalNotes.length.toLocaleString()} / 10,000 characters
+          </p>
+
+          <button
+            type="button"
+            onClick={() => {
+              void handleSaveNotes()
+            }}
+            disabled={
+              isReviewLoading ||
+              isReviewSaving
+            }
+            className="inline-flex min-h-10 items-center justify-center rounded-xl bg-blue-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:bg-slate-400"
+          >
+            {isReviewSaving
+              ? "Saving Notes..."
+              : "Save Notes"}
+          </button>
+        </div>
+
+        {reviewSuccessMessage && (
+          <div
+            className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm font-medium text-emerald-900"
+            role="status"
+          >
+            {reviewSuccessMessage}
+          </div>
+        )}
+      </section>
 
       {reviewErrorMessage && (
         <div className="mt-5 rounded-xl border border-red-200 bg-red-50 p-4">
