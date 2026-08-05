@@ -34,6 +34,13 @@ import type {
   OrganizerReviewDependentRelationship,
 } from "@/features/organizer-review/types"
 
+import {
+  dependentRequiresReview,
+  formatDependentReviewDate,
+  formatDependentReviewUpdatedAt,
+  getDependentFullName,
+} from "@/features/organizer-review/utils/dependent-review-utils"
+
 const relationshipLabels:
   Record<
     OrganizerReviewDependentRelationship,
@@ -94,99 +101,6 @@ const relationshipLabels:
       "Non-relative",
   }
 
-function formatDate(
-  value: string,
-): string {
-  const date =
-    new Date(
-      `${value}T00:00:00`,
-    )
-
-  if (
-    Number.isNaN(
-      date.getTime(),
-    )
-  ) {
-    return value
-  }
-
-  return new Intl.DateTimeFormat(
-    "en-US",
-    {
-      month:
-        "short",
-      day:
-        "numeric",
-      year:
-        "numeric",
-    },
-  ).format(
-    date,
-  )
-}
-
-function formatUpdatedAt(
-  value: string,
-): string {
-  const date =
-    new Date(value)
-
-  if (
-    Number.isNaN(
-      date.getTime(),
-    )
-  ) {
-    return value
-  }
-
-  return new Intl.DateTimeFormat(
-    "en-US",
-    {
-      month:
-        "short",
-      day:
-        "numeric",
-      year:
-        "numeric",
-      hour:
-        "numeric",
-      minute:
-        "2-digit",
-    },
-  ).format(
-    date,
-  )
-}
-
-function getFullName(
-  dependent:
-    OrganizerReviewDependent,
-): string {
-  return [
-    dependent.firstName,
-    dependent.middleName,
-    dependent.lastName,
-    dependent.suffix,
-  ]
-    .filter(Boolean)
-    .join(" ")
-}
-
-export function dependentRequiresReview(
-  dependent:
-    OrganizerReviewDependent,
-): boolean {
-  return (
-    dependent.claimedByAnotherTaxpayer ||
-    !dependent.usCitizenOrResident ||
-    (
-      !dependent.livedWithTaxpayerAllYear &&
-      dependent.monthsLivedWithTaxpayer <
-        12
-    )
-  )
-}
-
 interface DependentReviewCardProps {
   dependent:
     OrganizerReviewDependent
@@ -237,7 +151,7 @@ export function DependentReviewCard({
       <span>
         Last updated{" "}
         {
-          formatUpdatedAt(
+          formatDependentReviewUpdatedAt(
             dependent.updatedAt,
           )
         }
@@ -248,7 +162,7 @@ export function DependentReviewCard({
   return (
     <ReviewRecordCard
       title={
-        getFullName(
+        getDependentFullName(
           dependent,
         )
       }
@@ -303,7 +217,7 @@ export function DependentReviewCard({
 
           <dd className="mt-2 font-semibold text-slate-950">
             {
-              formatDate(
+              formatDependentReviewDate(
                 dependent.birthDate,
               )
             }

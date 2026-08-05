@@ -40,8 +40,11 @@ import {
 
 import {
   DependentReviewCard,
-  dependentRequiresReview,
 } from "@/features/organizer-review/components/dependent-review-card"
+
+import {
+  dependentRequiresReview,
+} from "@/features/organizer-review/utils/dependent-review-utils"
 
 import type {
   OrganizerReviewDependent,
