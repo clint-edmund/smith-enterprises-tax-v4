@@ -13,6 +13,10 @@ import {
   ReviewStatusBadge,
 } from "@/features/organizer-review/components"
 
+import {
+  useStaffDependentReview,
+} from "@/features/organizer-review/hooks/use-staff-dependent-review"
+
 import type {
   OrganizerReviewDependent,
   OrganizerReviewDependentRelationship,
@@ -171,6 +175,48 @@ export function dependentRequiresReview(
   )
 }
 
+function getStaffReviewPresentation(
+  status:
+    | "pending"
+    | "reviewed"
+    | "needs_follow_up"
+    | "returned_to_client",
+) {
+  switch (status) {
+    case "reviewed":
+      return {
+        badgeStatus:
+          "complete" as const,
+        label:
+          "Reviewed",
+      }
+
+    case "needs_follow_up":
+      return {
+        badgeStatus:
+          "needs_attention" as const,
+        label:
+          "Needs Follow-up",
+      }
+
+    case "returned_to_client":
+      return {
+        badgeStatus:
+          "needs_attention" as const,
+        label:
+          "Returned to Client",
+      }
+
+    default:
+      return {
+        badgeStatus:
+          "in_progress" as const,
+        label:
+          "Pending Review",
+      }
+  }
+}
+
 interface DependentReviewCardProps {
   dependent:
     OrganizerReviewDependent
@@ -179,9 +225,27 @@ interface DependentReviewCardProps {
 export function DependentReviewCard({
   dependent,
 }: DependentReviewCardProps) {
+  const {
+    review,
+    isLoading:
+      isReviewLoading,
+    errorMessage:
+      reviewErrorMessage,
+    refresh:
+      refreshReview,
+  } = useStaffDependentReview(
+    dependent.dependentId,
+  )
+
   const needsReview =
     dependentRequiresReview(
       dependent,
+    )
+
+  const reviewPresentation =
+    getStaffReviewPresentation(
+      review?.reviewStatus ??
+        "pending",
     )
 
   const footer = (
@@ -223,14 +287,16 @@ export function DependentReviewCard({
       status={
         <ReviewStatusBadge
           status={
-            needsReview
-              ? "needs_attention"
-              : "complete"
+            isReviewLoading
+              ? "in_progress"
+              : reviewPresentation
+                  .badgeStatus
           }
           label={
-            needsReview
-              ? "Needs Review"
-              : "Complete"
+            isReviewLoading
+              ? "Loading Review"
+              : reviewPresentation
+                  .label
           }
         />
       }
@@ -382,6 +448,28 @@ export function DependentReviewCard({
           </dd>
         </div>
       </dl>
+
+      {reviewErrorMessage && (
+        <div className="mt-5 rounded-xl border border-red-200 bg-red-50 p-4">
+          <p className="font-semibold text-red-950">
+            Unable to load staff review
+          </p>
+
+          <p className="mt-1 text-sm leading-6 text-red-900">
+            {reviewErrorMessage}
+          </p>
+
+          <button
+            type="button"
+            onClick={() => {
+              void refreshReview()
+            }}
+            className="mt-3 inline-flex min-h-10 items-center justify-center rounded-xl border border-red-300 bg-white px-4 py-2 text-sm font-semibold text-red-800 transition hover:bg-red-100"
+          >
+            Try Again
+          </button>
+        </div>
+      )}
 
       {needsReview && (
         <div className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-4">
