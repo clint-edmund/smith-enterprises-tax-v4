@@ -2731,6 +2731,30 @@ export type Database = {
           subject_type: string
         }[]
       }
+      add_organizer_review_workflow_event: {
+        Args: {
+          requested_event_type: string
+          requested_metadata?: Json
+          requested_note_text: string
+          requested_organizer_id: string
+          requested_section_key: string
+          requested_subject_id: string
+          requested_subject_type: string
+        }
+        Returns: {
+          actor_id: string
+          actor_name: string
+          created_at: string
+          entry_id: string
+          event_type: string
+          metadata: Json
+          note_text: string
+          organizer_id: string
+          section_key: string
+          subject_id: string
+          subject_type: string
+        }[]
+      }
       approve_document: {
         Args: { p_comments?: string; p_document_id: string }
         Returns: {
