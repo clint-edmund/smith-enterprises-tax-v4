@@ -19,6 +19,8 @@ import type {
 interface QuickActionsToolbarProps {
   status: ReviewStatus
   isBusy?: boolean
+  canMarkReviewed?: boolean
+  markReviewedDisabledReason?: string
   onSelectAction: (
     action:
       ReviewActionKey,
@@ -28,8 +30,16 @@ interface QuickActionsToolbarProps {
 export function QuickActionsToolbar({
   status,
   isBusy = false,
+  canMarkReviewed = true,
+  markReviewedDisabledReason,
   onSelectAction,
 }: QuickActionsToolbarProps) {
+  const markReviewedDisabled =
+    isBusy ||
+    status ===
+      "reviewed" ||
+    !canMarkReviewed
+
   return (
     <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-5">
       <div>
@@ -56,15 +66,16 @@ export function QuickActionsToolbar({
           }
           tone="success"
           disabled={
-            isBusy ||
-            status ===
-              "reviewed"
+            markReviewedDisabled
           }
           disabledReason={
             status ===
               "reviewed"
               ? "This item is already reviewed."
-              : "A review action is currently processing."
+              : !canMarkReviewed
+                ? markReviewedDisabledReason ??
+                  "Complete every required checklist item first."
+                : "A review action is currently processing."
           }
           onClick={() => {
             onSelectAction(

@@ -22,6 +22,10 @@ import {
 } from "@/features/organizer-review/components/review-workspace/review-status-header"
 
 import {
+  ReviewChecklist,
+} from "@/features/organizer-review/components/review-workspace/review-checklist"
+
+import {
   QuickActionsToolbar,
 } from "@/features/organizer-review/components/review-workspace/quick-actions-toolbar"
 
@@ -36,6 +40,10 @@ import {
 import {
   useReviewActionRunner,
 } from "@/features/organizer-review/hooks/use-review-action-runner"
+
+import {
+  useReviewChecklist,
+} from "@/features/organizer-review/hooks/use-review-checklist"
 
 import {
   createDependentReviewMetadata,
@@ -143,6 +151,31 @@ export function DependentReviewCard({
     dependent.dependentId,
   )
 
+  const {
+    checklist,
+    isLoading:
+      isChecklistLoading,
+    savingItemId,
+    errorMessage:
+      checklistErrorMessage,
+    successMessage:
+      checklistSuccessMessage,
+    refresh:
+      refreshChecklist,
+    setItemCompleted,
+    clearMessages:
+      clearChecklistMessages,
+  } = useReviewChecklist({
+    organizerId:
+      dependent.organizerId,
+    sectionKey:
+      "dependents",
+    subjectType:
+      "dependent",
+    subjectId:
+      dependent.dependentId,
+  })
+
   const needsReview =
     dependentRequiresReview(
       dependent,
@@ -155,6 +188,18 @@ export function DependentReviewCard({
         dependent.updatedAt,
       hasEligibilityConcern:
         needsReview,
+
+      completedChecklistItems:
+        checklist?.completedItems ??
+        0,
+
+      requiredChecklistItems:
+        checklist?.requiredItems ??
+        0,
+
+      totalChecklistItems:
+        checklist?.totalItems ??
+        0,
     })
 
   const {
@@ -415,6 +460,33 @@ export function DependentReviewCard({
         }
       />
 
+      <ReviewChecklist
+        checklist={
+          checklist
+        }
+        isLoading={
+          isChecklistLoading
+        }
+        savingItemId={
+          savingItemId
+        }
+        errorMessage={
+          checklistErrorMessage
+        }
+        successMessage={
+          checklistSuccessMessage
+        }
+        onRetry={() => {
+          void refreshChecklist()
+        }}
+        onSetItemCompleted={
+          setItemCompleted
+        }
+        onClearMessages={
+          clearChecklistMessages
+        }
+      />
+
       <QuickActionsToolbar
         status={
           reviewMetadata.status
@@ -422,8 +494,16 @@ export function DependentReviewCard({
         isBusy={
           isReviewLoading ||
           isReviewSaving ||
-          isActionSaving
+          isActionSaving ||
+          isChecklistLoading ||
+          savingItemId !==
+            null
         }
+        canMarkReviewed={
+          checklist?.areRequiredItemsComplete ??
+          false
+        }
+        markReviewedDisabledReason="Complete all required checklist items before marking this dependent as reviewed."
         onSelectAction={
           openAction
         }

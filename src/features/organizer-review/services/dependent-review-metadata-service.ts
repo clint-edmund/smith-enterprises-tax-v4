@@ -18,6 +18,9 @@ interface CreateDependentReviewMetadataRequest {
     StaffDependentReview | null
   dependentUpdatedAt: string
   hasEligibilityConcern: boolean
+  completedChecklistItems?: number
+  requiredChecklistItems?: number
+  totalChecklistItems?: number
 }
 
 function getLastAction(
@@ -47,6 +50,7 @@ function getHealth(
   review:
     StaffDependentReview | null,
   hasEligibilityConcern: boolean,
+  requiredItemsComplete: boolean,
 ): ReviewHealth {
   if (
     review?.reviewStatus ===
@@ -58,7 +62,8 @@ function getHealth(
   if (
     review?.reviewStatus ===
       "needs_follow_up" ||
-    hasEligibilityConcern
+    hasEligibilityConcern ||
+    !requiredItemsComplete
   ) {
     return "needs_attention"
   }
@@ -70,6 +75,7 @@ function getHealthReason(
   review:
     StaffDependentReview | null,
   hasEligibilityConcern: boolean,
+  requiredItemsComplete: boolean,
 ): string | null {
   if (
     review?.reviewStatus ===
@@ -89,6 +95,12 @@ function getHealthReason(
     hasEligibilityConcern
   ) {
     return "Eligibility information requires staff review."
+  }
+
+  if (
+    !requiredItemsComplete
+  ) {
+    return "Required review checklist items remain incomplete."
   }
 
   return null
@@ -121,7 +133,16 @@ export function createDependentReviewMetadata({
   review,
   dependentUpdatedAt,
   hasEligibilityConcern,
+  completedChecklistItems = 0,
+  requiredChecklistItems = 0,
+  totalChecklistItems = 0,
 }: CreateDependentReviewMetadataRequest): ReviewMetadata {
+  const requiredItemsComplete =
+    requiredChecklistItems >
+      0 &&
+    completedChecklistItems >=
+      requiredChecklistItems
+
   return createReviewMetadata({
     status:
       review?.reviewStatus ??
@@ -131,12 +152,14 @@ export function createDependentReviewMetadata({
       getHealth(
         review,
         hasEligibilityConcern,
+        requiredItemsComplete,
       ),
 
     healthReason:
       getHealthReason(
         review,
         hasEligibilityConcern,
+        requiredItemsComplete,
       ),
 
     priority:
@@ -179,14 +202,11 @@ export function createDependentReviewMetadata({
         review,
       ),
 
-    completedChecklistItems:
-      0,
+    completedChecklistItems,
 
-    requiredChecklistItems:
-      0,
+    requiredChecklistItems,
 
-    totalChecklistItems:
-      0,
+    totalChecklistItems,
 
     riskLevel:
       hasEligibilityConcern
