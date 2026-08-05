@@ -1,5 +1,6 @@
 import {
   useEffect,
+  useRef,
   useState,
 } from "react"
 
@@ -71,6 +72,16 @@ export function ReviewActionDialog({
     setExplanation,
   ] = useState("")
 
+  const dialogRef =
+    useRef<HTMLElement | null>(
+      null,
+    )
+
+  const previouslyFocusedElement =
+    useRef<HTMLElement | null>(
+      null,
+    )
+
   const [
     validationMessage,
     setValidationMessage,
@@ -82,6 +93,24 @@ export function ReviewActionDialog({
   useEffect(() => {
     setExplanation("")
     setValidationMessage(null)
+  }, [
+    action,
+  ])
+
+  useEffect(() => {
+    if (!action) {
+      return
+    }
+
+    previouslyFocusedElement.current =
+      document.activeElement instanceof
+        HTMLElement
+        ? document.activeElement
+        : null
+
+    return () => {
+      previouslyFocusedElement.current?.focus()
+    }
   }, [
     action,
   ])
@@ -131,27 +160,29 @@ export function ReviewActionDialog({
     ]
 
   async function handleSubmit() {
-    const normalized =
-      explanation.trim()
+  const normalized =
+    explanation.trim()
 
-    if (!normalized) {
-      setValidationMessage(
-        "An explanation is required.",
-      )
-      return
-    }
-
-    setValidationMessage(null)
-
-    if (!action) {
-      return
-    }
-
-    await onConfirm(
-      action,
-      normalized,
+  if (!normalized) {
+    setValidationMessage(
+      "An explanation is required.",
     )
+
+    return
   }
+
+  if (!action) {
+    return
+  }
+
+  setValidationMessage(null)
+
+  await onConfirm(
+    action,
+    normalized,
+  )
+}
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4"
@@ -167,6 +198,9 @@ export function ReviewActionDialog({
       }}
     >
       <section
+        ref={
+          dialogRef
+        }
         role="dialog"
         aria-modal="true"
         aria-labelledby="review-action-dialog-title"

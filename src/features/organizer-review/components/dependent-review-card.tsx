@@ -9,10 +9,6 @@ import {
 } from "lucide-react"
 
 import {
-  useState,
-} from "react"
-
-import {
   ReviewRecordCard,
   ReviewStatusBadge,
 } from "@/features/organizer-review/components"
@@ -34,16 +30,17 @@ import {
 } from "@/features/organizer-review/components/review-workspace/review-action-dialog"
 
 import {
+  ReviewNotice,
+} from "@/features/organizer-review/components/review-workspace/review-notice"
+
+import {
+  useReviewActionRunner,
+} from "@/features/organizer-review/hooks/use-review-action-runner"
+
+import {
   createDependentReviewMetadata,
 } from "@/features/organizer-review/services/dependent-review-metadata-service"
 
-import {
-  addReviewWorkflowEvent,
-} from "@/features/organizer-review/services/review-workflow-event-service"
-
-import type {
-  ReviewActionKey,
-} from "@/features/organizer-review/types/review-action.types"
 
 import {
   useStaffDependentReview,
@@ -146,40 +143,6 @@ export function DependentReviewCard({
     dependent.dependentId,
   )
 
-  const [
-    activeAction,
-    setActiveAction,
-  ] =
-    useState<ReviewActionKey | null>(
-      null,
-    )
-
-  const [
-    isActionSaving,
-    setIsActionSaving,
-  ] = useState(false)
-
-  const [
-    actionErrorMessage,
-    setActionErrorMessage,
-  ] =
-    useState<string | null>(
-      null,
-    )
-
-  const [
-    actionSuccessMessage,
-    setActionSuccessMessage,
-  ] =
-    useState<string | null>(
-      null,
-    )
-
-  const [
-    timelineVersion,
-    setTimelineVersion,
-  ] = useState(0)
-
   const needsReview =
     dependentRequiresReview(
       dependent,
@@ -194,114 +157,40 @@ export function DependentReviewCard({
         needsReview,
     })
 
-  async function handleReviewAction(
-    action:
-      ReviewActionKey,
-    explanation: string,
-  ): Promise<boolean> {
-    try {
-      setIsActionSaving(true)
-      setActionErrorMessage(null)
-      setActionSuccessMessage(null)
-
-      let didUpdate = false
-
-      switch (action) {
-        case "mark_reviewed":
-          didUpdate =
-            await markReviewed()
-          break
-
-        case "needs_follow_up":
-          didUpdate =
-            await markNeedsFollowUp(
-              explanation,
-            )
-          break
-
-        case "return_to_client":
-          didUpdate =
-            await returnToClient(
-              explanation,
-            )
-          break
-      }
-
-      if (!didUpdate) {
-        return false
-      }
-
-      const eventType =
-        action === "mark_reviewed"
-          ? "marked_reviewed"
-          : action ===
-              "needs_follow_up"
-            ? "needs_follow_up"
-            : "returned_to_client"
-
-      await addReviewWorkflowEvent({
-        organizerId:
-          dependent.organizerId,
-
-        sectionKey:
-          "dependents",
-
-        subjectType:
-          "dependent",
-
-        subjectId:
-          dependent.dependentId,
-
-        eventType,
-
-        explanation,
-
-        metadata: {
-          previousStatus:
-            review?.reviewStatus ??
-            "pending",
-
-          dependentName:
-            getDependentFullName(
-              dependent,
-            ),
-        },
-      })
-
-      setTimelineVersion(
-        (current) =>
-          current + 1,
-      )
-
-      setActionSuccessMessage(
-        action === "mark_reviewed"
-          ? "Dependent marked as reviewed."
-          : action ===
-              "needs_follow_up"
-            ? "Dependent marked as needing follow-up."
-            : "Dependent returned to the client.",
-      )
-
-      setActiveAction(null)
-
-      return true
-    } catch (error) {
-      console.error(
-        "Unable to complete the dependent review action:",
-        error,
-      )
-
-      setActionErrorMessage(
-        error instanceof Error
-          ? error.message
-          : "Unable to complete the review action.",
-      )
-
-      return false
-    } finally {
-      setIsActionSaving(false)
-    }
-  }
+  const {
+    activeAction,
+    isSaving:
+      isActionSaving,
+    errorMessage:
+      actionErrorMessage,
+    successMessage:
+      actionSuccessMessage,
+    timelineVersion,
+    openAction,
+    closeAction,
+    runAction,
+    clearMessages:
+      clearActionMessages,
+  } = useReviewActionRunner({
+    organizerId:
+      dependent.organizerId,
+    sectionKey:
+      "dependents",
+    subjectType:
+      "dependent",
+    subjectId:
+      dependent.dependentId,
+    subjectLabel:
+      getDependentFullName(
+        dependent,
+      ),
+    currentStatus:
+      review?.reviewStatus ??
+      "pending",
+    markReviewed,
+    markNeedsFollowUp,
+    returnToClient,
+  })
 
   const footer = (
     <div className="flex flex-col gap-2 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between">
@@ -536,26 +425,32 @@ export function DependentReviewCard({
           isActionSaving
         }
         onSelectAction={
-          setActiveAction
+          openAction
         }
       />
 
       {actionSuccessMessage && (
-        <div
-          className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm font-medium text-emerald-900"
-          role="status"
-        >
-          {actionSuccessMessage}
-        </div>
+        <ReviewNotice
+          tone="success"
+          message={
+            actionSuccessMessage
+          }
+          onDismiss={
+            clearActionMessages
+          }
+        />
       )}
 
       {actionErrorMessage && (
-        <div
-          className="mt-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm font-medium text-red-900"
-          role="alert"
-        >
-          {actionErrorMessage}
-        </div>
+        <ReviewNotice
+          tone="error"
+          message={
+            actionErrorMessage
+          }
+          onDismiss={
+            clearActionMessages
+          }
+        />
       )}
 
       <ReviewTimeline
@@ -607,13 +502,11 @@ export function DependentReviewCard({
         isSaving={
           isActionSaving
         }
-        onClose={() => {
-          if (!isActionSaving) {
-            setActiveAction(null)
-          }
-        }}
+        onClose={
+          closeAction
+        }
         onConfirm={
-          handleReviewAction
+          runAction
         }
       />
 
