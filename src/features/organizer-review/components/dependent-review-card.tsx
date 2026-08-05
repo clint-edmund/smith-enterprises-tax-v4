@@ -18,6 +18,14 @@ import {
 } from "@/features/organizer-review/components/review-timeline"
 
 import {
+  ReviewStatusHeader,
+} from "@/features/organizer-review/components/review-workspace/review-status-header"
+
+import {
+  createDependentReviewMetadata,
+} from "@/features/organizer-review/services/dependent-review-metadata-service"
+
+import {
   useStaffDependentReview,
 } from "@/features/organizer-review/hooks/use-staff-dependent-review"
 
@@ -179,48 +187,6 @@ export function dependentRequiresReview(
   )
 }
 
-function getStaffReviewPresentation(
-  status:
-    | "pending"
-    | "reviewed"
-    | "needs_follow_up"
-    | "returned_to_client",
-) {
-  switch (status) {
-    case "reviewed":
-      return {
-        badgeStatus:
-          "complete" as const,
-        label:
-          "Reviewed",
-      }
-
-    case "needs_follow_up":
-      return {
-        badgeStatus:
-          "needs_attention" as const,
-        label:
-          "Needs Follow-up",
-      }
-
-    case "returned_to_client":
-      return {
-        badgeStatus:
-          "needs_attention" as const,
-        label:
-          "Returned to Client",
-      }
-
-    default:
-      return {
-        badgeStatus:
-          "in_progress" as const,
-        label:
-          "Pending Review",
-      }
-  }
-}
-
 interface DependentReviewCardProps {
   dependent:
     OrganizerReviewDependent
@@ -246,11 +212,14 @@ export function DependentReviewCard({
       dependent,
     )
 
-  const reviewPresentation =
-    getStaffReviewPresentation(
-      review?.reviewStatus ??
-        "pending",
-    )
+  const reviewMetadata =
+    createDependentReviewMetadata({
+      review,
+      dependentUpdatedAt:
+        dependent.updatedAt,
+      hasEligibilityConcern:
+        needsReview,
+    })
 
   const footer = (
     <div className="flex flex-col gap-2 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between">
@@ -293,14 +262,27 @@ export function DependentReviewCard({
           status={
             isReviewLoading
               ? "in_progress"
-              : reviewPresentation
-                  .badgeStatus
+              : reviewMetadata.status ===
+                  "reviewed"
+                ? "complete"
+                : reviewMetadata.status ===
+                    "pending"
+                  ? "in_progress"
+                  : "needs_attention"
           }
           label={
             isReviewLoading
               ? "Loading Review"
-              : reviewPresentation
-                  .label
+              : reviewMetadata.status ===
+                  "reviewed"
+                ? "Reviewed"
+                : reviewMetadata.status ===
+                    "needs_follow_up"
+                  ? "Needs Follow-up"
+                  : reviewMetadata.status ===
+                      "returned_to_client"
+                    ? "Returned to Client"
+                    : "Pending Review"
           }
         />
       }
@@ -452,6 +434,15 @@ export function DependentReviewCard({
           </dd>
         </div>
       </dl>
+
+      <ReviewStatusHeader
+        metadata={
+          reviewMetadata
+        }
+        isLoading={
+          isReviewLoading
+        }
+      />
 
       <ReviewTimeline
         organizerId={
