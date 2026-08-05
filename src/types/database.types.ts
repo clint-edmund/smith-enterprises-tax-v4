@@ -1672,6 +1672,60 @@ export type Database = {
         }
         Relationships: []
       }
+      organizer_review_timeline_entries: {
+        Row: {
+          actor_id: string | null
+          created_at: string
+          event_type: string
+          id: string
+          metadata: Json
+          note_text: string | null
+          organizer_id: string
+          section_key: string
+          subject_id: string
+          subject_type: string
+        }
+        Insert: {
+          actor_id?: string | null
+          created_at?: string
+          event_type: string
+          id?: string
+          metadata?: Json
+          note_text?: string | null
+          organizer_id: string
+          section_key: string
+          subject_id: string
+          subject_type: string
+        }
+        Update: {
+          actor_id?: string | null
+          created_at?: string
+          event_type?: string
+          id?: string
+          metadata?: Json
+          note_text?: string | null
+          organizer_id?: string
+          section_key?: string
+          subject_id?: string
+          subject_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organizer_review_timeline_entries_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organizer_review_timeline_entries_organizer_id_fkey"
+            columns: ["organizer_id"]
+            isOneToOne: false
+            referencedRelation: "client_tax_organizers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       payments: {
         Row: {
           amount: number
@@ -2655,6 +2709,28 @@ export type Database = {
           us_citizen_or_resident: boolean
         }[]
       }
+      add_organizer_review_staff_note: {
+        Args: {
+          requested_note_text: string
+          requested_organizer_id: string
+          requested_section_key: string
+          requested_subject_id: string
+          requested_subject_type: string
+        }
+        Returns: {
+          actor_id: string
+          actor_name: string
+          created_at: string
+          entry_id: string
+          event_type: string
+          metadata: Json
+          note_text: string
+          organizer_id: string
+          section_key: string
+          subject_id: string
+          subject_type: string
+        }[]
+      }
       approve_document: {
         Args: { p_comments?: string; p_document_id: string }
         Returns: {
@@ -3593,6 +3669,26 @@ export type Database = {
           submitted_at: string
           tax_year: number
           updated_at: string
+        }[]
+      }
+      get_organizer_review_timeline: {
+        Args: {
+          requested_organizer_id: string
+          requested_subject_id: string
+          requested_subject_type: string
+        }
+        Returns: {
+          actor_id: string
+          actor_name: string
+          created_at: string
+          entry_id: string
+          event_type: string
+          metadata: Json
+          note_text: string
+          organizer_id: string
+          section_key: string
+          subject_id: string
+          subject_type: string
         }[]
       }
       get_payment_receipt: {
