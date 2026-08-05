@@ -63,6 +63,107 @@ function formatTimelineDate(
   )
 }
 
+interface TimelineChecklistSummary {
+  completedItems: number
+  requiredItems: number
+  totalItems: number
+  completionPercentage: number
+  requiredChecklistComplete: boolean
+}
+
+function getNumberMetadata(
+  metadata:
+    Record<string, unknown>,
+  key: string,
+): number | null {
+  const value =
+    metadata[
+      key
+    ]
+
+  return typeof value ===
+      "number" &&
+    Number.isFinite(
+      value,
+    )
+    ? value
+    : null
+}
+
+function getBooleanMetadata(
+  metadata:
+    Record<string, unknown>,
+  key: string,
+): boolean | null {
+  const value =
+    metadata[
+      key
+    ]
+
+  return typeof value ===
+    "boolean"
+    ? value
+    : null
+}
+
+function getChecklistSummary(
+  metadata:
+    Record<string, unknown>,
+): TimelineChecklistSummary | null {
+  const completedItems =
+    getNumberMetadata(
+      metadata,
+      "checklistCompletedItems",
+    )
+
+  const requiredItems =
+    getNumberMetadata(
+      metadata,
+      "checklistRequiredItems",
+    )
+
+  const totalItems =
+    getNumberMetadata(
+      metadata,
+      "checklistTotalItems",
+    )
+
+  const completionPercentage =
+    getNumberMetadata(
+      metadata,
+      "checklistCompletionPercentage",
+    )
+
+  const requiredChecklistComplete =
+    getBooleanMetadata(
+      metadata,
+      "requiredChecklistComplete",
+    )
+
+  if (
+    completedItems ===
+      null ||
+    requiredItems ===
+      null ||
+    totalItems ===
+      null ||
+    completionPercentage ===
+      null ||
+    requiredChecklistComplete ===
+      null
+  ) {
+    return null
+  }
+
+  return {
+    completedItems,
+    requiredItems,
+    totalItems,
+    completionPercentage,
+    requiredChecklistComplete,
+  }
+}
+
 function getEventPresentation(
   eventType:
     OrganizerReviewTimelineEventType,
@@ -306,6 +407,11 @@ export function ReviewTimeline({
                 const EventIcon =
                   presentation.icon
 
+                const checklistSummary =
+                  getChecklistSummary(
+                    entry.metadata,
+                  )
+
                 return (
                   <li
                     key={
@@ -354,6 +460,62 @@ export function ReviewTimeline({
                             {entry.noteText}
                           </p>
                         )}
+
+                        {entry.eventType ===
+                          "marked_reviewed" &&
+                          checklistSummary && (
+                            <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-3">
+                              <p className="text-sm font-semibold text-emerald-950">
+                                Required checklist verified
+                              </p>
+
+                              <dl className="mt-2 grid gap-2 text-xs text-emerald-900 sm:grid-cols-3">
+                                <div>
+                                  <dt className="font-medium">
+                                    Required checks
+                                  </dt>
+
+                                  <dd className="mt-0.5 font-semibold">
+                                    {
+                                      checklistSummary.completedItems
+                                    }{" "}
+                                    of{" "}
+                                    {
+                                      checklistSummary.requiredItems
+                                    }
+                                  </dd>
+                                </div>
+
+                                <div>
+                                  <dt className="font-medium">
+                                    Total checklist
+                                  </dt>
+
+                                  <dd className="mt-0.5 font-semibold">
+                                    {
+                                      checklistSummary.completedItems
+                                    }{" "}
+                                    of{" "}
+                                    {
+                                      checklistSummary.totalItems
+                                    }
+                                  </dd>
+                                </div>
+
+                                <div>
+                                  <dt className="font-medium">
+                                    Completion
+                                  </dt>
+
+                                  <dd className="mt-0.5 font-semibold">
+                                    {
+                                      checklistSummary.completionPercentage
+                                    }%
+                                  </dd>
+                                </div>
+                              </dl>
+                            </div>
+                          )}
                       </div>
                     </div>
                   </li>

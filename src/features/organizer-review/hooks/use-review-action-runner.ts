@@ -11,6 +11,13 @@ import type {
   ReviewActionKey,
 } from "@/features/organizer-review/types/review-action.types"
 
+interface ReviewChecklistEventSummary {
+  completedItems: number
+  requiredItems: number
+  totalItems: number
+  completionPercentage: number
+}
+
 interface UseReviewActionRunnerOptions {
   organizerId: string
   sectionKey:
@@ -34,6 +41,8 @@ interface UseReviewActionRunnerOptions {
   subjectId: string
   subjectLabel: string
   currentStatus: string
+  checklistSummary?:
+    ReviewChecklistEventSummary
   markReviewed:
     () => Promise<boolean>
   markNeedsFollowUp:
@@ -107,6 +116,7 @@ export function useReviewActionRunner({
   subjectId,
   subjectLabel,
   currentStatus,
+  checklistSummary,
   markReviewed,
   markNeedsFollowUp,
   returnToClient,
@@ -230,7 +240,34 @@ export function useReviewActionRunner({
             metadata: {
               previousStatus:
                 currentStatus,
+
               subjectLabel,
+
+              checklistCompletedItems:
+                checklistSummary
+                  ?.completedItems ??
+                null,
+
+              checklistRequiredItems:
+                checklistSummary
+                  ?.requiredItems ??
+                null,
+
+              checklistTotalItems:
+                checklistSummary
+                  ?.totalItems ??
+                null,
+
+              checklistCompletionPercentage:
+                checklistSummary
+                  ?.completionPercentage ??
+                null,
+
+              requiredChecklistComplete:
+                checklistSummary
+                  ? checklistSummary.completedItems >=
+                    checklistSummary.requiredItems
+                  : null,
             },
           })
 
@@ -268,6 +305,7 @@ export function useReviewActionRunner({
         }
       },
       [
+        checklistSummary,
         clearMessages,
         currentStatus,
         markNeedsFollowUp,

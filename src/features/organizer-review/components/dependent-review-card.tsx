@@ -232,6 +232,24 @@ export function DependentReviewCard({
     currentStatus:
       review?.reviewStatus ??
       "pending",
+
+    checklistSummary:
+      checklist
+        ? {
+            completedItems:
+              checklist.completedItems,
+
+            requiredItems:
+              checklist.requiredItems,
+
+            totalItems:
+              checklist.totalItems,
+
+            completionPercentage:
+              checklist.completionPercentage,
+          }
+        : undefined,
+
     markReviewed,
     markNeedsFollowUp,
     returnToClient,
