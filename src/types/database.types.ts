@@ -1672,6 +1672,160 @@ export type Database = {
         }
         Relationships: []
       }
+      organizer_review_checklist_definitions: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          section_key: string
+          subject_type: string
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          section_key: string
+          subject_type: string
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          section_key?: string
+          subject_type?: string
+          updated_at?: string
+          version?: number
+        }
+        Relationships: []
+      }
+      organizer_review_checklist_items: {
+        Row: {
+          created_at: string
+          definition_id: string
+          description: string | null
+          display_order: number
+          id: string
+          is_active: boolean
+          is_required: boolean
+          item_key: string
+          label: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          definition_id: string
+          description?: string | null
+          display_order: number
+          id?: string
+          is_active?: boolean
+          is_required?: boolean
+          item_key: string
+          label: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          definition_id?: string
+          description?: string | null
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          is_required?: boolean
+          item_key?: string
+          label?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organizer_review_checklist_items_definition_id_fkey"
+            columns: ["definition_id"]
+            isOneToOne: false
+            referencedRelation: "organizer_review_checklist_definitions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organizer_review_checklist_responses: {
+        Row: {
+          checklist_item_id: string
+          completed_at: string | null
+          completed_by: string | null
+          created_at: string
+          id: string
+          is_completed: boolean
+          organizer_id: string
+          subject_id: string
+          subject_type: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          checklist_item_id: string
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string
+          id?: string
+          is_completed?: boolean
+          organizer_id: string
+          subject_id: string
+          subject_type: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          checklist_item_id?: string
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string
+          id?: string
+          is_completed?: boolean
+          organizer_id?: string
+          subject_id?: string
+          subject_type?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organizer_review_checklist_responses_checklist_item_id_fkey"
+            columns: ["checklist_item_id"]
+            isOneToOne: false
+            referencedRelation: "organizer_review_checklist_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organizer_review_checklist_responses_completed_by_fkey"
+            columns: ["completed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organizer_review_checklist_responses_organizer_id_fkey"
+            columns: ["organizer_id"]
+            isOneToOne: false
+            referencedRelation: "client_tax_organizers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organizer_review_checklist_responses_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organizer_review_timeline_entries: {
         Row: {
           actor_id: string | null
@@ -3695,6 +3849,30 @@ export type Database = {
           updated_at: string
         }[]
       }
+      get_organizer_review_checklist: {
+        Args: {
+          requested_organizer_id: string
+          requested_section_key: string
+          requested_subject_id: string
+          requested_subject_type: string
+        }
+        Returns: {
+          checklist_version: number
+          completed_at: string
+          completed_by: string
+          completed_by_name: string
+          definition_id: string
+          definition_name: string
+          display_order: number
+          is_completed: boolean
+          is_required: boolean
+          item_description: string
+          item_id: string
+          item_key: string
+          item_label: string
+          updated_at: string
+        }[]
+      }
       get_organizer_review_timeline: {
         Args: {
           requested_organizer_id: string
@@ -4942,6 +5120,27 @@ export type Database = {
           tax_form: Database["public"]["Enums"]["tax_form_type"]
           tax_year: number
           updated_at: string
+        }[]
+      }
+      set_organizer_review_checklist_item: {
+        Args: {
+          requested_is_completed: boolean
+          requested_item_id: string
+          requested_organizer_id: string
+          requested_section_key: string
+          requested_subject_id: string
+          requested_subject_type: string
+        }
+        Returns: {
+          completed_at: string
+          completed_by: string
+          completed_by_name: string
+          completed_items: number
+          completion_percentage: number
+          is_completed: boolean
+          item_id: string
+          required_items: number
+          total_items: number
         }[]
       }
       store_vault_secret: {
