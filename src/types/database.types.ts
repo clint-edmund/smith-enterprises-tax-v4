@@ -362,6 +362,100 @@ export type Database = {
           },
         ]
       }
+      client_tax_organizer_dependent_reviews: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          dependent_id: string
+          follow_up_requested_at: string | null
+          follow_up_requested_by: string | null
+          id: string
+          internal_notes: string
+          returned_to_client_at: string | null
+          returned_to_client_by: string | null
+          review_status: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          dependent_id: string
+          follow_up_requested_at?: string | null
+          follow_up_requested_by?: string | null
+          id?: string
+          internal_notes?: string
+          returned_to_client_at?: string | null
+          returned_to_client_by?: string | null
+          review_status?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          dependent_id?: string
+          follow_up_requested_at?: string | null
+          follow_up_requested_by?: string | null
+          id?: string
+          internal_notes?: string
+          returned_to_client_at?: string | null
+          returned_to_client_by?: string | null
+          review_status?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_tax_organizer_dependent_revi_follow_up_requested_by_fkey"
+            columns: ["follow_up_requested_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_tax_organizer_dependent_revie_returned_to_client_by_fkey"
+            columns: ["returned_to_client_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_tax_organizer_dependent_reviews_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_tax_organizer_dependent_reviews_dependent_id_fkey"
+            columns: ["dependent_id"]
+            isOneToOne: true
+            referencedRelation: "client_tax_organizer_dependents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_tax_organizer_dependent_reviews_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_tax_organizer_dependent_reviews_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_tax_organizer_dependents: {
         Row: {
           birth_date: string
@@ -3651,6 +3745,21 @@ export type Database = {
         Args: { requested_client_id: string }
         Returns: Json
       }
+      get_staff_dependent_review: {
+        Args: { requested_dependent_id: string }
+        Returns: {
+          dependent_id: string
+          follow_up_requested_at: string
+          internal_notes: string
+          returned_to_client_at: string
+          review_id: string
+          review_status: string
+          reviewed_at: string
+          reviewed_by: string
+          reviewed_by_name: string
+          updated_at: string
+        }[]
+      }
       get_staff_income_review: {
         Args: { requested_client_id: string; requested_tax_year: number }
         Returns: Json
@@ -3965,6 +4074,39 @@ export type Database = {
         Returns: string
       }
       mark_all_document_notifications_read: { Args: never; Returns: number }
+      mark_dependent_review_complete: {
+        Args: { requested_dependent_id: string }
+        Returns: {
+          dependent_id: string
+          follow_up_requested_at: string
+          internal_notes: string
+          returned_to_client_at: string
+          review_id: string
+          review_status: string
+          reviewed_at: string
+          reviewed_by: string
+          reviewed_by_name: string
+          updated_at: string
+        }[]
+      }
+      mark_dependent_review_needs_followup: {
+        Args: {
+          requested_dependent_id: string
+          requested_internal_notes?: string
+        }
+        Returns: {
+          dependent_id: string
+          follow_up_requested_at: string
+          internal_notes: string
+          returned_to_client_at: string
+          review_id: string
+          review_status: string
+          reviewed_at: string
+          reviewed_by: string
+          reviewed_by_name: string
+          updated_at: string
+        }[]
+      }
       mark_document_notification_read: {
         Args: { p_notification_id: string }
         Returns: undefined
@@ -4323,6 +4465,24 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      return_dependent_to_client: {
+        Args: {
+          requested_dependent_id: string
+          requested_internal_notes?: string
+        }
+        Returns: {
+          dependent_id: string
+          follow_up_requested_at: string
+          internal_notes: string
+          returned_to_client_at: string
+          review_id: string
+          review_status: string
+          reviewed_at: string
+          reviewed_by: string
+          reviewed_by_name: string
+          updated_at: string
+        }[]
+      }
       return_income_record_to_client: {
         Args: {
           requested_income_source_id: string
@@ -4570,6 +4730,24 @@ export type Database = {
           organizer_progress_percentage: number
           section_progress_percentage: number
           section_status: Database["public"]["Enums"]["tax_organizer_section_status"]
+        }[]
+      }
+      save_dependent_review_notes: {
+        Args: {
+          requested_dependent_id: string
+          requested_internal_notes: string
+        }
+        Returns: {
+          dependent_id: string
+          follow_up_requested_at: string
+          internal_notes: string
+          returned_to_client_at: string
+          review_id: string
+          review_status: string
+          reviewed_at: string
+          reviewed_by: string
+          reviewed_by_name: string
+          updated_at: string
         }[]
       }
       save_income_review_notes: {
