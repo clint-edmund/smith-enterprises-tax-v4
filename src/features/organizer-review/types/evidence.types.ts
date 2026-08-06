@@ -126,3 +126,18 @@ export interface RegisterDocumentEvidenceRequest {
   linkType?: EvidenceLinkType
   notes?: string
 }
+
+
+export interface EvidenceFieldSuggestion {
+  fieldKey: string
+  reason: string
+}
+
+export interface DocumentAnalysisSuggestion {
+  evidenceType: string
+  confidence:
+    EvidenceConfidence
+  suggestedFields:
+    EvidenceFieldSuggestion[]
+  explanation: string
+}

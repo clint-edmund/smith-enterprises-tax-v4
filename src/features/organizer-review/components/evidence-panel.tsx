@@ -15,6 +15,10 @@ import {
   ReviewNotice,
 } from "@/features/organizer-review/components/review-workspace/review-notice"
 
+import {
+  EvidenceCoverageSummary,
+} from "@/features/organizer-review/components/evidence-coverage-summary"
+
 import { EvidenceDocumentPicker } from "@/features/organizer-review/components/evidence-document-picker"
 
 import {
@@ -316,6 +320,15 @@ export function EvidencePanel({
           non-file evidence.
         </p>
       </div>
+
+      <EvidenceCoverageSummary
+        evidence={
+          evidence
+        }
+        fieldOptions={
+          fieldOptions
+        }
+      />
 
       {isFormOpen && (
         <div className="mt-5 rounded-xl border border-slate-200 bg-slate-50 p-4">

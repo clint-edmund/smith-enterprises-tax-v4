@@ -1,6 +1,8 @@
 import {
+  CheckCircle2,
   ExternalLink,
   FileText,
+  Sparkles,
   Link2,
   LoaderCircle,
   Minus,
@@ -17,6 +19,10 @@ import {
 import {
   createEvidenceDocumentPreviewUrl,
 } from "@/features/organizer-review/services/evidence-document-service"
+
+import {
+  analyzeDependentDocument,
+} from "@/features/organizer-review/services/dependent-document-analysis-service"
 import type {
   EvidenceConfidence,
   EvidenceFieldOption,
@@ -115,29 +121,31 @@ export function DocumentReviewWorkspace({
   const [confidence, setConfidence] =
     useState<EvidenceConfidence>("unverified")
 
+  const [
+    suggestionsApplied,
+    setSuggestionsApplied,
+  ] = useState(false)
+
   useEffect(() => {
-    if (!document) {
-      return
-    }
+    if (!document) return
 
     const currentDocument =
       document
 
     setSelectedFields([])
-
     setEvidenceType(
       currentDocument.evidenceType ??
         inferEvidenceType(
           currentDocument,
         ),
     )
-
     setConfidence(
       currentDocument.evidenceConfidence ??
         "unverified",
     )
     setZoom(100)
     setRotation(0)
+    setSuggestionsApplied(false)
 
     let active = true
 
@@ -195,6 +203,41 @@ export function DocumentReviewWorkspace({
     [fieldOptions, selectedFields],
   )
 
+
+  const analysisSuggestion =
+    useMemo(
+      () =>
+        document
+          ? analyzeDependentDocument(
+              document,
+            )
+          : null,
+      [
+        document,
+      ],
+    )
+
+  const availableSuggestedFields =
+    useMemo(
+      () =>
+        (
+          analysisSuggestion
+            ?.suggestedFields ??
+          []
+        ).filter(
+          (suggestion) =>
+            fieldOptions.some(
+              (option) =>
+                option.key ===
+                suggestion.fieldKey,
+            ),
+        ),
+      [
+        analysisSuggestion,
+        fieldOptions,
+      ],
+    )
+
   if (!document) return null
 
   function toggleField(fieldKey: string) {
@@ -202,6 +245,31 @@ export function DocumentReviewWorkspace({
       current.includes(fieldKey)
         ? current.filter((item) => item !== fieldKey)
         : [...current, fieldKey],
+    )
+  }
+
+  function applyAnalysisSuggestions() {
+    if (!analysisSuggestion) {
+      return
+    }
+
+    setEvidenceType(
+      analysisSuggestion.evidenceType,
+    )
+
+    setConfidence(
+      analysisSuggestion.confidence,
+    )
+
+    setSelectedFields(
+      availableSuggestedFields.map(
+        (suggestion) =>
+          suggestion.fieldKey,
+      ),
+    )
+
+    setSuggestionsApplied(
+      true,
     )
   }
 
@@ -415,6 +483,90 @@ export function DocumentReviewWorkspace({
                   </dd>
                 </div>
               </dl>
+            </section>
+
+            <section className="mt-4 rounded-xl border border-violet-200 bg-violet-50 p-4">
+              <div className="flex items-start gap-3">
+                <Sparkles
+                  className="mt-0.5 h-5 w-5 shrink-0 text-violet-700"
+                  aria-hidden="true"
+                />
+
+                <div className="min-w-0 flex-1">
+                  <h3 className="font-semibold text-violet-950">
+                    Guided Analysis
+                  </h3>
+
+                  <p className="mt-1 text-sm leading-6 text-violet-900">
+                    {analysisSuggestion?.explanation}
+                  </p>
+
+                  {availableSuggestedFields.length >
+                    0 ? (
+                    <>
+                      <p className="mt-3 text-xs font-semibold uppercase tracking-wide text-violet-800">
+                        Suggested Fields
+                      </p>
+
+                      <ul className="mt-2 space-y-2">
+                        {availableSuggestedFields.map(
+                          (suggestion) => (
+                            <li
+                              key={
+                                suggestion.fieldKey
+                              }
+                              className="rounded-lg bg-white/80 p-2.5 text-xs text-violet-950"
+                            >
+                              <p className="font-semibold">
+                                {
+                                  fieldOptions.find(
+                                    (option) =>
+                                      option.key ===
+                                      suggestion.fieldKey,
+                                  )?.label
+                                }
+                              </p>
+
+                              <p className="mt-1 leading-5 text-violet-800">
+                                {suggestion.reason}
+                              </p>
+                            </li>
+                          ),
+                        )}
+                      </ul>
+
+                      <button
+                        type="button"
+                        onClick={
+                          applyAnalysisSuggestions
+                        }
+                        disabled={
+                          isSaving
+                        }
+                        className="mt-3 inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-xl bg-violet-700 px-4 py-2 text-sm font-semibold text-white hover:bg-violet-800 disabled:bg-slate-400"
+                      >
+                        {suggestionsApplied ? (
+                          <CheckCircle2
+                            className="h-4 w-4"
+                          />
+                        ) : (
+                          <Sparkles
+                            className="h-4 w-4"
+                          />
+                        )}
+
+                        {suggestionsApplied
+                          ? "Suggestions Applied"
+                          : "Apply Suggestions"}
+                      </button>
+                    </>
+                  ) : (
+                    <p className="mt-3 rounded-lg bg-white/80 p-3 text-xs leading-5 text-violet-900">
+                      No fields were selected automatically. Review the document and choose fields manually.
+                    </p>
+                  )}
+                </div>
+              </div>
             </section>
 
             <section className="mt-4 rounded-xl border border-slate-200 bg-white p-4">
