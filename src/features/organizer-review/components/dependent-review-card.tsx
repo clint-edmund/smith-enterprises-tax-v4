@@ -26,6 +26,10 @@ import {
 } from "@/features/organizer-review/components/review-workspace/review-checklist"
 
 import {
+  EvidencePanel,
+} from "@/features/organizer-review/components/evidence-panel"
+
+import {
   QuickActionsToolbar,
 } from "@/features/organizer-review/components/review-workspace/quick-actions-toolbar"
 
@@ -503,6 +507,84 @@ export function DependentReviewCard({
         onClearMessages={
           clearChecklistMessages
         }
+      />
+
+      <EvidencePanel
+        organizerId={
+          dependent.organizerId
+        }
+        sectionKey="dependents"
+        subjectType="dependent"
+        subjectId={
+          dependent.dependentId
+        }
+        subjectLabel={
+          getDependentFullName(
+            dependent,
+          )
+        }
+        fieldOptions={[
+          {
+            key:
+              "first_name",
+            label:
+              "First Name",
+          },
+          {
+            key:
+              "last_name",
+            label:
+              "Last Name",
+          },
+          {
+            key:
+              "birth_date",
+            label:
+              "Date of Birth",
+          },
+          {
+            key:
+              "relationship",
+            label:
+              "Relationship",
+          },
+          {
+            key:
+              "lived_with_taxpayer_all_year",
+            label:
+              "Residency",
+          },
+          {
+            key:
+              "is_full_time_student",
+            label:
+              "Student Status",
+          },
+          {
+            key:
+              "is_permanently_disabled",
+            label:
+              "Disability Status",
+          },
+          {
+            key:
+              "us_citizen_or_resident",
+            label:
+              "Citizenship or Residency",
+          },
+          {
+            key:
+              "taxpayer_identifier_documentation",
+            label:
+              "Taxpayer Identification Documentation",
+          },
+          {
+            key:
+              "supporting_documentation",
+            label:
+              "General Supporting Documentation",
+          },
+        ]}
       />
 
       <QuickActionsToolbar

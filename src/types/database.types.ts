@@ -1800,6 +1800,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "organizer_evidence_sources_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "client_documents"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "organizer_evidence_sources_organizer_id_fkey"
             columns: ["organizer_id"]
             isOneToOne: false
@@ -4622,6 +4629,35 @@ export type Database = {
           title: string
         }[]
       }
+      list_organizer_available_documents: {
+        Args: { requested_organizer_id: string }
+        Returns: {
+          category: string
+          client_id: string
+          description: string
+          document_id: string
+          document_status: string
+          evidence_confidence: string
+          evidence_id: string
+          evidence_type: string
+          evidence_verification_status: string
+          is_registered_as_evidence: boolean
+          mime_type: string
+          original_file_name: string
+          review_status: string
+          reviewed_at: string
+          reviewed_by: string
+          reviewed_by_name: string
+          size_bytes: number
+          storage_bucket: string
+          storage_path: string
+          tax_return_id: string
+          tax_year: number
+          uploaded_at: string
+          uploaded_by: string
+          uploaded_by_name: string
+        }[]
+      }
       list_required_documents: {
         Args: { requested_return_id: string }
         Returns: {
@@ -4823,6 +4859,30 @@ export type Database = {
           isOneToOne: false
           isSetofReturn: true
         }
+      }
+      register_document_as_organizer_evidence: {
+        Args: {
+          requested_confidence: string
+          requested_document_id: string
+          requested_evidence_type: string
+          requested_field_key: string
+          requested_link_type: string
+          requested_notes: string
+          requested_organizer_id: string
+          requested_section_key: string
+          requested_subject_id: string
+          requested_subject_type: string
+        }
+        Returns: {
+          confidence: string
+          document_id: string
+          evidence_id: string
+          evidence_type: string
+          link_id: string
+          original_file_name: string
+          verification_status: string
+          was_existing_evidence: boolean
+        }[]
       }
       request_document_changes: {
         Args: { p_comments: string; p_document_id: string }
