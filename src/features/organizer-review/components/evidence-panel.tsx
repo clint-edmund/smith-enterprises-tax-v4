@@ -15,6 +15,8 @@ import {
   ReviewNotice,
 } from "@/features/organizer-review/components/review-workspace/review-notice"
 
+import { EvidenceDocumentPicker } from "@/features/organizer-review/components/evidence-document-picker"
+
 import {
   useEvidenceRegistry,
 } from "@/features/organizer-review/hooks/use-evidence-registry"
@@ -293,15 +295,25 @@ export function EvidencePanel({
         </button>
       </div>
 
+      <EvidenceDocumentPicker
+        organizerId={organizerId}
+        sectionKey={sectionKey}
+        subjectType={subjectType}
+        subjectId={subjectId}
+        subjectLabel={subjectLabel}
+        fieldOptions={fieldOptions}
+        onEvidenceChanged={refresh}
+      />
+
       <div className="mt-4 rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-950">
         <p className="font-semibold">
-          Initial evidence integration
+          Two ways to add evidence
         </p>
 
         <p className="mt-1 leading-6">
-          This checkpoint registers manual evidence. Linking existing uploaded
-          files will be enabled after the current document-storage table is
-          confirmed.
+          Attach an existing client upload when a file already exists, or use
+          Add Evidence for phone confirmations, organizer answers, and other
+          non-file evidence.
         </p>
       </div>
 

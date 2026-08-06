@@ -90,3 +90,37 @@ export interface UpdateEvidenceVerificationRequest {
     EvidenceVerificationStatus
   note?: string
 }
+
+
+export interface OrganizerAvailableDocument {
+  documentId: string
+  clientId: string
+  taxReturnId: string | null
+  taxYear: number | null
+  category: string
+  documentStatus: string
+  originalFileName: string
+  mimeType: string
+  sizeBytes: number
+  description: string | null
+  uploadedByName: string
+  uploadedAt: string
+  evidenceId: string | null
+  evidenceType: string | null
+  evidenceConfidence: EvidenceConfidence | null
+  evidenceVerificationStatus: EvidenceVerificationStatus | null
+  isRegisteredAsEvidence: boolean
+}
+
+export interface RegisterDocumentEvidenceRequest {
+  organizerId: string
+  documentId: string
+  sectionKey: string
+  subjectType: string
+  subjectId: string
+  fieldKey: string | null
+  evidenceType: string
+  confidence: EvidenceConfidence
+  linkType?: EvidenceLinkType
+  notes?: string
+}
