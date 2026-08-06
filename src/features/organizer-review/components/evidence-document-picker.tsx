@@ -1,4 +1,5 @@
 import { CheckCircle2, FileText, Link2, Search, X } from "lucide-react"
+import { DocumentReviewWorkspace } from "@/features/organizer-review/components/document-review-workspace"
 import { useMemo, useState } from "react"
 import { ReviewNotice } from "@/features/organizer-review/components/review-workspace/review-notice"
 import { useEvidenceDocumentLibrary } from "@/features/organizer-review/hooks/use-evidence-document-library"
@@ -31,6 +32,7 @@ export function EvidenceDocumentPicker(props: Props) {
   const [fieldKey, setFieldKey] = useState(props.fieldOptions[0]?.key ?? "")
   const [evidenceType, setEvidenceType] = useState("other")
   const [confidence, setConfidence] = useState<EvidenceConfidence>("unverified")
+  const [reviewDocumentId, setReviewDocumentId] = useState<string | null>(null)
 
   const categories = useMemo(() => Array.from(new Set(library.documents.map((item) => item.category))).sort(), [library.documents])
   const documents = useMemo(() => {
@@ -41,6 +43,51 @@ export function EvidenceDocumentPicker(props: Props) {
     )
   }, [category, library.documents, search])
   const selected = library.documents.find((item) => item.documentId === documentId) ?? null
+
+  async function linkReviewFields(
+    fieldKeys: string[],
+    selectedEvidenceType: string,
+    selectedConfidence: EvidenceConfidence,
+  ): Promise<boolean> {
+    const reviewDocument =
+      library.documents.find(
+        (item) =>
+          item.documentId === reviewDocumentId,
+      )
+
+    if (!reviewDocument) {
+      return false
+    }
+
+    for (const fieldKey of fieldKeys) {
+      const didSave =
+        await library.registerDocument({
+          documentId:
+            reviewDocument.documentId,
+          sectionKey:
+            props.sectionKey,
+          subjectType:
+            props.subjectType,
+          subjectId:
+            props.subjectId,
+          fieldKey,
+          evidenceType:
+            selectedEvidenceType,
+          confidence:
+            selectedConfidence,
+          notes:
+            `Existing client document linked to ${props.subjectLabel}.`,
+        })
+
+      if (!didSave) {
+        return false
+      }
+    }
+
+    await props.onEvidenceChanged?.()
+
+    return true
+  }
 
   async function save() {
     if (!selected) return
@@ -103,11 +150,58 @@ export function EvidenceDocumentPicker(props: Props) {
               <label className="block text-sm font-semibold">Supports Field<select value={fieldKey} onChange={(event) => setFieldKey(event.target.value)} className="mt-2 w-full rounded-xl border bg-white px-3 py-2.5 font-normal">{props.fieldOptions.map((item) => <option key={item.key} value={item.key}>{item.label}</option>)}</select></label>
               <label className="block text-sm font-semibold">Evidence Type<select value={evidenceType} onChange={(event) => setEvidenceType(event.target.value)} className="mt-2 w-full rounded-xl border bg-white px-3 py-2.5 font-normal"><option value="birth_certificate">Birth Certificate</option><option value="social_security_card">Taxpayer Identification Document</option><option value="school_record">School Record</option><option value="medical_record">Medical or Disability Record</option><option value="prior_year_return">Prior-Year Return</option><option value="other">Other</option></select></label>
               <label className="block text-sm font-semibold">Confidence<select value={confidence} onChange={(event) => setConfidence(event.target.value as EvidenceConfidence)} className="mt-2 w-full rounded-xl border bg-white px-3 py-2.5 font-normal"><option value="unverified">Unverified</option><option value="high">High</option><option value="medium">Medium</option><option value="low">Low</option></select></label>
-              <button type="button" onClick={() => void save()} disabled={library.savingDocumentId !== null} className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-blue-700 px-4 text-sm font-semibold text-white disabled:bg-slate-400"><Link2 className="h-4 w-4" />{library.savingDocumentId ? "Linking..." : "Link as Evidence"}</button>
+              <button
+                type="button"
+                onClick={() =>
+                  setReviewDocumentId(
+                    selected.documentId,
+                  )
+                }
+                disabled={
+                  library.savingDocumentId !== null
+                }
+                className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-blue-700 px-4 text-sm font-semibold text-white hover:bg-blue-800 disabled:bg-slate-400"
+              >
+                <FileText className="h-4 w-4" />
+                Review and Link Multiple Fields
+              </button>
+
+              <button
+                type="button"
+                onClick={() => void save()}
+                disabled={
+                  library.savingDocumentId !== null
+                }
+                className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-blue-300 bg-white px-4 text-sm font-semibold text-blue-800 disabled:opacity-50"
+              >
+                <Link2 className="h-4 w-4" />
+                {library.savingDocumentId
+                  ? "Linking..."
+                  : "Quick Link One Field"}
+              </button>
             </div> : <p className="mt-4 text-sm text-slate-600">Select a document to configure its evidence link.</p>}
           </aside>
         </div>
       </section>
     </div>}
+
+    <DocumentReviewWorkspace
+      document={
+        library.documents.find(
+          (item) =>
+            item.documentId ===
+            reviewDocumentId,
+        ) ?? null
+      }
+      subjectLabel={props.subjectLabel}
+      fieldOptions={props.fieldOptions}
+      isSaving={
+        library.savingDocumentId !== null
+      }
+      onClose={() =>
+        setReviewDocumentId(null)
+      }
+      onLinkFields={linkReviewFields}
+    />
   </div>
 }

@@ -100,6 +100,8 @@ export interface OrganizerAvailableDocument {
   category: string
   documentStatus: string
   originalFileName: string
+  storageBucket: string
+  storagePath: string
   mimeType: string
   sizeBytes: number
   description: string | null

@@ -14,6 +14,8 @@ interface Row {
   category: string
   document_status: string
   original_file_name: string
+  storage_bucket: string
+  storage_path: string
   mime_type: string
   size_bytes: number
   description: string | null
@@ -62,6 +64,8 @@ export async function listOrganizerAvailableDocuments(
     category: row.category,
     documentStatus: row.document_status,
     originalFileName: row.original_file_name,
+    storageBucket: row.storage_bucket,
+    storagePath: row.storage_path,
     mimeType: row.mime_type,
     sizeBytes: Number(row.size_bytes),
     description: row.description,
@@ -91,4 +95,25 @@ export async function registerDocumentAsEvidence(
     requested_notes: request.notes?.trim() ?? "",
   })
   if (error) throw new Error(error.message)
+}
+
+
+export async function createEvidenceDocumentPreviewUrl(
+  document: OrganizerAvailableDocument,
+): Promise<string> {
+  const { data, error } = await supabase.storage
+    .from(document.storageBucket)
+    .createSignedUrl(document.storagePath, 60 * 10)
+
+  if (error) {
+    throw new Error(error.message)
+  }
+
+  if (!data.signedUrl) {
+    throw new Error(
+      "A secure document preview URL was not returned.",
+    )
+  }
+
+  return data.signedUrl
 }
