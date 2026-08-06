@@ -1672,6 +1672,213 @@ export type Database = {
         }
         Relationships: []
       }
+      organizer_evidence_links: {
+        Row: {
+          created_at: string
+          evidence_id: string
+          field_key: string | null
+          id: string
+          link_type: string
+          linked_at: string
+          linked_by: string | null
+          notes: string | null
+          organizer_id: string
+          section_key: string
+          subject_id: string
+          subject_type: string
+        }
+        Insert: {
+          created_at?: string
+          evidence_id: string
+          field_key?: string | null
+          id?: string
+          link_type?: string
+          linked_at?: string
+          linked_by?: string | null
+          notes?: string | null
+          organizer_id: string
+          section_key: string
+          subject_id: string
+          subject_type: string
+        }
+        Update: {
+          created_at?: string
+          evidence_id?: string
+          field_key?: string | null
+          id?: string
+          link_type?: string
+          linked_at?: string
+          linked_by?: string | null
+          notes?: string | null
+          organizer_id?: string
+          section_key?: string
+          subject_id?: string
+          subject_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organizer_evidence_links_evidence_id_fkey"
+            columns: ["evidence_id"]
+            isOneToOne: false
+            referencedRelation: "organizer_evidence_sources"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organizer_evidence_links_linked_by_fkey"
+            columns: ["linked_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organizer_evidence_links_organizer_id_fkey"
+            columns: ["organizer_id"]
+            isOneToOne: false
+            referencedRelation: "client_tax_organizers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organizer_evidence_sources: {
+        Row: {
+          confidence: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          document_id: string | null
+          evidence_type: string
+          id: string
+          metadata: Json
+          organizer_id: string
+          return_id: string | null
+          title: string
+          updated_at: string
+          verification_status: string
+          verified_at: string | null
+          verified_by: string | null
+        }
+        Insert: {
+          confidence?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          document_id?: string | null
+          evidence_type: string
+          id?: string
+          metadata?: Json
+          organizer_id: string
+          return_id?: string | null
+          title: string
+          updated_at?: string
+          verification_status?: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Update: {
+          confidence?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          document_id?: string | null
+          evidence_type?: string
+          id?: string
+          metadata?: Json
+          organizer_id?: string
+          return_id?: string | null
+          title?: string
+          updated_at?: string
+          verification_status?: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organizer_evidence_sources_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organizer_evidence_sources_organizer_id_fkey"
+            columns: ["organizer_id"]
+            isOneToOne: false
+            referencedRelation: "client_tax_organizers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organizer_evidence_sources_return_id_fkey"
+            columns: ["return_id"]
+            isOneToOne: false
+            referencedRelation: "tax_returns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organizer_evidence_sources_verified_by_fkey"
+            columns: ["verified_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organizer_evidence_verification_events: {
+        Row: {
+          action: string
+          actor_id: string | null
+          created_at: string
+          evidence_id: string
+          id: string
+          metadata: Json
+          new_confidence: string | null
+          new_status: string | null
+          note: string | null
+          previous_confidence: string | null
+          previous_status: string | null
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          created_at?: string
+          evidence_id: string
+          id?: string
+          metadata?: Json
+          new_confidence?: string | null
+          new_status?: string | null
+          note?: string | null
+          previous_confidence?: string | null
+          previous_status?: string | null
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          created_at?: string
+          evidence_id?: string
+          id?: string
+          metadata?: Json
+          new_confidence?: string | null
+          new_status?: string | null
+          note?: string | null
+          previous_confidence?: string | null
+          previous_status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organizer_evidence_verification_events_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organizer_evidence_verification_events_evidence_id_fkey"
+            columns: ["evidence_id"]
+            isOneToOne: false
+            referencedRelation: "organizer_evidence_sources"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organizer_review_checklist_definitions: {
         Row: {
           created_at: string
@@ -3184,6 +3391,37 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      create_organizer_evidence_source: {
+        Args: {
+          requested_confidence: string
+          requested_description: string
+          requested_document_id: string
+          requested_evidence_type: string
+          requested_metadata?: Json
+          requested_organizer_id: string
+          requested_return_id: string
+          requested_title: string
+        }
+        Returns: {
+          confidence: string
+          created_at: string
+          created_by: string
+          created_by_name: string
+          description: string
+          document_id: string
+          evidence_id: string
+          evidence_type: string
+          metadata: Json
+          organizer_id: string
+          return_id: string
+          title: string
+          updated_at: string
+          verification_status: string
+          verified_at: string
+          verified_by: string
+          verified_by_name: string
+        }[]
+      }
       create_tax_return_record: {
         Args: {
           requested_accepted_date?: string
@@ -3893,6 +4131,40 @@ export type Database = {
           subject_type: string
         }[]
       }
+      get_organizer_subject_evidence: {
+        Args: {
+          requested_organizer_id: string
+          requested_section_key: string
+          requested_subject_id: string
+          requested_subject_type: string
+        }
+        Returns: {
+          confidence: string
+          created_at: string
+          created_by: string
+          created_by_name: string
+          description: string
+          document_id: string
+          evidence_id: string
+          evidence_type: string
+          field_key: string
+          link_id: string
+          link_notes: string
+          link_type: string
+          linked_at: string
+          linked_by: string
+          linked_by_name: string
+          metadata: Json
+          organizer_id: string
+          return_id: string
+          title: string
+          updated_at: string
+          verification_status: string
+          verified_at: string
+          verified_by: string
+          verified_by_name: string
+        }[]
+      }
       get_payment_receipt: {
         Args: { requested_payment_id: string }
         Returns: {
@@ -4219,6 +4491,19 @@ export type Database = {
           requested_status: Database["public"]["Enums"]["return_status"]
         }
         Returns: boolean
+      }
+      link_organizer_evidence: {
+        Args: {
+          requested_evidence_id: string
+          requested_field_key: string
+          requested_link_type: string
+          requested_notes: string
+          requested_organizer_id: string
+          requested_section_key: string
+          requested_subject_id: string
+          requested_subject_type: string
+        }
+        Returns: string
       }
       list_client_documents: {
         Args: { requested_client_id: string; requested_tax_return_id?: string }
@@ -5376,6 +5661,15 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      update_organizer_evidence_verification: {
+        Args: {
+          requested_confidence: string
+          requested_evidence_id: string
+          requested_note: string
+          requested_verification_status: string
+        }
+        Returns: undefined
       }
       update_return_payment: {
         Args: {
