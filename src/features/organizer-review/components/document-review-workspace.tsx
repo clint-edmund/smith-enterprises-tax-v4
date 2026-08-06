@@ -29,6 +29,10 @@ import type {
   OrganizerAvailableDocument,
 } from "@/features/organizer-review/types/evidence.types"
 
+import {
+  DocumentAnalysisStatusPanel,
+} from "@/features/organizer-review/components/document-analysis-status-panel"
+
 interface DocumentReviewWorkspaceProps {
   document: OrganizerAvailableDocument | null
   subjectLabel: string
@@ -484,6 +488,19 @@ export function DocumentReviewWorkspace({
                 </div>
               </dl>
             </section>
+
+            <DocumentAnalysisStatusPanel
+              documentId={
+                document.documentId
+              }
+              organizerId={
+                document.organizerId ??
+                null
+              }
+              evidenceId={
+                document.evidenceId
+              }
+            />
 
             <section className="mt-4 rounded-xl border border-violet-200 bg-violet-50 p-4">
               <div className="flex items-start gap-3">

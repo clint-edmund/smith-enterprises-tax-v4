@@ -94,6 +94,7 @@ export interface UpdateEvidenceVerificationRequest {
 
 export interface OrganizerAvailableDocument {
   documentId: string
+  organizerId?: string | null
   clientId: string
   taxReturnId: string | null
   taxYear: number | null
