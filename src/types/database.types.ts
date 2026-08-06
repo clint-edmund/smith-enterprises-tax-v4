@@ -1375,6 +1375,333 @@ export type Database = {
           },
         ]
       }
+      document_analysis_events: {
+        Row: {
+          actor_id: string | null
+          created_at: string
+          event_type: string
+          id: string
+          job_id: string
+          message: string | null
+          metadata: Json
+          new_status: string | null
+          previous_status: string | null
+        }
+        Insert: {
+          actor_id?: string | null
+          created_at?: string
+          event_type: string
+          id?: string
+          job_id: string
+          message?: string | null
+          metadata?: Json
+          new_status?: string | null
+          previous_status?: string | null
+        }
+        Update: {
+          actor_id?: string | null
+          created_at?: string
+          event_type?: string
+          id?: string
+          job_id?: string
+          message?: string | null
+          metadata?: Json
+          new_status?: string | null
+          previous_status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_analysis_events_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "document_analysis_events_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "document_analysis_jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      document_analysis_extracted_fields: {
+        Row: {
+          accepted_value: string | null
+          bounding_box: Json | null
+          confidence: number | null
+          created_at: string
+          display_label: string
+          extracted_value: string | null
+          field_key: string
+          id: string
+          normalized_value: string | null
+          page_number: number | null
+          result_id: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          source_text: string | null
+          staff_decision: string
+          updated_at: string
+        }
+        Insert: {
+          accepted_value?: string | null
+          bounding_box?: Json | null
+          confidence?: number | null
+          created_at?: string
+          display_label: string
+          extracted_value?: string | null
+          field_key: string
+          id?: string
+          normalized_value?: string | null
+          page_number?: number | null
+          result_id: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          source_text?: string | null
+          staff_decision?: string
+          updated_at?: string
+        }
+        Update: {
+          accepted_value?: string | null
+          bounding_box?: Json | null
+          confidence?: number | null
+          created_at?: string
+          display_label?: string
+          extracted_value?: string | null
+          field_key?: string
+          id?: string
+          normalized_value?: string | null
+          page_number?: number | null
+          result_id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          source_text?: string | null
+          staff_decision?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_analysis_extracted_fields_result_id_fkey"
+            columns: ["result_id"]
+            isOneToOne: false
+            referencedRelation: "document_analysis_results"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "document_analysis_extracted_fields_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      document_analysis_jobs: {
+        Row: {
+          attempt_count: number
+          completed_at: string | null
+          created_at: string
+          document_id: string
+          evidence_id: string | null
+          failed_at: string | null
+          failure_code: string | null
+          failure_message: string | null
+          id: string
+          max_attempts: number
+          organizer_id: string | null
+          processing_started_at: string | null
+          provider_id: string
+          provider_job_reference: string | null
+          queued_at: string | null
+          request_metadata: Json
+          requested_at: string
+          requested_by: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          attempt_count?: number
+          completed_at?: string | null
+          created_at?: string
+          document_id: string
+          evidence_id?: string | null
+          failed_at?: string | null
+          failure_code?: string | null
+          failure_message?: string | null
+          id?: string
+          max_attempts?: number
+          organizer_id?: string | null
+          processing_started_at?: string | null
+          provider_id: string
+          provider_job_reference?: string | null
+          queued_at?: string | null
+          request_metadata?: Json
+          requested_at?: string
+          requested_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          attempt_count?: number
+          completed_at?: string | null
+          created_at?: string
+          document_id?: string
+          evidence_id?: string | null
+          failed_at?: string | null
+          failure_code?: string | null
+          failure_message?: string | null
+          id?: string
+          max_attempts?: number
+          organizer_id?: string | null
+          processing_started_at?: string | null
+          provider_id?: string
+          provider_job_reference?: string | null
+          queued_at?: string | null
+          request_metadata?: Json
+          requested_at?: string
+          requested_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_analysis_jobs_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "client_documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "document_analysis_jobs_evidence_id_fkey"
+            columns: ["evidence_id"]
+            isOneToOne: false
+            referencedRelation: "organizer_evidence_sources"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "document_analysis_jobs_organizer_id_fkey"
+            columns: ["organizer_id"]
+            isOneToOne: false
+            referencedRelation: "client_tax_organizers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "document_analysis_jobs_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "document_analysis_providers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "document_analysis_jobs_requested_by_fkey"
+            columns: ["requested_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      document_analysis_providers: {
+        Row: {
+          configuration: Json
+          created_at: string
+          display_name: string
+          id: string
+          is_enabled: boolean
+          provider_key: string
+          provider_type: string
+          updated_at: string
+        }
+        Insert: {
+          configuration?: Json
+          created_at?: string
+          display_name: string
+          id?: string
+          is_enabled?: boolean
+          provider_key: string
+          provider_type: string
+          updated_at?: string
+        }
+        Update: {
+          configuration?: Json
+          created_at?: string
+          display_name?: string
+          id?: string
+          is_enabled?: boolean
+          provider_key?: string
+          provider_type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      document_analysis_results: {
+        Row: {
+          created_at: string
+          document_type: string | null
+          id: string
+          job_id: string
+          normalized_result: Json
+          overall_confidence: number | null
+          page_count: number | null
+          raw_provider_result: Json
+          requires_staff_review: boolean
+          review_notes: string | null
+          review_outcome: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          document_type?: string | null
+          id?: string
+          job_id: string
+          normalized_result?: Json
+          overall_confidence?: number | null
+          page_count?: number | null
+          raw_provider_result?: Json
+          requires_staff_review?: boolean
+          review_notes?: string | null
+          review_outcome?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          document_type?: string | null
+          id?: string
+          job_id?: string
+          normalized_result?: Json
+          overall_confidence?: number | null
+          page_count?: number | null
+          raw_provider_result?: Json
+          requires_staff_review?: boolean
+          review_notes?: string | null
+          review_outcome?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_analysis_results_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: true
+            referencedRelation: "document_analysis_jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "document_analysis_results_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       document_categories: {
         Row: {
           code: string
@@ -4058,6 +4385,36 @@ export type Database = {
           workflow_signature_pending: number
         }[]
       }
+      get_document_analysis_jobs: {
+        Args: { requested_document_id: string }
+        Returns: {
+          attempt_count: number
+          completed_at: string
+          document_id: string
+          document_type: string
+          evidence_id: string
+          failed_at: string
+          failure_code: string
+          failure_message: string
+          job_id: string
+          max_attempts: number
+          organizer_id: string
+          overall_confidence: number
+          processing_started_at: string
+          provider_key: string
+          provider_name: string
+          queued_at: string
+          requested_at: string
+          requested_by: string
+          requested_by_name: string
+          requires_staff_review: boolean
+          result_id: string
+          review_outcome: string
+          reviewed_at: string
+          reviewed_by_name: string
+          status: string
+        }[]
+      }
       get_executive_financial_analytics: { Args: never; Returns: Json }
       get_my_unread_document_notification_count: {
         Args: never
@@ -4762,6 +5119,16 @@ export type Database = {
           reviewed_by_name: string
           updated_at: string
         }[]
+      }
+      queue_document_analysis_job: {
+        Args: {
+          requested_document_id: string
+          requested_evidence_id: string
+          requested_metadata: Json
+          requested_organizer_id: string
+          requested_provider_key: string
+        }
+        Returns: string
       }
       record_client_portal_login: { Args: never; Returns: undefined }
       record_return_payment: {
