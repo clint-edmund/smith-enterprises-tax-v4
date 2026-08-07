@@ -312,34 +312,57 @@ export async function searchTaxReturns(
   >()
 
   if (returnIds.length > 0) {
-    const {
-      data: workflowRows,
-      error: workflowError,
-    } = await supabase
-      .from("tax_returns")
-      .select(`
-        id,
-        workflow_status,
-        workflow_hold_reason
-      `)
-      .in("id", returnIds)
+    const workflowBatchSize = 40
 
-    if (workflowError) {
-      throw new Error(
-        getReturnServiceErrorMessage(workflowError),
-      )
-    }
+    for (
+      let offset = 0;
+      offset < returnIds.length;
+      offset += workflowBatchSize
+    ) {
+      const returnIdBatch =
+        returnIds.slice(
+          offset,
+          offset + workflowBatchSize,
+        )
 
-    for (const workflowRow of workflowRows ?? []) {
-      workflowByReturnId.set(
-        workflowRow.id,
-        {
-          workflow_status:
-            workflowRow.workflow_status,
-          workflow_hold_reason:
-            workflowRow.workflow_hold_reason,
-        },
-      )
+      const {
+        data: workflowRows,
+        error: workflowError,
+      } = await supabase
+        .from("tax_returns")
+        .select(`
+          id,
+          workflow_status,
+          workflow_hold_reason
+        `)
+        .in(
+          "id",
+          returnIdBatch,
+        )
+
+      if (workflowError) {
+        throw new Error(
+          getReturnServiceErrorMessage(
+            workflowError,
+          ),
+        )
+      }
+
+      for (
+        const workflowRow
+        of workflowRows ?? []
+      ) {
+        workflowByReturnId.set(
+          workflowRow.id,
+          {
+            workflow_status:
+              workflowRow.workflow_status,
+
+            workflow_hold_reason:
+              workflowRow.workflow_hold_reason,
+          },
+        )
+      }
     }
   }
 

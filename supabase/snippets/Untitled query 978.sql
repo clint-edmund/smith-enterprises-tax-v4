@@ -1,8 +1,3 @@
-SELECT
-    trigger_name,
-    event_manipulation,
-    action_statement
-FROM information_schema.triggers
-WHERE event_object_schema = 'auth'
-  AND event_object_table = 'users'
-ORDER BY trigger_name;
+select count(*)
+from public.return_workflow_history
+where event_type = 'payment_received';

@@ -67,6 +67,11 @@ assertLocalSupabaseUrl(supabaseUrl)
 export const atlasSeederConfig = {
   supabaseUrl,
 
+  publishableKey:
+    requiredEnvironmentVariable(
+      "VITE_SUPABASE_PUBLISHABLE_KEY",
+    ),
+
   secretKey:
     requiredEnvironmentVariable(
       "ATLAS_SUPABASE_SECRET_KEY",
