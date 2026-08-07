@@ -92,6 +92,10 @@ import {
 } from "@/features/client-portal/pages/organizer-income-page"
 
 import {
+  OrganizerBusinessPage,
+} from "@/features/client-portal/pages/organizer-business-page"
+
+import {
   OrganizerOverviewPage,
 } from "@/features/client-portal/pages/organizer-overview-page"
 
@@ -114,6 +118,7 @@ import {
 import {
   DependentsReviewPage,
 } from "@/features/organizer-review/pages/dependents-review-page"
+
 
 export const appRouter =
   createBrowserRouter([
@@ -216,6 +221,12 @@ export const appRouter =
                       path: "/client/organizer/income",
                       element: (
                         <OrganizerIncomePage />
+                      ),
+                    },
+                    {
+                      path: "/client/organizer/business",
+                      element: (
+                        <OrganizerBusinessPage />
                       ),
                     },
                     {

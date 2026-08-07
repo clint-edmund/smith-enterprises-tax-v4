@@ -1,0 +1,42 @@
+/**
+ * Atlas Fixture Library
+ * Employer names used only for fictional development data.
+ */
+
+export const employers = [
+  "Acme Consulting Group",
+  "Amazon Web Services",
+  "Arlington County Government",
+  "Atlas Home Services",
+  "Blue Ridge Consulting",
+  "Booz Allen Hamilton",
+  "Capital One",
+  "CareFirst",
+  "City of Alexandria",
+  "Commonwealth of Virginia",
+  "DC Government",
+  "Fairfax County Government",
+  "Fairfax County Public Schools",
+  "Federal Government",
+  "Freddie Mac",
+  "General Dynamics",
+  "George Mason University",
+  "Georgetown University",
+  "Howard University",
+  "Inova Health System",
+  "Kaiser Permanente",
+  "Loudoun County Government",
+  "Loudoun County Public Schools",
+  "Maryland State Government",
+  "MedStar Health",
+  "Microsoft",
+  "Montgomery County Government",
+  "Northrop Grumman",
+  "Prince George's County Government",
+  "Prince George's County Public Schools",
+  "Reston Technology Group",
+  "Smithsonian Institution",
+  "Southern Maryland Services",
+  "Virginia Tech",
+  "Washington Metropolitan Area Transit Authority",
+] as const

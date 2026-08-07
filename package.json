@@ -10,7 +10,16 @@
     "preview": "vite preview",
     "supabase:types": "supabase gen types typescript --linked --schema public > src/types/database.types.ts",
     "supabase:push": "supabase db push",
-    "publish:develop": "./scripts/publish-develop.sh"
+    "publish:develop": "./scripts/publish-develop.sh",
+    "dev:start": "./scripts/dev-start.sh",
+    "dev:stop": "./scripts/dev-stop.sh",
+    "dev:reset": "./scripts/dev-reset.sh",
+    "dev:status": "./scripts/dev-status.sh",
+    "dev:health": "./scripts/dev-health.sh",
+    "dev:seed": "tsx tools/atlas-seeder/src/index.ts",
+    "dev:seed:test-random": "tsx tools/atlas-seeder/src/test-random.ts",
+    "dev:seed:test-fixtures": "tsx tools/atlas-seeder/src/test-fixtures.ts",
+    "dev:seed:preview-clients": "tsx tools/atlas-seeder/src/preview-clients.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",
@@ -42,11 +51,13 @@
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.3",
+    "dotenv": "^17.4.2",
     "eslint": "^10.6.0",
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.3",
     "globals": "^17.7.0",
     "supabase": "^2.109.1",
+    "tsx": "^4.23.10",
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.62.0",
     "vite": "^8.1.1"
