@@ -362,6 +362,214 @@ export type Database = {
           },
         ]
       }
+      client_tax_organizer_business_responses: {
+        Row: {
+          created_at: string
+          has_business_activity: boolean | null
+          organizer_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          has_business_activity?: boolean | null
+          organizer_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          has_business_activity?: boolean | null
+          organizer_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_tax_organizer_business_responses_organizer_id_fkey"
+            columns: ["organizer_id"]
+            isOneToOne: true
+            referencedRelation: "client_tax_organizers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_tax_organizer_businesses: {
+        Row: {
+          accounting_method: string
+          address_line_1: string
+          address_line_2: string
+          advertising_expense: number
+          bookkeeping_complete: boolean | null
+          business_code: string
+          business_name: string
+          car_and_truck_expense: number
+          city: string
+          commissions_and_fees_expense: number
+          contract_labor_expense: number
+          cost_of_goods_sold: number
+          country: string
+          created_at: string
+          date_closed: string | null
+          date_started: string | null
+          dba_name: string
+          deductible_meals_expense: number
+          depreciation_expense: number
+          display_order: number
+          employee_benefit_expense: number
+          employer_identification_number: string
+          entity_type: string
+          gross_receipts: number
+          has_employees: boolean | null
+          has_home_office: boolean | null
+          has_inventory: boolean | null
+          id: string
+          insurance_expense: number
+          interest_expense: number
+          legal_and_professional_expense: number
+          notes: string
+          office_expense: number
+          organizer_id: string
+          other_business_income: number
+          other_expense: number
+          other_expense_description: string
+          ownership_percentage: number | null
+          pension_and_profit_sharing_expense: number
+          postal_code: string
+          principal_business_activity: string
+          record_status: string
+          rent_or_lease_expense: number
+          repairs_and_maintenance_expense: number
+          returns_and_allowances: number
+          state: string
+          supplies_expense: number
+          taxes_and_licenses_expense: number
+          travel_expense: number
+          updated_at: string
+          uses_vehicle: boolean | null
+          utilities_expense: number
+          wages_expense: number
+          was_active_during_tax_year: boolean | null
+        }
+        Insert: {
+          accounting_method?: string
+          address_line_1?: string
+          address_line_2?: string
+          advertising_expense?: number
+          bookkeeping_complete?: boolean | null
+          business_code?: string
+          business_name?: string
+          car_and_truck_expense?: number
+          city?: string
+          commissions_and_fees_expense?: number
+          contract_labor_expense?: number
+          cost_of_goods_sold?: number
+          country?: string
+          created_at?: string
+          date_closed?: string | null
+          date_started?: string | null
+          dba_name?: string
+          deductible_meals_expense?: number
+          depreciation_expense?: number
+          display_order?: number
+          employee_benefit_expense?: number
+          employer_identification_number?: string
+          entity_type?: string
+          gross_receipts?: number
+          has_employees?: boolean | null
+          has_home_office?: boolean | null
+          has_inventory?: boolean | null
+          id?: string
+          insurance_expense?: number
+          interest_expense?: number
+          legal_and_professional_expense?: number
+          notes?: string
+          office_expense?: number
+          organizer_id: string
+          other_business_income?: number
+          other_expense?: number
+          other_expense_description?: string
+          ownership_percentage?: number | null
+          pension_and_profit_sharing_expense?: number
+          postal_code?: string
+          principal_business_activity?: string
+          record_status?: string
+          rent_or_lease_expense?: number
+          repairs_and_maintenance_expense?: number
+          returns_and_allowances?: number
+          state?: string
+          supplies_expense?: number
+          taxes_and_licenses_expense?: number
+          travel_expense?: number
+          updated_at?: string
+          uses_vehicle?: boolean | null
+          utilities_expense?: number
+          wages_expense?: number
+          was_active_during_tax_year?: boolean | null
+        }
+        Update: {
+          accounting_method?: string
+          address_line_1?: string
+          address_line_2?: string
+          advertising_expense?: number
+          bookkeeping_complete?: boolean | null
+          business_code?: string
+          business_name?: string
+          car_and_truck_expense?: number
+          city?: string
+          commissions_and_fees_expense?: number
+          contract_labor_expense?: number
+          cost_of_goods_sold?: number
+          country?: string
+          created_at?: string
+          date_closed?: string | null
+          date_started?: string | null
+          dba_name?: string
+          deductible_meals_expense?: number
+          depreciation_expense?: number
+          display_order?: number
+          employee_benefit_expense?: number
+          employer_identification_number?: string
+          entity_type?: string
+          gross_receipts?: number
+          has_employees?: boolean | null
+          has_home_office?: boolean | null
+          has_inventory?: boolean | null
+          id?: string
+          insurance_expense?: number
+          interest_expense?: number
+          legal_and_professional_expense?: number
+          notes?: string
+          office_expense?: number
+          organizer_id?: string
+          other_business_income?: number
+          other_expense?: number
+          other_expense_description?: string
+          ownership_percentage?: number | null
+          pension_and_profit_sharing_expense?: number
+          postal_code?: string
+          principal_business_activity?: string
+          record_status?: string
+          rent_or_lease_expense?: number
+          repairs_and_maintenance_expense?: number
+          returns_and_allowances?: number
+          state?: string
+          supplies_expense?: number
+          taxes_and_licenses_expense?: number
+          travel_expense?: number
+          updated_at?: string
+          uses_vehicle?: boolean | null
+          utilities_expense?: number
+          wages_expense?: number
+          was_active_during_tax_year?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_tax_organizer_businesses_organizer_id_fkey"
+            columns: ["organizer_id"]
+            isOneToOne: false
+            referencedRelation: "client_tax_organizers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_tax_organizer_dependent_reviews: {
         Row: {
           created_at: string
@@ -3537,6 +3745,71 @@ export type Database = {
           updated_at: string
         }[]
       }
+      create_client_organizer_business: {
+        Args: { requested_business: Json; requested_organizer_id: string }
+        Returns: {
+          accounting_method: string
+          address_line_1: string
+          address_line_2: string
+          advertising_expense: number
+          bookkeeping_complete: boolean | null
+          business_code: string
+          business_name: string
+          car_and_truck_expense: number
+          city: string
+          commissions_and_fees_expense: number
+          contract_labor_expense: number
+          cost_of_goods_sold: number
+          country: string
+          created_at: string
+          date_closed: string | null
+          date_started: string | null
+          dba_name: string
+          deductible_meals_expense: number
+          depreciation_expense: number
+          display_order: number
+          employee_benefit_expense: number
+          employer_identification_number: string
+          entity_type: string
+          gross_receipts: number
+          has_employees: boolean | null
+          has_home_office: boolean | null
+          has_inventory: boolean | null
+          id: string
+          insurance_expense: number
+          interest_expense: number
+          legal_and_professional_expense: number
+          notes: string
+          office_expense: number
+          organizer_id: string
+          other_business_income: number
+          other_expense: number
+          other_expense_description: string
+          ownership_percentage: number | null
+          pension_and_profit_sharing_expense: number
+          postal_code: string
+          principal_business_activity: string
+          record_status: string
+          rent_or_lease_expense: number
+          repairs_and_maintenance_expense: number
+          returns_and_allowances: number
+          state: string
+          supplies_expense: number
+          taxes_and_licenses_expense: number
+          travel_expense: number
+          updated_at: string
+          uses_vehicle: boolean | null
+          utilities_expense: number
+          wages_expense: number
+          was_active_during_tax_year: boolean | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "client_tax_organizer_businesses"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       create_client_organizer_healthcare_coverage: {
         Args: {
           requested_coverage_type: string
@@ -3836,6 +4109,13 @@ export type Database = {
         Args: never
         Returns: Database["public"]["Enums"]["app_role"]
       }
+      delete_client_organizer_business: {
+        Args: { requested_business_id: string; requested_organizer_id: string }
+        Returns: {
+          deleted_business_id: string
+          success: boolean
+        }[]
+      }
       delete_client_organizer_dependent: {
         Args: { requested_dependent_id: string; requested_organizer_id: string }
         Returns: {
@@ -3931,6 +4211,80 @@ export type Database = {
           updated_at: string
           use_direct_deposit: boolean
         }[]
+      }
+      get_client_organizer_business_response: {
+        Args: { requested_organizer_id: string }
+        Returns: {
+          created_at: string
+          has_business_activity: boolean
+          organizer_id: string
+          updated_at: string
+        }[]
+      }
+      get_client_organizer_businesses: {
+        Args: { requested_organizer_id: string }
+        Returns: {
+          accounting_method: string
+          address_line_1: string
+          address_line_2: string
+          advertising_expense: number
+          bookkeeping_complete: boolean | null
+          business_code: string
+          business_name: string
+          car_and_truck_expense: number
+          city: string
+          commissions_and_fees_expense: number
+          contract_labor_expense: number
+          cost_of_goods_sold: number
+          country: string
+          created_at: string
+          date_closed: string | null
+          date_started: string | null
+          dba_name: string
+          deductible_meals_expense: number
+          depreciation_expense: number
+          display_order: number
+          employee_benefit_expense: number
+          employer_identification_number: string
+          entity_type: string
+          gross_receipts: number
+          has_employees: boolean | null
+          has_home_office: boolean | null
+          has_inventory: boolean | null
+          id: string
+          insurance_expense: number
+          interest_expense: number
+          legal_and_professional_expense: number
+          notes: string
+          office_expense: number
+          organizer_id: string
+          other_business_income: number
+          other_expense: number
+          other_expense_description: string
+          ownership_percentage: number | null
+          pension_and_profit_sharing_expense: number
+          postal_code: string
+          principal_business_activity: string
+          record_status: string
+          rent_or_lease_expense: number
+          repairs_and_maintenance_expense: number
+          returns_and_allowances: number
+          state: string
+          supplies_expense: number
+          taxes_and_licenses_expense: number
+          travel_expense: number
+          updated_at: string
+          uses_vehicle: boolean | null
+          utilities_expense: number
+          wages_expense: number
+          was_active_during_tax_year: boolean | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "client_tax_organizer_businesses"
+          isOneToOne: false
+          isSetofReturn: true
+        }
       }
       get_client_organizer_dependents: {
         Args: { requested_organizer_id: string }
@@ -5171,6 +5525,10 @@ export type Database = {
         Args: { requested_action: string; requested_metadata?: Json }
         Returns: number
       }
+      refresh_client_business_organizer_progress: {
+        Args: { requested_organizer_id: string }
+        Returns: undefined
+      }
       register_client_document: {
         Args: {
           requested_category: string
@@ -5385,6 +5743,32 @@ export type Database = {
           to: "client_documents"
           isOneToOne: false
           isSetofReturn: true
+        }
+      }
+      require_client_business_organizer_access: {
+        Args: {
+          requested_organizer_id: string
+          requested_require_editable: boolean
+        }
+        Returns: {
+          client_id: string
+          created_at: string
+          current_section: Database["public"]["Enums"]["tax_organizer_section_key"]
+          id: string
+          last_saved_at: string | null
+          progress_percentage: number
+          reviewed_at: string | null
+          started_at: string | null
+          status: Database["public"]["Enums"]["tax_organizer_status"]
+          submitted_at: string | null
+          tax_year: number
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "client_tax_organizers"
+          isOneToOne: true
+          isSetofReturn: false
         }
       }
       reset_document_review: {
@@ -5834,6 +6218,18 @@ export type Database = {
           updated_at: string
         }[]
       }
+      set_client_organizer_business_activity: {
+        Args: {
+          requested_has_business_activity: boolean
+          requested_organizer_id: string
+        }
+        Returns: {
+          created_at: string
+          has_business_activity: boolean
+          organizer_id: string
+          updated_at: string
+        }[]
+      }
       set_organizer_review_checklist_item: {
         Args: {
           requested_is_completed: boolean
@@ -5938,6 +6334,75 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "client_documents"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      update_client_organizer_business: {
+        Args: {
+          requested_business: Json
+          requested_business_id: string
+          requested_organizer_id: string
+        }
+        Returns: {
+          accounting_method: string
+          address_line_1: string
+          address_line_2: string
+          advertising_expense: number
+          bookkeeping_complete: boolean | null
+          business_code: string
+          business_name: string
+          car_and_truck_expense: number
+          city: string
+          commissions_and_fees_expense: number
+          contract_labor_expense: number
+          cost_of_goods_sold: number
+          country: string
+          created_at: string
+          date_closed: string | null
+          date_started: string | null
+          dba_name: string
+          deductible_meals_expense: number
+          depreciation_expense: number
+          display_order: number
+          employee_benefit_expense: number
+          employer_identification_number: string
+          entity_type: string
+          gross_receipts: number
+          has_employees: boolean | null
+          has_home_office: boolean | null
+          has_inventory: boolean | null
+          id: string
+          insurance_expense: number
+          interest_expense: number
+          legal_and_professional_expense: number
+          notes: string
+          office_expense: number
+          organizer_id: string
+          other_business_income: number
+          other_expense: number
+          other_expense_description: string
+          ownership_percentage: number | null
+          pension_and_profit_sharing_expense: number
+          postal_code: string
+          principal_business_activity: string
+          record_status: string
+          rent_or_lease_expense: number
+          repairs_and_maintenance_expense: number
+          returns_and_allowances: number
+          state: string
+          supplies_expense: number
+          taxes_and_licenses_expense: number
+          travel_expense: number
+          updated_at: string
+          uses_vehicle: boolean | null
+          utilities_expense: number
+          wages_expense: number
+          was_active_during_tax_year: boolean | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "client_tax_organizer_businesses"
           isOneToOne: false
           isSetofReturn: true
         }
