@@ -19,7 +19,9 @@
     "dev:seed": "tsx tools/atlas-seeder/src/index.ts",
     "dev:seed:test-random": "tsx tools/atlas-seeder/src/test-random.ts",
     "dev:seed:test-fixtures": "tsx tools/atlas-seeder/src/test-fixtures.ts",
-    "dev:seed:preview-clients": "tsx tools/atlas-seeder/src/preview-clients.ts"
+    "dev:seed:preview-clients": "tsx tools/atlas-seeder/src/preview-clients.ts",
+    "dev:seed:preview-returns": "tsx tools/atlas-seeder/src/preview-returns.ts",
+    "dev:seed:preview-payments": "tsx tools/atlas-seeder/src/preview-payments.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",

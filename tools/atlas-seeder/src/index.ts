@@ -21,6 +21,15 @@ import {
   verifyClients,
 } from "./services/client.service"
 
+import {
+  generateReturns,
+} from "./generators/returns"
+
+import {
+  seedReturns,
+  verifyReturns,
+} from "./services/return.service"
+
 const supabase = createClient(
   atlasSeederConfig.supabaseUrl,
   atlasSeederConfig.secretKey,
@@ -388,11 +397,37 @@ async function main(): Promise<void> {
   )
 
   logHeader(
+    "Seeding Atlas Development Tax Returns",
+  )
+
+  const returns =
+    generateReturns()
+
+  await seedReturns(
+    supabase,
+    returns,
+    administrator.id,
+  )
+
+  await verifyReturns(
+    supabase,
+    returns.length,
+  )
+
+  logHeader(
     "Atlas Seeder Complete",
   )
 
   console.log(
     `✓ ${developmentStaff.length} development staff accounts ready`,
+  )
+
+  console.log(
+    `✓ ${clients.length} development clients ready`,
+  )
+
+  console.log(
+    `✓ ${returns.length} development tax returns ready`,
   )
 
   console.log("")
