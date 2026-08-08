@@ -30,7 +30,11 @@
     "dev:seed:payments": "npm run dev:seed -- --profile=payments",
     "dev:seed:workflow": "npm run dev:seed -- --profile=workflow",
     "dev:seed:documents": "npm run dev:seed -- --profile=documents",
-    "dev:seed:demo": "npm run dev:seed -- --profile=demo"
+    "dev:seed:demo": "npm run dev:seed -- --profile=demo",
+    "atlas:status": "tsx scripts/atlas-status.ts",
+    "atlas:verify": "tsx scripts/atlas-verify.ts",
+    "atlas:preview": "tsx scripts/atlas-preview.ts",
+    "atlas:release": "tsx scripts/atlas-release.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",

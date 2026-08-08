@@ -36,3 +36,90 @@ Production is never used for feature development.
 ## Current Version
 
 Atlas Foundation 1.0
+
+# Atlas Engineering Documentation
+
+Welcome to the engineering documentation for the Smith Enterprises Tax Management Platform (Atlas).
+
+This documentation contains everything required to develop, deploy, maintain, and operate the application.
+
+---
+
+## Documentation Index
+
+### Architecture
+
+- Application Overview
+- Frontend Architecture
+- Backend Architecture
+- Database Architecture
+- Security Architecture
+- Seeder Framework
+
+### Development
+
+Contains standards for:
+
+- Branching
+- Coding conventions
+- Local development
+- Testing
+- Pull Requests
+
+### Deployment
+
+Documents:
+
+- Local Development
+- Staging
+- Production
+- GitHub Actions
+- Vercel
+- Supabase
+
+### Release Process
+
+Documents:
+
+- Versioning
+- Release Checklist
+- Rollback Procedures
+- Customer Demo Process
+
+### Roadmap
+
+Tracks all completed and future Atlas phases.
+
+---
+
+Atlas follows a staged deployment lifecycle:
+
+Feature Branch
+
+↓
+
+Develop
+
+↓
+
+Preview
+
+↓
+
+Customer Review
+
+↓
+
+Main
+
+↓
+
+Production
+
+---
+
+# Engineering Documentation
+
+See:
+
+- docs/
