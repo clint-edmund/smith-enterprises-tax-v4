@@ -346,7 +346,9 @@ export function ReturnFiltersPanel({
             <option value="due_today">Due today</option>
             <option value="due_this_week">Due this week</option>
             <option value="next_7_days">Next 7 days</option>
+            <option value="next_30_days">Next 30 days</option>
             <option value="no_due_date">No due date</option>
+            
           </select>
         </div>
       </div>
@@ -431,7 +433,9 @@ export function ReturnFiltersPanel({
                       ? "Due this week"
                       : filters.deadline === "next_7_days"
                         ? "Next 7 days"
-                        : "No due date"
+                        : filters.deadline === "next_30_days"
+                          ? "Next 30 days"
+                          : "No due date"
               }`}
               onRemove={() => {
                 onRemoveFilter("deadline")

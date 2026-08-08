@@ -193,6 +193,7 @@ export function ReturnsPage() {
     const todayKey = toLocalDateKey(today)
     const weekEndKey = toLocalDateKey(endOfCurrentWeek(today))
     const nextSevenDaysKey = toLocalDateKey(addDays(today, 7))
+    const nextThirtyDaysKey = toLocalDateKey(addDays(today, 30))
 
     return allTaxReturns.filter((taxReturn) => {
       if (
@@ -250,10 +251,21 @@ export function ReturnsPage() {
         )
       }
 
-      return (
-        taxReturn.dueDate >= todayKey &&
-        taxReturn.dueDate <= nextSevenDaysKey
-      )
+      if (filters.deadline === "next_7_days") {
+        return (
+          taxReturn.dueDate >= todayKey &&
+          taxReturn.dueDate <= nextSevenDaysKey
+        )
+      }
+
+      if (filters.deadline === "next_30_days") {
+        return (
+          taxReturn.dueDate >= todayKey &&
+          taxReturn.dueDate <= nextThirtyDaysKey
+        )
+      }
+
+      return true
     })
   }, [
     allTaxReturns,
