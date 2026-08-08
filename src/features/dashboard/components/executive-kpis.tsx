@@ -92,17 +92,17 @@ export function ExecutiveKpis({
   ]
 
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+    <section className="rounded-2xl border border-brand-200 bg-white p-6 shadow-[0_10px_30px_rgba(33,31,28,0.06)]">
       <div>
-        <p className="text-sm font-semibold uppercase tracking-[0.14em] text-blue-700">
+        <p className="text-sm font-semibold uppercase tracking-[0.14em] text-brand-800">
           Executive Metrics
         </p>
 
-        <h2 className="mt-2 text-2xl font-bold tracking-tight text-slate-950">
+        <h2 className="mt-2 text-2xl font-bold tracking-tight text-brand-950">
           Operational Performance
         </h2>
 
-        <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
+        <p className="mt-2 max-w-3xl text-sm leading-6 text-brand-600">
           Monitor projected revenue, upcoming deadlines, production, and
           the current review queue.
         </p>
@@ -116,26 +116,26 @@ export function ExecutiveKpis({
             <>
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <p className="text-sm font-semibold text-slate-600">
+                  <p className="text-sm font-semibold text-brand-600">
                     {item.label}
                   </p>
 
-                  <p className="mt-2 text-3xl font-bold tracking-tight text-slate-950">
+                  <p className="mt-2 text-3xl font-bold tracking-tight text-brand-950">
                     {item.value}
                   </p>
                 </div>
 
-                <div className="rounded-xl bg-blue-100 p-3 text-blue-700">
+                <div className="rounded-xl bg-brand-200 p-3 text-brand-800">
                   <Icon className="size-5" />
                 </div>
               </div>
 
-              <p className="mt-4 text-sm leading-5 text-slate-500">
+              <p className="mt-4 text-sm leading-5 text-brand-500">
                 {item.description}
               </p>
 
               {item.href ? (
-                <p className="mt-4 text-sm font-semibold text-blue-700">
+                <p className="mt-4 text-sm font-semibold text-brand-800">
                   View matching returns →
                 </p>
               ) : null}
@@ -147,7 +147,7 @@ export function ExecutiveKpis({
               <Link
                 key={item.label}
                 to={item.href}
-                className="block rounded-xl border border-slate-200 bg-slate-50 p-5 transition hover:-translate-y-0.5 hover:border-blue-300 hover:bg-blue-50 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2"
+                className="block rounded-xl border border-brand-200 bg-brand-50 p-5 transition hover:-translate-y-0.5 hover:border-brand-400 hover:bg-brand-100 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-600 focus:ring-offset-2"
               >
                 {content}
               </Link>
@@ -157,7 +157,7 @@ export function ExecutiveKpis({
           return (
             <article
               key={item.label}
-              className="rounded-xl border border-slate-200 bg-slate-50 p-5"
+              className="rounded-xl border border-brand-200 bg-brand-50 p-5"
             >
               {content}
             </article>

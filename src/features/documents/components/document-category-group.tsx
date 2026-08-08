@@ -32,9 +32,13 @@ interface DocumentCategoryGroupProps {
   onPreview: (
     document: ClientDocument,
   ) => void
+  onReviewChanged: () => void | Promise<void>
   onSelectionChange: (
     documentId: string,
     selected: boolean,
+  ) => void
+  onShowVersions: (
+    document: ClientDocument,
   ) => void
   onToggleFavorite: (
     documentId: string,
@@ -49,7 +53,9 @@ export function DocumentCategoryGroup({
   selectionDisabled = false,
   onArchived,
   onPreview,
+  onReviewChanged,
   onSelectionChange,
+  onShowVersions,
   onToggleFavorite,
 }: DocumentCategoryGroupProps) {
   const [
@@ -116,8 +122,14 @@ export function DocumentCategoryGroup({
                   onArchived
                 }
                 onPreview={onPreview}
+                onReviewChanged={
+                  onReviewChanged
+                }
                 onSelectionChange={
                   onSelectionChange
+                }
+                onShowVersions={
+                  onShowVersions
                 }
                 onToggleFavorite={
                   onToggleFavorite

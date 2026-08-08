@@ -50,7 +50,7 @@ function getScoreClasses(score: number): string {
   }
 
   if (score >= 75) {
-    return "bg-blue-100 text-blue-800"
+    return "bg-stone-200 text-stone-900"
   }
 
   if (score >= 60) {
@@ -66,7 +66,7 @@ function getProgressClasses(score: number): string {
   }
 
   if (score >= 75) {
-    return "bg-blue-600"
+    return "bg-primary"
   }
 
   if (score >= 60) {
@@ -84,7 +84,7 @@ function getRecommendationClasses(
       return "border-emerald-200 bg-emerald-50 text-emerald-900"
 
     case "info":
-      return "border-blue-200 bg-blue-50 text-blue-900"
+      return "border-border bg-muted text-foreground"
 
     case "warning":
       return "border-amber-200 bg-amber-50 text-amber-900"
@@ -221,14 +221,14 @@ function ScoreCard({
   )
 
   return (
-    <article className="rounded-xl border border-slate-200 bg-white p-5">
+    <article className="rounded-xl border border-border bg-card p-5">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-sm font-semibold text-slate-700">
+          <p className="text-sm font-semibold text-foreground">
             {label}
           </p>
 
-          <p className="mt-1 text-xs leading-5 text-slate-500">
+          <p className="mt-1 text-xs leading-5 text-muted-foreground">
             {description}
           </p>
         </div>
@@ -272,7 +272,7 @@ function ReadinessMetricCard({
 
   return (
     <Link
-      className={`group rounded-xl border p-4 transition hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 ${item.classes}`}
+      className={`group rounded-xl border p-4 transition hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 ${item.classes}`}
       to={item.href}
     >
       <div className="flex items-start justify-between gap-4">
@@ -359,9 +359,9 @@ export function ReturnReadinessCenter({
       href: "/returns?workflow=review",
       icon: ClipboardCheck,
       classes:
-        "border-blue-200 bg-blue-50 text-blue-950",
+        "border-border bg-muted text-foreground",
       iconClasses:
-        "bg-blue-200 text-blue-800",
+        "bg-primary text-primary-foreground",
     },
     {
       label: "Blocked",
@@ -381,11 +381,11 @@ export function ReturnReadinessCenter({
     buildRecommendations(metrics)
 
   return (
-    <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-      <header className="border-b border-slate-200 bg-slate-50 px-6 py-5">
+    <section className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+      <header className="border-b border-slate-200 bg-muted/60 px-6 py-5">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex items-start gap-3">
-            <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-blue-100 text-blue-700">
+            <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-stone-200 text-primary">
               <HeartPulse
                 aria-hidden="true"
                 className="size-6"
@@ -393,33 +393,33 @@ export function ReturnReadinessCenter({
             </span>
 
             <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.14em] text-blue-700">
+              <p className="text-sm font-semibold uppercase tracking-[0.14em] text-primary">
                 Readiness Intelligence
               </p>
 
-              <h2 className="mt-1 text-2xl font-bold tracking-tight text-slate-950">
+              <h2 className="mt-1 text-2xl font-bold tracking-tight text-foreground">
                 Return Readiness Center
               </h2>
 
-              <p className="mt-1 max-w-3xl text-sm leading-6 text-slate-600">
+              <p className="mt-1 max-w-3xl text-sm leading-6 text-muted-foreground">
                 Identify what is preventing returns from moving forward and
                 focus staff attention on the highest-priority work.
               </p>
             </div>
           </div>
 
-          <div className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-right">
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+          <div className="rounded-xl border border-border bg-card px-4 py-3 text-right">
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               Active Returns
             </p>
 
-            <p className="mt-1 text-2xl font-bold text-slate-950">
+            <p className="mt-1 text-2xl font-bold text-foreground">
               {formatNumber(
                 metrics.activeReturns,
               )}
             </p>
 
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-muted-foreground">
               {formatNumber(
                 metrics.readinessEligibleReturns,
               )} readiness eligible
@@ -456,7 +456,7 @@ export function ReturnReadinessCenter({
           />
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-slate-50 p-5">
+        <div className="rounded-xl border border-slate-200 bg-muted/60 p-5">
           <div className="flex items-start gap-3">
             <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-amber-700">
               <AlertTriangle
@@ -466,11 +466,11 @@ export function ReturnReadinessCenter({
             </span>
 
             <div>
-              <h3 className="font-bold text-slate-950">
+              <h3 className="font-bold text-foreground">
                 Top Recommendations
               </h3>
 
-              <p className="mt-1 text-sm text-slate-600">
+              <p className="mt-1 text-sm text-muted-foreground">
                 Recommended actions based on the current readiness metrics.
               </p>
             </div>
@@ -519,7 +519,7 @@ export function ReturnReadinessCenter({
 
                 return (
                   <Link
-                    className={`${className} transition hover:-translate-y-0.5 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2`}
+                    className={`${className} transition hover:-translate-y-0.5 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2`}
                     key={recommendation.id}
                     to={recommendation.href}
                   >

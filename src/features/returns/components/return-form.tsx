@@ -9,7 +9,6 @@ import {
 } from "lucide-react"
 import {
   useEffect,
-  useMemo,
 } from "react"
 import {
   useForm,
@@ -36,10 +35,6 @@ import {
 import {
   formatClientNumber,
 } from "@/features/clients/utils/client-formatters"
-import {
-  getAllowedReturnStatuses,
-} from "@/features/returns/utils/return-workflow"
-
 
 interface ReturnFormProps {
   mode: ReturnFormMode
@@ -61,7 +56,6 @@ export function ReturnForm({
   clients,
   staffOptions,
   defaultValues,
-  currentStatus,
   submitLabel,
   isSubmitting,
   errorMessage,
@@ -103,12 +97,6 @@ export function ReturnForm({
       name: "extensionFiled",
     }) || false
 
-  const selectedStatus =
-    useWatch({
-      control,
-      name: "status",
-    })
-
   const assignedPreparerId =
     useWatch({
       control,
@@ -130,20 +118,6 @@ export function ReturnForm({
   const taxYearOptions =
     getTaxYearOptions()
 
-  const statusOptions =
-    useMemo(
-      () =>
-        getAllowedReturnStatuses(
-          mode === "edit"
-            ? currentStatus
-            : undefined,
-        ),
-      [
-        currentStatus,
-        mode,
-      ],
-    )
-
   const preparerOptions =
     staffOptions.filter(
       (staff) =>
@@ -158,33 +132,6 @@ export function ReturnForm({
         staff.role === "administrator" ||
         staff.role === "manager" ||
         staff.role === "reviewer",
-    )
-
-  const preparerRequiredStatuses =
-    new Set<ReturnStatus>([
-      "in_progress",
-      "ready_for_review",
-      "under_review",
-      "ready_to_file",
-      "filed",
-      "accepted",
-      "completed",
-    ])
-
-  const reviewerRequiredStatuses =
-    new Set<ReturnStatus>([
-      "under_review",
-      "ready_to_file",
-    ])
-
-  const requiresPreparer =
-    preparerRequiredStatuses.has(
-      selectedStatus,
-    )
-
-  const requiresReviewer =
-    reviewerRequiredStatuses.has(
-      selectedStatus,
     )
 
   const hasSameStaffAssignment =
@@ -409,106 +356,10 @@ export function ReturnForm({
             </select>
           </div>
 
-          <div>
-            <label
-              htmlFor="status"
-              className="mb-2 block text-sm font-medium text-slate-800"
-            >
-              Workflow status
-            </label>
-
-            <select
-              id="status"
-              {...register("status")}
-              disabled={isSubmitting}
-              className={fieldClasses(
-                Boolean(errors.status),
-              )}
-            >
-              {statusOptions.map(
-                (option) => (
-                  <option
-                    key={option.value}
-                    value={option.value}
-                  >
-                    {option.label}
-                  </option>
-                ),
-              )}
-            </select>
-
-            {mode === "edit" &&
-              currentStatus && (
-                <p className="mt-2 text-xs leading-5 text-slate-500">
-                  Only workflow transitions permitted
-                  from the current status are shown.
-                </p>
-              )}
-          </div>
-
-          <div className="md:col-span-2 xl:col-span-3 rounded-xl border border-blue-200 bg-blue-50 p-4">
-            <p className="text-sm font-semibold text-blue-950">
-              Workflow requirements
-            </p>
-
-            <ul className="mt-2 space-y-1 text-sm leading-6 text-blue-900">
-              {requiresPreparer && (
-                <li>
-                  An active authorized preparer is required
-                  for the selected status.
-                </li>
-              )}
-
-              {requiresReviewer && (
-                <li>
-                  An active authorized reviewer is required
-                  for the selected status.
-                </li>
-              )}
-
-              {selectedStatus === "filed" && (
-                <li>
-                  The filed date will default to today when
-                  left blank.
-                </li>
-              )}
-
-              {(selectedStatus === "accepted" ||
-                selectedStatus === "completed") && (
-                <li>
-                  Filed and accepted dates will default to
-                  today when left blank.
-                </li>
-              )}
-
-              {selectedStatus === "rejected" && (
-                <li>
-                  Saving a rejected return clears its
-                  accepted date while preserving the filed
-                  date.
-                </li>
-              )}
-
-              {!requiresPreparer &&
-                !requiresReviewer &&
-                selectedStatus !== "filed" &&
-                selectedStatus !== "accepted" &&
-                selectedStatus !== "completed" &&
-                selectedStatus !== "rejected" && (
-                  <li>
-                    No additional staff or automatic-date
-                    requirements apply to this status.
-                  </li>
-                )}
-            </ul>
-
-            {hasSameStaffAssignment && (
-              <p className="mt-3 text-sm font-semibold text-red-700">
-                The preparer and reviewer must be different
-                staff members.
-              </p>
-            )}
-          </div>
+          <input
+            type="hidden"
+            {...register("status")}
+          />
 
           <div className="md:col-span-2 xl:col-span-3">
             <label
@@ -621,6 +472,13 @@ export function ReturnForm({
             </select>
           </div>
         </div>
+
+        {hasSameStaffAssignment && (
+          <p className="mt-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm font-semibold text-red-700">
+            The preparer and reviewer must be different
+            staff members.
+          </p>
+        )}
       </section>
 
       <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">

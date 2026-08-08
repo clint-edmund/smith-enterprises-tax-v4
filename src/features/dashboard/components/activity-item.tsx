@@ -32,19 +32,19 @@ export function ActivityItem({
 
   const content = (
     <div className="flex gap-3">
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-700">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-stone-200 bg-stone-50 text-stone-700 shadow-sm dark:border-stone-700 dark:bg-stone-900 dark:text-stone-200">
         {getActivityIcon(activity.action)}
       </div>
 
       <div className="min-w-0 flex-1">
-        <p className="text-sm text-slate-700">
-          <span className="font-semibold text-slate-950">
+        <p className="text-sm leading-6 text-stone-700 dark:text-stone-300">
+          <span className="font-semibold text-stone-950 dark:text-stone-50">
             {activity.actorName || "System"}
           </span>{" "}
           {formatActivityDescription(activity)}
         </p>
 
-        <p className="mt-1 text-xs text-slate-500">
+        <p className="mt-1 text-xs font-medium text-stone-500 dark:text-stone-500">
           {formatActivityTimestamp(
             activity.occurredAt,
           )}
@@ -55,7 +55,7 @@ export function ActivityItem({
 
   if (!route) {
     return (
-      <li className="px-1 py-4">
+      <li className="px-2 py-4">
         {content}
       </li>
     )
@@ -64,7 +64,7 @@ export function ActivityItem({
   return (
     <li>
       <Link
-        className="block rounded-lg px-1 py-4 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2"
+        className="block rounded-lg px-2 py-4 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2"
         to={route}
       >
         {content}

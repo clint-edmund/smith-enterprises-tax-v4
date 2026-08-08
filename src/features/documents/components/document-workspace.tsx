@@ -2,8 +2,8 @@ import { FolderLock, RefreshCw } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
 import { DocumentLibrary } from "@/features/documents/components/document-library";
-import { RequiredDocumentsPanel } from "@/features/documents/components/required-documents-panel";
 import { DocumentUploadZone } from "@/features/documents/components/document-upload-zone";
+import { RequiredDocumentsPanel } from "@/features/documents/components/required-documents-panel";
 import { listClientDocuments } from "@/features/documents/services/document-service";
 import type { ClientDocument } from "@/features/documents/types/document.types";
 
@@ -11,12 +11,16 @@ interface DocumentWorkspaceProps {
   clientId: string;
   taxReturnId?: string | null;
   title?: string;
+  onDocumentsChanged?: () => void;
+  onActivityChanged?: () => void;
 }
 
 export function DocumentWorkspace({
   clientId,
   taxReturnId = null,
   title = "Documents",
+  onDocumentsChanged,
+  onActivityChanged,
 }: DocumentWorkspaceProps) {
   const [documents, setDocuments] = useState<ClientDocument[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -40,20 +44,59 @@ export function DocumentWorkspace({
   }, [clientId, taxReturnId]);
 
   useEffect(() => {
-    void loadDocuments()
-  }, [loadDocuments])
+    void loadDocuments();
+  }, [loadDocuments]);
 
   function handleUploaded(document: ClientDocument) {
     setDocuments((current) => [
       document,
       ...current.filter((item) => item.id !== document.id),
     ]);
+
+    onDocumentsChanged?.();
+    onActivityChanged?.();
   }
 
   function handleArchived(documentId: string) {
     setDocuments((current) =>
       current.filter((document) => document.id !== documentId),
     );
+
+    onDocumentsChanged?.();
+    onActivityChanged?.();
+  }
+
+  function handleFavoriteChanged(documentId: string) {
+    setDocuments((current) =>
+      current.map((document) =>
+        document.id === documentId
+          ? {
+              ...document,
+              isFavorite: !document.isFavorite,
+            }
+          : document,
+      ),
+    );
+
+    onDocumentsChanged?.();
+    onActivityChanged?.();
+  }
+
+  async function handleVersionChanged() {
+    await loadDocuments();
+    onDocumentsChanged?.();
+    onActivityChanged?.();
+  }
+
+  async function handleReviewChanged() {
+    await loadDocuments();
+    onDocumentsChanged?.();
+    onActivityChanged?.();
+  }
+
+  function handleRefresh() {
+    void loadDocuments();
+    onActivityChanged?.();
   }
 
   return (
@@ -77,10 +120,14 @@ export function DocumentWorkspace({
         <button
           className="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-60"
           disabled={isLoading}
-          onClick={() => void loadDocuments()}
+          onClick={handleRefresh}
           type="button"
         >
-          <RefreshCw className={`size-4 ${isLoading ? "animate-spin" : ""}`} />
+          <RefreshCw
+            className={`size-4 ${
+              isLoading ? "animate-spin" : ""
+            }`}
+          />
           Refresh
         </button>
       </div>
@@ -116,9 +163,17 @@ export function DocumentWorkspace({
 
       {!errorMessage && !isLoading ? (
         <div className="mt-5">
-          <DocumentLibrary documents={documents} onArchived={handleArchived} />
+          <DocumentLibrary
+            documents={documents}
+            onActivityLogged={onActivityChanged}
+            onArchived={handleArchived}
+            onFavoriteChanged={handleFavoriteChanged}
+            onReviewChanged={handleReviewChanged}
+            onVersionChanged={handleVersionChanged}
+          />
         </div>
       ) : null}
+
     </section>
   );
 }

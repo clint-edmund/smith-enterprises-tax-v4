@@ -22,6 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+bundle-stats.html
 
 # Environment variables
 .env
@@ -29,4 +30,6 @@ dist-ssr
 .env.*.local
 
 # Allow the environment template
-!.env.example
+!.env.examplemigration-history-before-atlas-repair.txt
+
+migration-history-before-atlas-repair.txt

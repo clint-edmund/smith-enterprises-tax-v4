@@ -23,12 +23,12 @@ function WorkloadSummaryCard({
   value: number;
 }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/50">
-      <p className="text-sm font-medium text-slate-600 dark:text-slate-400">
+    <div className="rounded-xl border border-border bg-muted/60 p-4">
+      <p className="text-sm font-medium text-muted-foreground">
         {label}
       </p>
 
-      <p className="mt-2 text-2xl font-bold text-slate-900 dark:text-slate-100">
+      <p className="mt-2 text-2xl font-bold text-foreground">
         {value}
       </p>
     </div>
@@ -55,17 +55,17 @@ function getCapacityBadge(
 
 function StaffWorkloadRow({ item }: { item: DashboardStaffWorkloadItem }) {
   return (
-    <tr className="border-b border-slate-100 last:border-b-0 dark:border-slate-800">
+    <tr className="border-b border-border/70 last:border-b-0">
       <td className="px-4 py-4">
         <div>
           <Link
             to={`/returns?preparer=${item.staffId}`}
-            className="font-semibold text-blue-700 hover:text-blue-900 hover:underline dark:text-blue-400 dark:hover:text-blue-300"
+            className="font-semibold text-primary hover:text-foreground hover:underline"
           >
             {item.displayName}
           </Link>
 
-          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+          <p className="mt-1 text-xs text-muted-foreground">
             {formatRole(item.role)}
           </p>
         </div>
@@ -74,13 +74,13 @@ function StaffWorkloadRow({ item }: { item: DashboardStaffWorkloadItem }) {
       <td className="px-4 py-4 text-center">
         <Link
           to={`/returns?preparer=${item.staffId}`}
-          className="font-semibold text-blue-700 hover:underline dark:text-blue-400"
+          className="font-semibold text-primary hover:text-foreground hover:underline"
         >
           {item.assignedPreparation}
         </Link>
       </td>
 
-      <td className="px-4 py-4 text-center text-sm text-slate-700 dark:text-slate-300">
+      <td className="px-4 py-4 text-center text-sm text-foreground">
         {item.assignedReview}
       </td>
 
@@ -88,20 +88,20 @@ function StaffWorkloadRow({ item }: { item: DashboardStaffWorkloadItem }) {
         <div className="flex min-w-[150px] flex-col gap-1 text-sm">
           <Link
             to={`/returns?preparer=${item.staffId}&workflow=in_preparation`}
-            className="flex items-center justify-between gap-4 text-slate-600 hover:text-blue-700 hover:underline dark:text-slate-400 dark:hover:text-blue-400"
+            className="flex items-center justify-between gap-4 text-muted-foreground hover:text-foreground hover:underline"
           >
             <span>In preparation</span>
-            <span className="font-semibold text-slate-900 dark:text-slate-100">
+            <span className="font-semibold text-foreground">
               {item.inPreparation}
             </span>
           </Link>
 
           <Link
             to={`/returns?preparer=${item.staffId}&workflow=review`}
-            className="flex items-center justify-between gap-4 text-slate-600 hover:text-blue-700 hover:underline dark:text-slate-400 dark:hover:text-blue-400"
+            className="flex items-center justify-between gap-4 text-muted-foreground hover:text-foreground hover:underline"
           >
             <span>Awaiting review</span>
-            <span className="font-semibold text-slate-900 dark:text-slate-100">
+            <span className="font-semibold text-foreground">
               {item.awaitingReview}
             </span>
           </Link>
@@ -110,7 +110,7 @@ function StaffWorkloadRow({ item }: { item: DashboardStaffWorkloadItem }) {
 
       <td className="px-4 py-4 text-center">
         <div className="flex min-w-[125px] flex-col items-center gap-2">
-          <span className="text-sm font-bold text-slate-900 dark:text-slate-100">
+          <span className="text-sm font-bold text-foreground">
             {item.capacityPercentage}%
           </span>
 
@@ -129,7 +129,7 @@ function StaffWorkloadRow({ item }: { item: DashboardStaffWorkloadItem }) {
           className={
             item.overdue > 0
               ? "inline-flex min-w-8 justify-center rounded-full bg-red-100 px-2.5 py-1 text-xs font-semibold text-red-700 dark:bg-red-950/50 dark:text-red-300"
-              : "text-sm text-slate-500 dark:text-slate-400"
+              : "text-sm text-muted-foreground"
           }
         >
           {item.overdue}
@@ -141,7 +141,7 @@ function StaffWorkloadRow({ item }: { item: DashboardStaffWorkloadItem }) {
           className={
             item.dueNextSevenDays > 0
               ? "inline-flex min-w-8 justify-center rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-700 dark:bg-amber-950/50 dark:text-amber-300"
-              : "text-sm text-slate-500 dark:text-slate-400"
+              : "text-sm text-muted-foreground"
           }
         >
           {item.dueNextSevenDays}
@@ -153,7 +153,7 @@ function StaffWorkloadRow({ item }: { item: DashboardStaffWorkloadItem }) {
           className={
             item.onHold > 0
               ? "inline-flex min-w-8 justify-center rounded-full bg-slate-200 px-2.5 py-1 text-xs font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-300"
-              : "text-sm text-slate-500 dark:text-slate-400"
+              : "text-sm text-muted-foreground"
           }
         >
           {item.onHold}
@@ -165,14 +165,14 @@ function StaffWorkloadRow({ item }: { item: DashboardStaffWorkloadItem }) {
 
 export function StaffWorkload({ workload }: StaffWorkloadProps) {
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
-      <div className="border-b border-slate-200 p-6 dark:border-slate-800">
+    <section className="rounded-2xl border border-border bg-card text-card-foreground shadow-sm">
+      <div className="border-b border-border p-6">
         <div>
-          <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">
+          <h2 className="text-xl font-bold text-foreground">
             Staff Workload
           </h2>
 
-          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
+          <p className="mt-1 text-sm text-muted-foreground">
             Current preparation, review, deadline, and hold assignments by staff
             member.
           </p>
@@ -203,11 +203,11 @@ export function StaffWorkload({ workload }: StaffWorkloadProps) {
 
       {workload.staff.length === 0 ? (
         <div className="p-8 text-center">
-          <p className="font-medium text-slate-700 dark:text-slate-300">
+          <p className="font-medium text-foreground">
             No active staff members were found.
           </p>
 
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+          <p className="mt-1 text-sm text-muted-foreground">
             Staff workload information will appear after active preparers or
             reviewers are available.
           </p>
@@ -215,37 +215,37 @@ export function StaffWorkload({ workload }: StaffWorkloadProps) {
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full min-w-[1050px]">
-            <thead className="bg-slate-50 dark:bg-slate-900/60">
+            <thead className="bg-muted/60">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                   Staff Member
                 </th>
 
-                <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                   Prep
                 </th>
 
-                <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                   Review
                 </th>
 
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                   Active Work
                 </th>
 
-                <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                   Capacity
                 </th>
 
-                <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                   Overdue
                 </th>
 
-                <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                   Due in 7 Days
                 </th>
 
-                <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                   On Hold
                 </th>
               </tr>

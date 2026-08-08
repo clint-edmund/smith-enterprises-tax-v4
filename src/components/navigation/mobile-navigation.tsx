@@ -31,16 +31,16 @@ export function MobileNavigation({
     >
       <button
         type="button"
-        className="absolute inset-0 bg-slate-950/60"
+        className="absolute inset-0 bg-slate-950/70 backdrop-blur-sm"
         onClick={onClose}
         aria-label="Close navigation menu"
       />
 
-      <aside className="relative h-full w-[min(20rem,88vw)] bg-white shadow-2xl">
+      <aside className="relative h-full w-[min(20rem,90vw)] overflow-hidden border-r border-white/10 bg-sidebar shadow-2xl">
         <button
           type="button"
           onClick={onClose}
-          className="absolute right-3 top-3 z-10 inline-flex size-9 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-900"
+          className="absolute right-3 top-3 z-10 inline-flex size-9 items-center justify-center rounded-xl border border-white/10 bg-white/10 text-white/80 shadow-sm transition hover:bg-white/15 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
           aria-label="Close navigation menu"
         >
           <X
