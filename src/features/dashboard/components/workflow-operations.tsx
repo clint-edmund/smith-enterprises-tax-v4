@@ -1,4 +1,8 @@
 import {
+  getReturnsRoute,
+} from "@/features/returns/utils/return-navigation"
+
+import {
   CheckCircle2,
   ClipboardList,
   FileCheck2,
@@ -25,7 +29,9 @@ const workflowItems = [
     label: "Intake",
     description: "New returns entering the workflow",
     icon: ClipboardList,
-    href: "/returns?workflow=intake",
+    href: getReturnsRoute({
+  workflow: "intake",
+}),
     classes: "border-slate-200 bg-slate-50 text-slate-800",
     iconClasses: "bg-slate-200 text-slate-700",
   },
@@ -34,7 +40,9 @@ const workflowItems = [
     label: "Documents Pending",
     description: "Waiting for client documents",
     icon: FolderClock,
-    href: "/returns?workflow=documents_pending",
+    href: getReturnsRoute({
+  workflow: "documents_pending",
+}),
     classes: "border-amber-200 bg-amber-50 text-amber-900",
     iconClasses: "bg-amber-200 text-amber-800",
   },
@@ -43,7 +51,9 @@ const workflowItems = [
     label: "Ready for Preparation",
     description: "Ready to be assigned or prepared",
     icon: FileCheck2,
-    href: "/returns?workflow=ready_for_preparation",
+    href: getReturnsRoute({
+  workflow: "ready_for_preparation",
+}),
     classes: "border-border bg-muted/70 text-foreground",
     iconClasses: "bg-primary text-primary-foreground",
   },
@@ -52,7 +62,9 @@ const workflowItems = [
     label: "In Preparation",
     description: "Returns currently being prepared",
     icon: FilePenLine,
-    href: "/returns?workflow=in_preparation",
+    href: getReturnsRoute({
+  workflow: "in_preparation",
+}),
     classes: "border-stone-300 bg-stone-100 text-stone-900",
     iconClasses: "bg-stone-800 text-white",
   },
@@ -61,7 +73,9 @@ const workflowItems = [
     label: "Review",
     description: "Waiting for or undergoing review",
     icon: ScanSearch,
-    href: "/returns?workflow=review",
+    href: getReturnsRoute({
+  workflow: "review",
+}),
     classes: "border-zinc-300 bg-zinc-100 text-zinc-900",
     iconClasses: "bg-zinc-800 text-white",
   },
@@ -70,7 +84,9 @@ const workflowItems = [
     label: "Signature Pending",
     description: "Waiting for client signatures",
     icon: Signature,
-    href: "/returns?workflow=signature_pending",
+    href: getReturnsRoute({
+  workflow: "signature_pending",
+}),
     classes: "border-neutral-300 bg-neutral-100 text-neutral-900",
     iconClasses: "bg-neutral-800 text-white",
   },
@@ -79,7 +95,9 @@ const workflowItems = [
     label: "Ready to File",
     description: "Approved and ready for filing",
     icon: FileClock,
-    href: "/returns?workflow=ready_to_file",
+    href: getReturnsRoute({
+  workflow: "ready_to_file",
+}),
     classes: "border-slate-300 bg-slate-100 text-slate-900",
     iconClasses: "bg-slate-800 text-white",
   },
@@ -88,7 +106,9 @@ const workflowItems = [
     label: "Filed",
     description: "Submitted to the taxing authority",
     icon: Send,
-    href: "/returns?workflow=filed",
+    href: getReturnsRoute({
+  workflow: "filed",
+}),
     classes: "border-slate-300 bg-white text-slate-900",
     iconClasses: "bg-slate-700 text-white",
   },
@@ -97,7 +117,9 @@ const workflowItems = [
     label: "Completed",
     description: "Finished workflow items",
     icon: CheckCircle2,
-    href: "/returns?workflow=completed",
+    href: getReturnsRoute({
+  workflow: "completed",
+}),
     classes: "border-emerald-200 bg-emerald-50 text-emerald-900",
     iconClasses: "bg-emerald-200 text-emerald-800",
   },
@@ -106,7 +128,9 @@ const workflowItems = [
     label: "On Hold",
     description: "Returns requiring attention",
     icon: PauseCircle,
-    href: "/returns?workflow=on_hold",
+    href: getReturnsRoute({
+  workflow: "on_hold",
+}),
     classes: "border-red-200 bg-red-50 text-red-900",
     iconClasses: "bg-red-200 text-red-800",
   },
@@ -146,7 +170,7 @@ export function WorkflowOperations({
         </div>
 
         <Link
-          to="/returns?workflow=all"
+          to={getReturnsRoute()}
           className="inline-flex items-center justify-center rounded-lg border border-border bg-background px-4 py-2.5 text-sm font-semibold text-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-muted hover:shadow-md focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
         >
           View All {formatNumber(totalWorkflowReturns)}

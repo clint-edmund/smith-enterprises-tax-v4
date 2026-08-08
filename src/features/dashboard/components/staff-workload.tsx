@@ -1,3 +1,7 @@
+import {
+  getReturnsRoute,
+} from "@/features/returns/utils/return-navigation"
+
 import { Link } from "react-router-dom";
 
 import type {
@@ -59,7 +63,9 @@ function StaffWorkloadRow({ item }: { item: DashboardStaffWorkloadItem }) {
       <td className="px-4 py-4">
         <div>
           <Link
-            to={`/returns?preparer=${item.staffId}`}
+            to={getReturnsRoute({
+  preparerId: item.staffId,
+})}
             className="font-semibold text-primary hover:text-foreground hover:underline"
           >
             {item.displayName}
@@ -73,7 +79,9 @@ function StaffWorkloadRow({ item }: { item: DashboardStaffWorkloadItem }) {
 
       <td className="px-4 py-4 text-center">
         <Link
-          to={`/returns?preparer=${item.staffId}`}
+          to={getReturnsRoute({
+  preparerId: item.staffId,
+})}
           className="font-semibold text-primary hover:text-foreground hover:underline"
         >
           {item.assignedPreparation}
@@ -87,7 +95,10 @@ function StaffWorkloadRow({ item }: { item: DashboardStaffWorkloadItem }) {
       <td className="px-4 py-4">
         <div className="flex min-w-[150px] flex-col gap-1 text-sm">
           <Link
-            to={`/returns?preparer=${item.staffId}&workflow=in_preparation`}
+            to={getReturnsRoute({
+  preparerId: item.staffId,
+  workflow: "in_preparation",
+})}
             className="flex items-center justify-between gap-4 text-muted-foreground hover:text-foreground hover:underline"
           >
             <span>In preparation</span>
@@ -97,7 +108,10 @@ function StaffWorkloadRow({ item }: { item: DashboardStaffWorkloadItem }) {
           </Link>
 
           <Link
-            to={`/returns?preparer=${item.staffId}&workflow=review`}
+            to={getReturnsRoute({
+  preparerId: item.staffId,
+  workflow: "review",
+})}
             className="flex items-center justify-between gap-4 text-muted-foreground hover:text-foreground hover:underline"
           >
             <span>Awaiting review</span>

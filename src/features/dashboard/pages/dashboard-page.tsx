@@ -65,6 +65,9 @@ import {
   useAuthorization,
 } from "@/features/authorization/hooks/use-authorization"
 
+import {
+  getReturnsRoute,
+} from "@/features/returns/utils/return-navigation"
 const DashboardFinancialChart =
   lazy(async () => {
     const module =
@@ -606,7 +609,9 @@ export function DashboardPage() {
           value={formatNumber(summary.inProgressReturns)}
           description="Returns actively being prepared"
           icon={FileClock}
-          href="/returns?status=in_progress"
+          href={getReturnsRoute({
+  status: "in_progress",
+})}
         />
 
         <SummaryCard
@@ -614,7 +619,9 @@ export function DashboardPage() {
           value={formatNumber(summary.awaitingReviewReturns)}
           description="Ready-for-review and under-review returns"
           icon={ScanSearch}
-          href="/returns?status=ready_for_review"
+          href={getReturnsRoute({
+  status: "ready_for_review",
+})}
         />
 
         <SummaryCard
@@ -624,7 +631,9 @@ export function DashboardPage() {
             summary.overdueReturns,
           )} overdue returns`}
           icon={CalendarClock}
-          href="/returns?deadline=next_7_days"
+          href={getReturnsRoute({
+  deadline: "next_7_days",
+})}
         />
 
         <SummaryCard
@@ -632,7 +641,9 @@ export function DashboardPage() {
           value={formatNumber(summary.documentsPending)}
           description="Returns awaiting client documents"
           icon={AlertTriangle}
-          href="/returns?status=documents_pending"
+          href={getReturnsRoute({
+  status: "documents_pending",
+})}
         />
 
         {canViewExecutiveData && (
@@ -653,7 +664,9 @@ export function DashboardPage() {
             summary.unassignedReturns,
           )} open returns are unassigned`}
           icon={FileCheck2}
-          href="/returns?status=completed"
+          href={getReturnsRoute({
+  status: "completed",
+})}
         />
       </div>
 

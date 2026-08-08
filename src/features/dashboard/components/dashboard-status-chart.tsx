@@ -1,3 +1,7 @@
+import {
+  getReturnsRoute,
+} from "@/features/returns/utils/return-navigation"
+
 import { ChartNoAxesColumnIncreasing } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -40,7 +44,9 @@ export function DashboardStatusChart({ data }: DashboardStatusChartProps) {
             return (
               <Link
                 key={item.status}
-                to={`/returns?status=${encodeURIComponent(item.status)}`}
+                to={getReturnsRoute({
+  status: item.status,
+})}
                 className="block rounded-xl border border-transparent p-2 transition hover:border-blue-200 hover:bg-blue-50/50 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <div className="mb-1.5 flex items-center justify-between gap-3 text-sm">
