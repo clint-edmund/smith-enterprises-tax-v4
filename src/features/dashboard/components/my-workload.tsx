@@ -1,4 +1,8 @@
 import {
+  getReturnsRoute,
+} from "@/features/returns/utils/return-navigation"
+
+import {
   AlertTriangle,
   CalendarDays,
   CalendarRange,
@@ -19,35 +23,48 @@ const workloadItems = [
     key: "assignedToMe" as const,
     label: "Assigned to Me",
     description: "Open returns where you are the preparer",
-    href: "/returns?assignment=mine",
+    href: getReturnsRoute({
+  assignment: "mine",
+}),
     icon: UserRoundCheck,
   },
   {
     key: "reviewAssignedToMe" as const,
     label: "My Reviews",
     description: "Returns assigned to you for review",
-    href: "/returns?reviewer=mine",
+    href: getReturnsRoute({
+  reviewer: "mine",
+}),
     icon: ClipboardCheck,
   },
   {
     key: "dueToday" as const,
     label: "Due Today",
     description: "Open assigned returns due today",
-    href: "/returns?assignment=mine&deadline=due_today",
+    href: getReturnsRoute({
+  assignment: "mine",
+  deadline: "due_today",
+}),
     icon: CalendarDays,
   },
   {
     key: "dueThisWeek" as const,
     label: "Due This Week",
     description: "Open assigned returns due this week",
-    href: "/returns?assignment=mine&deadline=due_this_week",
+    href: getReturnsRoute({
+  assignment: "mine",
+  deadline: "due_this_week",
+}),
     icon: CalendarRange,
   },
   {
     key: "overdue" as const,
     label: "My Overdue Returns",
     description: "Open assigned returns past their due date",
-    href: "/returns?assignment=mine&deadline=overdue",
+    href: getReturnsRoute({
+  assignment: "mine",
+  deadline: "overdue",
+}),
     icon: AlertTriangle,
   },
 ];

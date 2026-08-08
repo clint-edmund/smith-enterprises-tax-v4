@@ -1,3 +1,7 @@
+import {
+  getReturnsRoute,
+} from "@/features/returns/utils/return-navigation"
+
 import { UsersRound } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -67,7 +71,9 @@ export function DashboardStaffWorkloadChart({
           ))}
 
           <Link
-            to="/returns?assignment=unassigned"
+            to={getReturnsRoute({
+  assignment: "unassigned",
+})}
             className="inline-flex text-sm font-semibold text-blue-700 hover:text-blue-800"
           >
             Review unassigned returns

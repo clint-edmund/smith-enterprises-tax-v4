@@ -22,6 +22,9 @@ import {
   formatNumber,
 } from "@/features/dashboard/utils/dashboard-formatters"
 
+import {
+  getReturnsRoute,
+} from "@/features/returns/utils/return-navigation"
 type ReturnReadinessCenterProps = {
   metrics: DashboardReadinessMetrics
 }
@@ -110,7 +113,9 @@ function buildRecommendations(
           ? "return needs"
           : "returns need"
       } document attention.`,
-      href: "/returns?workflow=documents_pending",
+      href: getReturnsRoute({
+  workflow: "documents_pending",
+}),
       severity: "warning",
     })
   }
@@ -126,7 +131,9 @@ function buildRecommendations(
           ? "return does"
           : "returns do"
       } not have an assigned preparer.`,
-      href: "/returns?assignment=unassigned",
+      href: getReturnsRoute({
+  assignment: "unassigned",
+}),
       severity: "warning",
     })
   }
@@ -142,7 +149,9 @@ function buildRecommendations(
           ? "return is"
           : "returns are"
       } currently on hold.`,
-      href: "/returns?workflow=on_hold",
+      href: getReturnsRoute({
+  workflow: "on_hold",
+}),
       severity: "critical",
     })
   }
@@ -158,7 +167,9 @@ function buildRecommendations(
           ? "return is"
           : "returns are"
       } past the due date.`,
-      href: "/returns?deadline=overdue",
+      href: getReturnsRoute({
+  deadline: "overdue",
+}),
       severity: "critical",
     })
   } else {
@@ -182,7 +193,9 @@ function buildRecommendations(
           ? "return is"
           : "returns are"
       } ready to begin preparation.`,
-      href: "/returns?workflow=ready_for_preparation",
+      href: getReturnsRoute({
+  workflow: "ready_for_preparation",
+}),
       severity: "info",
     })
   }
@@ -198,7 +211,9 @@ function buildRecommendations(
           ? "return is"
           : "returns are"
       } currently in the review stage.`,
-      href: "/returns?workflow=review",
+      href: getReturnsRoute({
+  workflow: "review",
+}),
       severity: "info",
     })
   }
@@ -320,7 +335,9 @@ export function ReturnReadinessCenter({
       description:
         "Readiness requirements are satisfied and preparation can begin.",
       value: metrics.readyForPreparation,
-      href: "/returns?workflow=ready_for_preparation",
+      href: getReturnsRoute({
+  workflow: "ready_for_preparation",
+}),
       icon: FileCheck2,
       classes:
         "border-emerald-200 bg-emerald-50 text-emerald-950",
@@ -332,7 +349,9 @@ export function ReturnReadinessCenter({
       description:
         "Required-document checklists are missing or incomplete.",
       value: metrics.needsDocuments,
-      href: "/returns?workflow=documents_pending",
+      href: getReturnsRoute({
+  workflow: "documents_pending",
+}),
       icon: FolderClock,
       classes:
         "border-amber-200 bg-amber-50 text-amber-950",
@@ -344,7 +363,9 @@ export function ReturnReadinessCenter({
       description:
         "Open returns that do not have an assigned preparer.",
       value: metrics.missingPreparer,
-      href: "/returns?assignment=unassigned",
+      href: getReturnsRoute({
+  assignment: "unassigned",
+}),
       icon: UserRoundX,
       classes:
         "border-orange-200 bg-orange-50 text-orange-950",
@@ -356,7 +377,9 @@ export function ReturnReadinessCenter({
       description:
         "Returns currently waiting for or undergoing review.",
       value: metrics.readyForReview,
-      href: "/returns?workflow=review",
+      href: getReturnsRoute({
+  workflow: "review",
+}),
       icon: ClipboardCheck,
       classes:
         "border-border bg-muted text-foreground",
@@ -368,7 +391,9 @@ export function ReturnReadinessCenter({
       description:
         "Returns currently placed on hold and requiring attention.",
       value: metrics.blockedReturns,
-      href: "/returns?workflow=on_hold",
+      href: getReturnsRoute({
+  workflow: "on_hold",
+}),
       icon: Ban,
       classes:
         "border-red-200 bg-red-50 text-red-950",

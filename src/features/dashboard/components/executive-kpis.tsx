@@ -14,6 +14,10 @@ import {
 } from "@/features/dashboard/utils/dashboard-formatters"
 import { Link } from "react-router-dom"
 
+import {
+  getReturnsRoute,
+} from "@/features/returns/utils/return-navigation"
+
 type ExecutiveKpisProps = {
   metrics: DashboardExecutiveMetrics
 }
@@ -47,7 +51,7 @@ export function ExecutiveKpis({
       description:
         "Open returns with deadlines during the next seven days.",
       icon: CalendarDays,
-      href: "/returns?deadline=next_7_days",
+      href: getReturnsRoute({ deadline: "next_7_days" }),
     },
     {
       label: "Due Next 30 Days",
@@ -57,7 +61,7 @@ export function ExecutiveKpis({
       description:
         "Open returns with deadlines during the next thirty days.",
       icon: CalendarRange,
-      href: "/returns?deadline=next_30_days",
+      href: getReturnsRoute({ deadline: "next_30_days" }),
     },
     {
       label: "Completed This Week",
@@ -67,7 +71,7 @@ export function ExecutiveKpis({
       description:
         "Returns completed since the beginning of the current week.",
       icon: FileCheck2,
-      href: "/returns?workflow=completed&completedPeriod=week",
+      href: getReturnsRoute({ workflow: "completed", completedPeriod: "week", }),
     },
     {
       label: "Completed This Month",
@@ -77,7 +81,7 @@ export function ExecutiveKpis({
       description:
         "Returns completed since the beginning of the current month.",
       icon: TrendingUp,
-      href: "/returns?workflow=completed&completedPeriod=month",
+      href: getReturnsRoute({ workflow: "completed", completedPeriod: "month", }),
     },
     {
       label: "Review Queue",
@@ -87,7 +91,7 @@ export function ExecutiveKpis({
       description:
         "Returns that are currently in the review stage.",
       icon: ClipboardCheck,
-      href: "/returns?workflow=review",
+      href: getReturnsRoute({ workflow: "review", }),
     },
   ]
 
