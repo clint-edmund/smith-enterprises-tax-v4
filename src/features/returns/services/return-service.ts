@@ -308,6 +308,7 @@ export async function searchTaxReturns(
         | TaxReturnListItem["workflowStatus"]
         | null
       workflow_hold_reason: string | null
+      workflow_completed_at: string | null
     }
   >()
 
@@ -333,7 +334,8 @@ export async function searchTaxReturns(
         .select(`
           id,
           workflow_status,
-          workflow_hold_reason
+          workflow_hold_reason,
+          workflow_completed_at
         `)
         .in(
           "id",
@@ -360,6 +362,9 @@ export async function searchTaxReturns(
 
             workflow_hold_reason:
               workflowRow.workflow_hold_reason,
+
+            workflow_completed_at:
+              workflowRow.workflow_completed_at,
           },
         )
       }
@@ -407,6 +412,9 @@ export async function searchTaxReturns(
         "intake",
       workflowHoldReason:
         workflow?.workflow_hold_reason ??
+        null,
+      workflowCompletedAt:
+        workflow?.workflow_completed_at ??
         null,
       createdAt: taxReturn.created_at,
       updatedAt: taxReturn.updated_at,

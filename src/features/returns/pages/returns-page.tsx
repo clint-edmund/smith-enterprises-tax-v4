@@ -80,6 +80,45 @@ function endOfCurrentWeek(date: Date) {
   return result
 }
 
+function startOfCurrentWeek(
+  date: Date,
+): Date {
+  const result =
+    new Date(date)
+
+  const day =
+    result.getDay()
+
+  const daysSinceMonday =
+    day === 0
+      ? 6
+      : day - 1
+
+  result.setDate(
+    result.getDate() -
+      daysSinceMonday,
+  )
+
+  result.setHours(
+    0,
+    0,
+    0,
+    0,
+  )
+
+  return result
+}
+
+function startOfCurrentMonth(
+  date: Date,
+): Date {
+  return new Date(
+    date.getFullYear(),
+    date.getMonth(),
+    1,
+  )
+}
+
 export function ReturnsPage() {
   const { profile } = useAuth()
   const {
@@ -191,9 +230,18 @@ export function ReturnsPage() {
     const currentUserId = profile?.id ?? null
     const today = new Date()
     const todayKey = toLocalDateKey(today)
-    const weekEndKey = toLocalDateKey(endOfCurrentWeek(today))
-    const nextSevenDaysKey = toLocalDateKey(addDays(today, 7))
-    const nextThirtyDaysKey = toLocalDateKey(addDays(today, 30))
+    const weekEndKey =
+      toLocalDateKey(
+        endOfCurrentWeek(today),
+      )
+    const nextSevenDaysKey =
+      toLocalDateKey(
+        addDays(today, 7),
+      )
+    const nextThirtyDaysKey =
+      toLocalDateKey(
+        addDays(today, 30),
+      )
 
     return allTaxReturns.filter((taxReturn) => {
       if (
@@ -275,17 +323,98 @@ export function ReturnsPage() {
     profile?.id,
   ])
 
-  const taxReturns = useMemo(
-    () =>
-      filters.workflow === "all"
-        ? queueTaxReturns
-        : queueTaxReturns.filter(
-            (taxReturn) =>
-              taxReturn.workflowStatus ===
-              filters.workflow,
-          ),
-    [queueTaxReturns, filters.workflow],
-  )
+  const taxReturns = useMemo(() => {
+    const today =
+      new Date()
+
+    const endOfToday =
+      new Date(today)
+
+    endOfToday.setHours(
+      23,
+      59,
+      59,
+      999,
+    )
+
+    const weekStart =
+      startOfCurrentWeek(
+        today,
+      )
+
+    const monthStart =
+      startOfCurrentMonth(
+        today,
+      )
+
+    return queueTaxReturns.filter(
+      (taxReturn) => {
+        if (
+          filters.workflow !== "all" &&
+          taxReturn.workflowStatus !==
+            filters.workflow
+        ) {
+          return false
+        }
+
+        if (
+          filters.completedPeriod ===
+          "all"
+        ) {
+          return true
+        }
+
+        if (
+          !taxReturn.workflowCompletedAt
+        ) {
+          return false
+        }
+
+        const completedAt =
+          new Date(
+            taxReturn.workflowCompletedAt,
+          )
+
+        if (
+          Number.isNaN(
+            completedAt.getTime(),
+          )
+        ) {
+          return false
+        }
+
+        if (
+          filters.completedPeriod ===
+          "week"
+        ) {
+          return (
+            completedAt >=
+              weekStart &&
+            completedAt <=
+              endOfToday
+          )
+        }
+
+        if (
+          filters.completedPeriod ===
+          "month"
+        ) {
+          return (
+            completedAt >=
+              monthStart &&
+            completedAt <=
+              endOfToday
+          )
+        }
+
+        return true
+      },
+    )
+  }, [
+    queueTaxReturns,
+    filters.workflow,
+    filters.completedPeriod,
+  ])
 
   const resultNetFees = taxReturns.reduce(
     (total, taxReturn) =>
