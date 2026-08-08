@@ -22,7 +22,15 @@
     "dev:seed:preview-clients": "tsx tools/atlas-seeder/src/preview-clients.ts",
     "dev:seed:preview-returns": "tsx tools/atlas-seeder/src/preview-returns.ts",
     "dev:seed:preview-payments": "tsx tools/atlas-seeder/src/preview-payments.ts",
-    "dev:seed:test-payment-workflow": "tsx tools/atlas-seeder/src/test-payment-workflow.ts"
+    "dev:seed:test-payment-workflow": "tsx tools/atlas-seeder/src/test-payment-workflow.ts",
+    "dev:seed:test-clock": "tsx tools/atlas-seeder/src/test-simulation-clock.ts",
+    "dev:seed:test-options": "tsx tools/atlas-seeder/src/test-seeder-options.ts",
+    "dev:seed:office": "npm run dev:seed -- --profile=office",
+    "dev:seed:dashboard": "npm run dev:seed -- --profile=dashboard",
+    "dev:seed:payments": "npm run dev:seed -- --profile=payments",
+    "dev:seed:workflow": "npm run dev:seed -- --profile=workflow",
+    "dev:seed:documents": "npm run dev:seed -- --profile=documents",
+    "dev:seed:demo": "npm run dev:seed -- --profile=demo"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",

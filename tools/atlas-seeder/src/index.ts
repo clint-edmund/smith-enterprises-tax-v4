@@ -14,6 +14,14 @@ import {
   logHeader,
 } from "./utils/logger"
 
+import {
+  parseSeederOptions,
+} from "./config/seeder-options"
+
+import {
+  createModulePlan,
+} from "./config/module-plan"
+
 const supabase =
   createClient(
     atlasSeederConfig.supabaseUrl,
@@ -41,8 +49,23 @@ async function main(): Promise<void> {
 
   console.log("")
 
+  const options =
+    parseSeederOptions()
+
+  const modulePlan =
+    createModulePlan(
+      options,
+    )
+
+  console.log(
+    `Modules:     ${modulePlan.join(", ")}`,
+  )
+
+  console.log("")
+
   await seedAtlasOffice(
     supabase,
+    options,
   )
 
   console.log(

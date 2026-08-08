@@ -100,9 +100,11 @@ function main(): void {
       [
         taxReturn.clientNumber,
         taxReturn.taxYear,
+        taxReturn.intelligenceProfile,
         taxReturn.taxForm,
         taxReturn.status,
         taxReturn.workflowStatus,
+        taxReturn.dueDate,
         `$${taxReturn.preparationFee.toFixed(2)}`,
       ].join(
         " | ",

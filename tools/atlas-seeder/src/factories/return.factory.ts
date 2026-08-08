@@ -3,60 +3,23 @@ import type {
 } from "../models/generated-client"
 
 import type {
-  AtlasReturnStatus,
   AtlasReturnType,
   AtlasTaxFormType,
-  AtlasWorkflowStatus,
   GeneratedReturn,
 } from "../models/generated-return"
+
+import {
+  getIntelligenceProfile,
+} from "../simulation/intelligence-profiles"
+
+import {
+  simulationDateOnlyOffset,
+  simulationDateOffset,
+} from "../simulation/clock"
 
 import type {
   SeededRandom,
 } from "../utils/random"
-
-interface ReturnLifecycle {
-  status: AtlasReturnStatus
-  workflowStatus: AtlasWorkflowStatus
-}
-
-const lifecycleStates: readonly ReturnLifecycle[] = [
-  {
-    status: "documents_pending",
-    workflowStatus: "documents_pending",
-  },
-  {
-    status: "in_progress",
-    workflowStatus: "in_preparation",
-  },
-  {
-    status: "ready_for_review",
-    workflowStatus: "review",
-  },
-  {
-    status: "under_review",
-    workflowStatus: "review",
-  },
-  {
-    status: "ready_to_file",
-    workflowStatus: "ready_to_file",
-  },
-  {
-    status: "filed",
-    workflowStatus: "filed",
-  },
-  {
-    status: "accepted",
-    workflowStatus: "completed",
-  },
-  {
-    status: "completed",
-    workflowStatus: "completed",
-  },
-  {
-    status: "on_hold",
-    workflowStatus: "on_hold",
-  },
-] as const
 
 function isoDate(
   date: Date,
@@ -70,7 +33,8 @@ function getReturnType(
   client: GeneratedClient,
 ): AtlasReturnType {
   if (
-    client.scenario === "small_business"
+    client.scenario ===
+    "small_business"
   ) {
     return "business"
   }
@@ -91,15 +55,6 @@ function getTaxForm(
     default:
       return "1040"
   }
-}
-
-function getLifecycle(
-  index: number,
-): ReturnLifecycle {
-  return lifecycleStates[
-    (index - 1) %
-      lifecycleStates.length
-  ]
 }
 
 function getPreparationFee(
@@ -211,19 +166,35 @@ function getTaxEstimate(
   }
 }
 
-function shouldAssignReviewer(
-  lifecycle: ReturnLifecycle,
-): boolean {
-  return (
-    lifecycle.workflowStatus ===
-      "review" ||
-    lifecycle.workflowStatus ===
-      "ready_to_file" ||
-    lifecycle.workflowStatus ===
-      "filed" ||
-    lifecycle.workflowStatus ===
-      "completed"
-  )
+function getActiveActivityOffset(
+  profile:
+    GeneratedReturn["intelligenceProfile"],
+): number {
+  switch (profile) {
+    case "critical":
+      return -18
+
+    case "high":
+      return -2
+
+    case "medium":
+      return -4
+
+    case "low":
+      return -1
+
+    case "review":
+      return -2
+
+    case "on_hold":
+      return -10
+
+    case "completed":
+      return -35
+
+    case "historical":
+      return -365
+  }
 }
 
 export function createReturn(
@@ -232,14 +203,30 @@ export function createReturn(
   taxYear: number,
   random: SeededRandom,
 ): GeneratedReturn {
-  const lifecycle =
-    getLifecycle(index)
+  /*
+   * The client number range begins at 900001,
+   * so this gives us a stable 1-based position
+   * for deterministic intelligence profiles.
+   */
+  const clientPosition =
+    client.clientNumber -
+    900000
+
+  const profile =
+    getIntelligenceProfile(
+      clientPosition,
+      taxYear,
+    )
 
   const returnType =
-    getReturnType(client)
+    getReturnType(
+      client,
+    )
 
   const taxForm =
-    getTaxForm(client)
+    getTaxForm(
+      client,
+    )
 
   const preparationFee =
     getPreparationFee(
@@ -258,102 +245,144 @@ export function createReturn(
       random,
     )
 
+  /*
+   * Date received reflects the actual filing
+   * season associated with the return year.
+   */
   const dateReceivedDate =
     random.dateBetween(
       new Date(
         `${taxYear + 1}-01-05T00:00:00Z`,
       ),
+
       new Date(
         `${taxYear + 1}-04-10T00:00:00Z`,
       ),
     )
 
+  /*
+   * Historical returns retain their normal
+   * April deadline.
+   *
+   * Active 2025 returns use dates around the
+   * simulation clock so dashboard due-date
+   * intelligence has meaningful variation.
+   */
   const dueDate =
-    `${taxYear + 1}-04-15`
+    taxYear <= 2024
+      ? `${taxYear + 1}-04-15`
+      : simulationDateOnlyOffset(
+          profile.dueOffsetDays,
+        )
 
   const createdAtDate =
     new Date(
       dateReceivedDate.getTime() -
-      random.integer(
-        0,
-        14,
-      ) *
-        24 *
-        60 *
-        60 *
-        1000,
+        random.integer(
+          0,
+          14,
+        ) *
+          24 *
+          60 *
+          60 *
+          1000,
     )
 
+  /*
+   * Active returns derive recent activity from
+   * the simulation clock so risk scoring can
+   * distinguish stale and healthy work.
+   */
   const workflowChangedAt =
-    new Date(
-      dateReceivedDate.getTime() +
-      random.integer(
-        1,
-        45,
-      ) *
-        24 *
-        60 *
-        60 *
-        1000,
-    )
-
-  const isFiled =
-    lifecycle.status ===
-      "filed" ||
-    lifecycle.status ===
-      "accepted" ||
-    lifecycle.status ===
-      "completed"
-
-  const isAccepted =
-    lifecycle.status ===
-      "accepted" ||
-    lifecycle.status ===
-      "completed"
-
-  const filedDate =
-    isFiled
-      ? isoDate(
-          new Date(
-            workflowChangedAt.getTime() +
-            2 *
-              24 *
-              60 *
-              60 *
-              1000,
-          ),
-        )
-      : null
-
-  const acceptedDate =
-    isAccepted && filedDate
-      ? isoDate(
-          new Date(
-            new Date(
-              filedDate,
-            ).getTime() +
+    taxYear <= 2024
+      ? new Date(
+          dateReceivedDate.getTime() +
             random.integer(
               1,
-              5,
+              45,
             ) *
               24 *
               60 *
               60 *
               1000,
+        )
+      : simulationDateOffset(
+          getActiveActivityOffset(
+            profile.profile,
+          ),
+        )
+
+  const assignedPreparerEmail =
+    profile.assignPreparer
+      ? client.scenario ===
+          "simple_w2"
+        ? "junior.preparer@atlas.local"
+        : "senior.preparer@atlas.local"
+      : null
+
+  const assignedReviewerEmail =
+    profile.assignReviewer
+      ? "reviewer@atlas.local"
+      : null
+
+  const isCompleted =
+    profile.workflowStatus ===
+    "completed"
+
+  const isFiled =
+    profile.workflowStatus ===
+      "filed" ||
+    isCompleted
+
+  const filedDate =
+    isFiled
+      ? isoDate(
+          new Date(
+            workflowChangedAt.getTime() -
+              3 *
+                24 *
+                60 *
+                60 *
+                1000,
+          ),
+        )
+      : null
+
+  const acceptedDate =
+    isCompleted &&
+    filedDate
+      ? isoDate(
+          new Date(
+            new Date(
+              `${filedDate}T12:00:00Z`,
+            ).getTime() +
+              random.integer(
+                1,
+                3,
+              ) *
+                24 *
+                60 *
+                60 *
+                1000,
           ),
         )
       : null
 
   const extensionFiled =
-    lifecycle.status ===
+    profile.profile ===
       "on_hold" &&
-    random.chance(0.5)
+    random.chance(
+      0.5,
+    )
 
   return {
     clientNumber:
       client.clientNumber,
 
     taxYear,
+
+    intelligenceProfile:
+      profile.profile,
 
     returnType,
 
@@ -363,23 +392,14 @@ export function createReturn(
       client.filingStatus,
 
     status:
-      lifecycle.status,
+      profile.status,
 
     workflowStatus:
-      lifecycle.workflowStatus,
+      profile.workflowStatus,
 
-    assignedPreparerEmail:
-      client.scenario ===
-        "simple_w2"
-        ? "junior.preparer@atlas.local"
-        : "senior.preparer@atlas.local",
+    assignedPreparerEmail,
 
-    assignedReviewerEmail:
-      shouldAssignReviewer(
-        lifecycle,
-      )
-        ? "reviewer@atlas.local"
-        : null,
+    assignedReviewerEmail,
 
     dateReceived:
       isoDate(
@@ -389,6 +409,7 @@ export function createReturn(
     dueDate,
 
     filedDate,
+
     acceptedDate,
 
     preparationFee,
@@ -401,13 +422,18 @@ export function createReturn(
     estimatedAmountDue:
       taxEstimate.estimatedAmountDue,
 
-    federalReturnRequired: true,
+    federalReturnRequired:
+      true,
 
     stateReturnRequired:
-      random.chance(0.85),
+      random.chance(
+        0.85,
+      ),
 
     localReturnRequired:
-      random.chance(0.08),
+      random.chance(
+        0.08,
+      ),
 
     extensionFiled,
 
@@ -420,23 +446,21 @@ export function createReturn(
       workflowChangedAt.toISOString(),
 
     assignedAt:
-      dateReceivedDate.toISOString(),
-
-    workflowHoldReason:
-      lifecycle.workflowStatus ===
-        "on_hold"
-        ? "Waiting on additional client information."
+      assignedPreparerEmail
+        ? dateReceivedDate.toISOString()
         : null,
 
+    workflowHoldReason:
+      profile.holdReason,
+
     workflowHeldAt:
-      lifecycle.workflowStatus ===
+      profile.workflowStatus ===
         "on_hold"
         ? workflowChangedAt.toISOString()
         : null,
 
     workflowCompletedAt:
-      lifecycle.workflowStatus ===
-        "completed"
+      isCompleted
         ? workflowChangedAt.toISOString()
         : null,
 
@@ -447,6 +471,7 @@ export function createReturn(
       [
         "Atlas development return.",
         `Scenario: ${client.scenario}.`,
+        `Intelligence profile: ${profile.profile}.`,
       ].join(" "),
 
     createdAt:

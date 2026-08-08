@@ -50,10 +50,21 @@ export type AtlasReturnFilingStatus =
   | "qualifying_surviving_spouse"
   | "not_applicable"
 
+export type AtlasIntelligenceProfile =
+  | "critical"
+  | "high"
+  | "medium"
+  | "low"
+  | "review"
+  | "on_hold"
+  | "completed"
+  | "historical"
+
 export interface GeneratedReturn {
   clientNumber: number
 
   taxYear: number
+  intelligenceProfile: AtlasIntelligenceProfile
 
   returnType: AtlasReturnType
   taxForm: AtlasTaxFormType
