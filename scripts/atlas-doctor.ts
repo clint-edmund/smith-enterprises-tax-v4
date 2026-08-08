@@ -3,44 +3,26 @@ import {
 } from "node:fs"
 
 import {
-  atlasConfig,
-} from "../atlas.config"
+  createAtlasContext,
+} from "./framework/atlas-context"
 
 import {
-  printBanner,
-} from "./utils/banner"
+  runAtlasCommand,
+} from "./framework/atlas-command"
 
 import {
   runCommand,
 } from "./utils/command"
 
-import {
-  getCurrentBranch,
-  getRemoteSyncStatus,
-  isWorkingTreeClean,
-} from "./utils/git"
-
-import {
-  logFailure,
-  logSection,
-  logSuccess,
-  logValue,
-  logWarning,
-} from "./utils/logger"
-
-interface DoctorCheck {
-  name: string
-  passed: boolean
+interface DoctorResult {
+  success: boolean
   detail: string
-  fix?: string
 }
 
 function checkCommand(
-  name: string,
   command: string,
   args: string[],
-  fix?: string,
-): DoctorCheck {
+): DoctorResult {
   const result =
     runCommand(
       command,
@@ -48,370 +30,268 @@ function checkCommand(
     )
 
   return {
-    name,
-    passed:
+    success:
       result.success,
 
     detail:
-      result.success
-        ? result.output || "Available"
-        : result.output,
-
-    fix,
+      result.output ||
+      (
+        result.success
+          ? "Available"
+          : "Command failed."
+      ),
   }
 }
 
-function printDoctorCheck(
-  check: DoctorCheck,
-): void {
-  if (check.passed) {
-    logSuccess(
-      check.name,
-    )
-
-    if (
-      check.detail &&
-      check.detail !== "Available"
-    ) {
-      console.log(
-        `  ${check.detail}`,
-      )
-    }
-
-    return
-  }
-
-  logFailure(
-    check.name,
-  )
-
-  if (check.detail) {
-    console.log(
-      `  Reason: ${check.detail}`,
-    )
-  }
-
-  if (check.fix) {
-    console.log(
-      `  Suggested fix: ${check.fix}`,
-    )
-  }
-}
-
-function main(): void {
-  printBanner(
+async function main():
+Promise<void> {
+  await runAtlasCommand(
     "Atlas Doctor",
-  )
+    (atlas) => {
+      const context =
+        createAtlasContext()
 
-  const checks:
-    DoctorCheck[] = []
-
-  logSection(
-    "Runtime",
-  )
-
-  checks.push(
-    checkCommand(
-      "Node.js",
-      "node",
-      [
-        "--version",
-      ],
-      "Install or repair Node.js.",
-    ),
-  )
-
-  checks.push(
-    checkCommand(
-      "npm",
-      "npm",
-      [
-        "--version",
-      ],
-      "Install npm with your Node.js installation.",
-    ),
-  )
-
-  checks.push(
-    checkCommand(
-      "Supabase CLI",
-      "supabase",
-      [
-        "--version",
-      ],
-      "Install or repair the Supabase CLI.",
-    ),
-  )
-
-  for (
-    const check
-    of checks
-  ) {
-    printDoctorCheck(
-      check,
-    )
-  }
-
-  logSection(
-    "Project Files",
-  )
-
-  const requiredFiles = [
-    "package.json",
-    "atlas.config.ts",
-    "vite.config.ts",
-    "supabase/config.toml",
-    "scripts/verify-project.sh",
-  ]
-
-  for (
-    const file
-    of requiredFiles
-  ) {
-    const exists =
-      existsSync(
-        file,
+      atlas.section(
+        "Runtime",
       )
 
-    const check:
-      DoctorCheck = {
-        name:
-          file,
+      const node =
+        checkCommand(
+          "node",
+          [
+            "--version",
+          ],
+        )
 
-        passed:
-          exists,
-
-        detail:
-          exists
-            ? "Found"
-            : "Required project file is missing.",
-
-        fix:
-          `Restore or recreate ${file}.`,
+      if (node.success) {
+        atlas.pass(
+          "Node.js",
+          node.detail,
+        )
+      } else {
+        atlas.fail(
+          "Node.js",
+          "Install or repair Node.js.",
+        )
       }
 
-    checks.push(
-      check,
-    )
+      const npm =
+        checkCommand(
+          "npm",
+          [
+            "--version",
+          ],
+        )
 
-    printDoctorCheck(
-      check,
-    )
-  }
+      if (npm.success) {
+        atlas.pass(
+          "npm",
+          npm.detail,
+        )
+      } else {
+        atlas.fail(
+          "npm",
+          "Install npm with Node.js.",
+        )
+      }
 
-  logSection(
-    "Git",
-  )
+      const supabase =
+        checkCommand(
+          "supabase",
+          [
+            "--version",
+          ],
+        )
 
-  const branch =
-    getCurrentBranch()
+      if (supabase.success) {
+        atlas.pass(
+          "Supabase CLI",
+          supabase.detail,
+        )
+      } else {
+        atlas.fail(
+          "Supabase CLI",
+          "Install or repair the Supabase CLI.",
+        )
+      }
 
-  logValue(
-    "Current Branch",
-    branch,
-  )
+      atlas.section(
+        "Project Files",
+      )
 
-  const clean =
-    isWorkingTreeClean()
+      const requiredFiles = [
+        "package.json",
+        "atlas.config.ts",
+        "vite.config.ts",
+        "supabase/config.toml",
+        "scripts/verify-project.sh",
+      ]
 
-  const cleanCheck:
-    DoctorCheck = {
-      name:
-        "Working tree",
+      for (
+        const file
+        of requiredFiles
+      ) {
+        if (
+          existsSync(
+            file,
+          )
+        ) {
+          atlas.pass(
+            file,
+          )
+        } else {
+          atlas.fail(
+            file,
+            `Restore or recreate ${file}.`,
+          )
+        }
+      }
 
-      passed:
-        clean,
+      atlas.section(
+        "Git",
+      )
 
-      detail:
-        clean
-          ? "Clean"
-          : "Local changes are present.",
+      atlas.value(
+        "Current Branch",
+        context.branch,
+      )
 
-      fix:
-        "Run git status, then commit or stash your changes.",
-    }
+      atlas.value(
+        "Remote Status",
+        context.remoteSyncStatus,
+      )
 
-  checks.push(
-    cleanCheck,
-  )
+      if (
+        context.workingTreeClean
+      ) {
+        atlas.pass(
+          "Working tree clean",
+        )
+      } else {
+        atlas.warning(
+          "Working tree contains changes",
+          "Run git status and commit or stash your changes.",
+        )
+      }
 
-  printDoctorCheck(
-    cleanCheck,
-  )
-
-  const remoteStatus =
-    getRemoteSyncStatus()
-
-  const remoteCheck:
-    DoctorCheck = {
-      name:
-        "Git remote sync",
-
-      passed:
-        remoteStatus ===
-        "Up to date",
-
-      detail:
-        remoteStatus,
-
-      fix:
-        remoteStatus.startsWith(
+      if (
+        context.remoteSyncStatus ===
+        "Up to date"
+      ) {
+        atlas.pass(
+          "Git remote synchronized",
+        )
+      } else if (
+        context.remoteSyncStatus.startsWith(
+          "Ahead",
+        )
+      ) {
+        atlas.warning(
+          "Local branch is ahead",
+          `Run git push origin ${context.branch}.`,
+        )
+      } else if (
+        context.remoteSyncStatus.startsWith(
           "Behind",
         )
-          ? `Run git pull origin ${branch}.`
-          : remoteStatus.startsWith(
-                "Ahead",
-              )
-            ? `Run git push origin ${branch}.`
-            : "Inspect git status and remote branch history.",
-    }
+      ) {
+        atlas.fail(
+          "Local branch is behind",
+          `Run git pull origin ${context.branch}.`,
+        )
+      } else if (
+        context.remoteSyncStatus.startsWith(
+          "Diverged",
+        )
+      ) {
+        atlas.fail(
+          "Git history diverged",
+          "Inspect local and remote history before continuing.",
+        )
+      } else {
+        atlas.warning(
+          "Unable to confirm Git synchronization",
+          context.remoteSyncStatus,
+        )
+      }
 
-  checks.push(
-    remoteCheck,
-  )
-
-  printDoctorCheck(
-    remoteCheck,
-  )
-
-  logSection(
-    "Supabase Local",
-  )
-
-  const supabaseStatus =
-    checkCommand(
-      "Local Supabase",
-      "supabase",
-      [
-        "status",
-      ],
-      "Run supabase start.",
-    )
-
-  checks.push(
-    supabaseStatus,
-  )
-
-  printDoctorCheck(
-    supabaseStatus,
-  )
-
-  logSection(
-    "Environment",
-  )
-
-  const envExists =
-    existsSync(
-      ".env.local",
-    )
-
-  const envCheck:
-    DoctorCheck = {
-      name:
-        ".env.local",
-
-      passed:
-        envExists,
-
-      detail:
-        envExists
-          ? "Found"
-          : "Local environment file is missing.",
-
-      fix:
-        "Create .env.local with the required VITE_* and local Atlas development values.",
-    }
-
-  checks.push(
-    envCheck,
-  )
-
-  printDoctorCheck(
-    envCheck,
-  )
-
-  logSection(
-    "Branch Lifecycle",
-  )
-
-  if (
-    branch ===
-    atlasConfig.branches.production
-  ) {
-    logSuccess(
-      "Production branch detected.",
-    )
-  } else if (
-    branch ===
-    atlasConfig.branches.staging
-  ) {
-    logSuccess(
-      "Staging branch detected.",
-    )
-  } else {
-    logSuccess(
-      "Feature branch detected.",
-    )
-  }
-
-  logSection(
-    "Doctor Summary",
-  )
-
-  const failures =
-    checks.filter(
-      (check) =>
-        !check.passed,
-    )
-
-  logValue(
-    "Checks",
-    String(
-      checks.length,
-    ),
-  )
-
-  logValue(
-    "Failures",
-    String(
-      failures.length,
-    ),
-  )
-
-  console.log("")
-
-  if (
-    failures.length === 0
-  ) {
-    logSuccess(
-      "Atlas environment is healthy.",
-    )
-
-    return
-  }
-
-  logWarning(
-    "Atlas Doctor found issues requiring attention.",
-  )
-
-  console.log("")
-
-  for (
-    const failure
-    of failures
-  ) {
-    console.log(
-      `- ${failure.name}`,
-    )
-
-    if (failure.fix) {
-      console.log(
-        `  ${failure.fix}`,
+      atlas.section(
+        "Supabase Local",
       )
-    }
-  }
 
-  process.exitCode = 1
+      const localSupabase =
+        checkCommand(
+          "supabase",
+          [
+            "status",
+          ],
+        )
+
+      if (
+        localSupabase.success
+      ) {
+        atlas.pass(
+          "Local Supabase running",
+        )
+      } else {
+        atlas.warning(
+          "Local Supabase is not running",
+          "Run: supabase start",
+        )
+      }
+
+      atlas.section(
+        "Environment",
+      )
+
+      if (
+        existsSync(
+          ".env.local",
+        )
+      ) {
+        atlas.pass(
+          ".env.local found",
+        )
+      } else {
+        atlas.fail(
+          ".env.local missing",
+          "Create .env.local with the required local environment variables.",
+        )
+      }
+
+      atlas.section(
+        "Branch Lifecycle",
+      )
+
+      atlas.value(
+        "Production",
+        context.productionBranch,
+      )
+
+      atlas.value(
+        "Staging",
+        context.stagingBranch,
+      )
+
+      if (
+        context.isProductionBranch
+      ) {
+        atlas.pass(
+          "Production branch detected",
+        )
+      } else if (
+        context.isStagingBranch
+      ) {
+        atlas.pass(
+          "Staging branch detected",
+        )
+      } else {
+        atlas.pass(
+          "Feature branch detected",
+        )
+      }
+    },
+  )
 }
 
-main()
+void main()
