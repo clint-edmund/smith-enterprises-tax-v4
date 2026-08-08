@@ -9,7 +9,7 @@ import {
 async function main():
 Promise<void> {
   await runAtlasCommand(
-    "Atlas Engineering Status",
+    "Atlas Framework Test",
     (atlas) => {
       const context =
         createAtlasContext()
@@ -19,13 +19,8 @@ Promise<void> {
       )
 
       atlas.value(
-        "Name",
+        "Project",
         context.projectName,
-      )
-
-      atlas.value(
-        "Codename",
-        context.codename,
       )
 
       atlas.value(
@@ -38,22 +33,12 @@ Promise<void> {
       )
 
       atlas.value(
-        "Current Branch",
+        "Branch",
         context.branch,
       )
 
       atlas.value(
-        "Production Branch",
-        context.productionBranch,
-      )
-
-      atlas.value(
-        "Staging Branch",
-        context.stagingBranch,
-      )
-
-      atlas.value(
-        "Remote Status",
+        "Remote",
         context.remoteSyncStatus,
       )
 
@@ -66,46 +51,26 @@ Promise<void> {
       } else {
         atlas.warning(
           "Working tree contains changes",
-          "Commit or stash changes before deployment.",
         )
       }
 
       if (
+        context.isStagingBranch
+      ) {
+        atlas.pass(
+          "Develop branch detected",
+        )
+      } else if (
         context.isProductionBranch
       ) {
         atlas.pass(
           "Production branch detected",
-        )
-      } else if (
-        context.isStagingBranch
-      ) {
-        atlas.pass(
-          "Staging branch detected",
         )
       } else {
         atlas.pass(
           "Feature branch detected",
         )
       }
-
-      atlas.section(
-        "Environment Mapping",
-      )
-
-      atlas.value(
-        "Local",
-        "Local Development",
-      )
-
-      atlas.value(
-        "Preview",
-        "Vercel Preview",
-      )
-
-      atlas.value(
-        "Production",
-        "Vercel Production",
-      )
     },
   )
 }
