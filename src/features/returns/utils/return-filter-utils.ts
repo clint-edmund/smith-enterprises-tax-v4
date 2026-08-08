@@ -39,7 +39,13 @@ const workflows = new Set([
 const assignments = new Set<ReturnAssignmentFilter>(["all", "mine", "unassigned"])
 const reviewers = new Set<ReturnReviewerFilter>(["all", "mine", "unassigned"])
 const deadlines = new Set<ReturnDeadlineFilter>([
-  "all", "overdue", "due_today", "due_this_week", "next_7_days", "no_due_date",
+  "all",
+  "overdue",
+  "due_today",
+  "due_this_week",
+  "next_7_days",
+  "next_30_days",
+  "no_due_date",
 ])
 
 function normalizeTaxYear(value: string | null | undefined) {

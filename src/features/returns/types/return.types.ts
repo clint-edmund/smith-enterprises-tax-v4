@@ -249,6 +249,7 @@ export type ReturnDeadlineFilter =
   | "due_today"
   | "due_this_week"
   | "next_7_days"
+  | "next_30_days"
   | "no_due_date"
 
 export interface ReturnFilters {
