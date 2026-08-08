@@ -14,6 +14,7 @@ const environmentSchema = z.object({
   VITE_APP_ENVIRONMENT: z.enum([
     "development",
     "test",
+    "staging",
     "production",
   ]),
 
