@@ -1,40 +1,24 @@
 import {
-  atlasConfig,
-} from "../atlas.config"
+  createAtlasContext,
+} from "./framework/atlas-context"
 
 import {
-  printBanner,
-} from "./utils/banner"
+  runAtlasCommand,
+} from "./framework/atlas-command"
 
 import {
   runCommand,
 } from "./utils/command"
 
-import {
-  getCurrentBranch,
-  getRemoteSyncStatus,
-  isWorkingTreeClean,
-} from "./utils/git"
-
-import {
-  logFailure,
-  logSection,
-  logSuccess,
-  logValue,
-  logWarning,
-} from "./utils/logger"
-
-interface VerificationCheck {
-  name: string
-  passed: boolean
+interface CheckResult {
+  success: boolean
   detail: string
 }
 
-function runCheck(
-  name: string,
+function executeCheck(
   command: string,
   args: string[],
-): VerificationCheck {
+): CheckResult {
   const result =
     runCommand(
       command,
@@ -42,264 +26,280 @@ function runCheck(
     )
 
   return {
-    name,
-    passed:
+    success:
       result.success,
 
     detail:
-      result.success
-        ? "PASS"
-        : result.output,
+      result.output ||
+      (
+        result.success
+          ? "PASS"
+          : "Command failed."
+      ),
   }
 }
 
-function printCheck(
-  check: VerificationCheck,
-): void {
-  if (check.passed) {
-    logSuccess(
-      `${check.name}: PASS`,
-    )
-
-    return
-  }
-
-  logFailure(
-    `${check.name}: FAIL`,
-  )
-
-  console.log(
-    check.detail,
-  )
-}
-
-function main(): void {
-  printBanner(
+async function main():
+Promise<void> {
+  await runAtlasCommand(
     "Atlas Verification",
-  )
+    (atlas) => {
+      const context =
+        createAtlasContext()
 
-  const checks:
-    VerificationCheck[] =
-      []
+      let hasFailure =
+        false
 
-  const branch =
-    getCurrentBranch()
-
-  const workingTreeClean =
-    isWorkingTreeClean()
-
-  const remoteStatus =
-    getRemoteSyncStatus()
-
-  logSection(
-    "Git",
-  )
-
-  logValue(
-    "Current Branch",
-    branch,
-  )
-
-  if (workingTreeClean) {
-    logSuccess(
-      "Working tree clean",
-    )
-  } else {
-    logWarning(
-      "Working tree contains changes",
-    )
-  }
-
-  logValue(
-    "Remote Status",
-    remoteStatus,
-  )
-
-  checks.push({
-    name:
-      "Git working tree",
-
-    passed:
-      workingTreeClean,
-
-    detail:
-      workingTreeClean
-        ? "PASS"
-        : "Commit or stash local changes before deployment.",
-  })
-
-  logSection(
-    "Application",
-  )
-
-  const buildCheck =
-    runCheck(
-      "Production build",
-      "npm",
-      [
-        "run",
-        "build",
-      ],
-    )
-
-  checks.push(
-    buildCheck,
-  )
-
-  printCheck(
-    buildCheck,
-  )
-
-  logSection(
-    "Seeder",
-  )
-
-  const seederCheck =
-    runCheck(
-      "Seeder verification",
-      "npm",
-      [
-        "run",
-        "dev:seed:test-options",
-      ],
-    )
-
-  checks.push(
-    seederCheck,
-  )
-
-  printCheck(
-    seederCheck,
-  )
-
-  const returnsCheck =
-    runCheck(
-      "Return factory",
-      "npm",
-      [
-        "run",
-        "dev:seed:preview-returns",
-      ],
-    )
-
-  checks.push(
-    returnsCheck,
-  )
-
-  printCheck(
-    returnsCheck,
-  )
-
-  const paymentsCheck =
-    runCheck(
-      "Payment factory",
-      "npm",
-      [
-        "run",
-        "dev:seed:preview-payments",
-      ],
-    )
-
-  checks.push(
-    paymentsCheck,
-  )
-
-  printCheck(
-    paymentsCheck,
-  )
-
-  logSection(
-    "Database",
-  )
-
-  const supabaseCheck =
-    runCheck(
-      "Supabase CLI",
-      "supabase",
-      [
-        "--version",
-      ],
-    )
-
-  checks.push(
-    supabaseCheck,
-  )
-
-  printCheck(
-    supabaseCheck,
-  )
-
-  logSection(
-    "Verification Summary",
-  )
-
-  const passedCount =
-    checks.filter(
-      (check) =>
-        check.passed,
-    ).length
-
-  const failedChecks =
-    checks.filter(
-      (check) =>
-        !check.passed,
-    )
-
-  logValue(
-    "Checks Passed",
-    `${passedCount}/${checks.length}`,
-  )
-
-  if (
-    failedChecks.length > 0
-  ) {
-    console.log("")
-
-    logFailure(
-      "Atlas verification failed.",
-    )
-
-    for (
-      const check
-      of failedChecks
-    ) {
-      console.log(
-        `  - ${check.name}`,
+      atlas.section(
+        "Git",
       )
-    }
 
-    process.exitCode = 1
+      atlas.value(
+        "Current Branch",
+        context.branch,
+      )
 
-    return
-  }
+      atlas.value(
+        "Remote Status",
+        context.remoteSyncStatus,
+      )
 
-  console.log("")
+      if (
+        context.workingTreeClean
+      ) {
+        atlas.pass(
+          "Working tree clean",
+        )
+      } else {
+        hasFailure =
+          true
 
-  logSuccess(
-    "Atlas verification passed.",
+        atlas.fail(
+          "Working tree contains changes",
+          "Commit or stash local changes before deployment.",
+        )
+      }
+
+      if (
+        context.remoteSyncStatus ===
+        "Up to date"
+      ) {
+        atlas.pass(
+          "Git remote synchronized",
+        )
+      } else if (
+        context.remoteSyncStatus.startsWith(
+          "Ahead",
+        )
+      ) {
+        atlas.warning(
+          "Local branch is ahead",
+          `Push with: git push origin ${context.branch}`,
+        )
+      } else if (
+        context.remoteSyncStatus.startsWith(
+          "Behind",
+        )
+      ) {
+        hasFailure =
+          true
+
+        atlas.fail(
+          "Local branch is behind",
+          `Pull with: git pull origin ${context.branch}`,
+        )
+      } else if (
+        context.remoteSyncStatus.startsWith(
+          "Diverged",
+        )
+      ) {
+        hasFailure =
+          true
+
+        atlas.fail(
+          "Git history diverged",
+          "Inspect local and remote history before continuing.",
+        )
+      } else {
+        atlas.warning(
+          "Unable to confirm Git synchronization",
+          context.remoteSyncStatus,
+        )
+      }
+
+      atlas.section(
+        "Application",
+      )
+
+      const build =
+        executeCheck(
+          "npm",
+          [
+            "run",
+            "build",
+          ],
+        )
+
+      if (
+        build.success
+      ) {
+        atlas.pass(
+          "Production build",
+        )
+      } else {
+        hasFailure =
+          true
+
+        atlas.fail(
+          "Production build",
+          build.detail,
+        )
+      }
+
+      atlas.section(
+        "Seeder",
+      )
+
+      const options =
+        executeCheck(
+          "npm",
+          [
+            "run",
+            "dev:seed:test-options",
+          ],
+        )
+
+      if (
+        options.success
+      ) {
+        atlas.pass(
+          "Seeder options",
+        )
+      } else {
+        hasFailure =
+          true
+
+        atlas.fail(
+          "Seeder options",
+          options.detail,
+        )
+      }
+
+      const returns =
+        executeCheck(
+          "npm",
+          [
+            "run",
+            "dev:seed:preview-returns",
+          ],
+        )
+
+      if (
+        returns.success
+      ) {
+        atlas.pass(
+          "Return factory",
+        )
+      } else {
+        hasFailure =
+          true
+
+        atlas.fail(
+          "Return factory",
+          returns.detail,
+        )
+      }
+
+      const payments =
+        executeCheck(
+          "npm",
+          [
+            "run",
+            "dev:seed:preview-payments",
+          ],
+        )
+
+      if (
+        payments.success
+      ) {
+        atlas.pass(
+          "Payment factory",
+        )
+      } else {
+        hasFailure =
+          true
+
+        atlas.fail(
+          "Payment factory",
+          payments.detail,
+        )
+      }
+
+      atlas.section(
+        "Database",
+      )
+
+      const supabase =
+        executeCheck(
+          "supabase",
+          [
+            "--version",
+          ],
+        )
+
+      if (
+        supabase.success
+      ) {
+        atlas.pass(
+          "Supabase CLI",
+          supabase.detail,
+        )
+      } else {
+        hasFailure =
+          true
+
+        atlas.fail(
+          "Supabase CLI",
+          "Install or repair the Supabase CLI.",
+        )
+      }
+
+      atlas.section(
+        "Deployment Readiness",
+      )
+
+      if (
+        hasFailure
+      ) {
+        atlas.fail(
+          "Deployment readiness",
+          "Resolve failed verification checks before deployment.",
+        )
+
+        process.exitCode = 1
+
+        return
+      }
+
+      if (
+        context.isProductionBranch
+      ) {
+        atlas.pass(
+          "Ready for production release",
+        )
+      } else if (
+        context.isStagingBranch
+      ) {
+        atlas.pass(
+          "Ready for Preview deployment",
+        )
+      } else {
+        atlas.pass(
+          "Feature branch ready for Pull Request",
+        )
+      }
+    },
   )
-
-  console.log("")
-
-  if (
-    branch ===
-    atlasConfig.branches.production
-  ) {
-    logSuccess(
-      "Ready for production release.",
-    )
-  } else if (
-    branch ===
-    atlasConfig.branches.staging
-  ) {
-    logSuccess(
-      "Ready for Preview deployment.",
-    )
-  } else {
-    logSuccess(
-      "Feature branch is ready for a Pull Request into develop.",
-    )
-  }
 }
 
-main()
+void main()
