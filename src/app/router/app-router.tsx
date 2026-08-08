@@ -1,4 +1,9 @@
 import {
+  Suspense,
+  lazy,
+} from "react"
+
+import {
   createBrowserRouter,
   Navigate,
   Outlet,
@@ -31,11 +36,8 @@ import { ClientDashboardPage } from "@/features/client-portal/pages/client-dashb
 import { ClientLoginPage } from "@/features/client-portal/pages/client-login-page"
 import { ClientRegistrationPage } from "@/features/client-portal/pages/client-registration-page"
 import { ClientDetailsPage } from "@/features/clients/pages/client-details-page"
-import { ClientsPage } from "@/features/clients/pages/clients-page"
 import { EditClientPage } from "@/features/clients/pages/edit-client-page"
 import { NewClientPage } from "@/features/clients/pages/new-client-page"
-import { DashboardPage } from "@/features/dashboard/pages/dashboard-page"
-import { DocumentsPage } from "@/features/documents/pages/documents-page"
 import { ReviewQueuePage } from "@/features/documents/pages/review-queue-page"
 import {
   NotificationCenterPage,
@@ -43,16 +45,12 @@ import {
 import {
   NotificationPreferencesPage,
 } from "@/features/notifications/pages/notification-preferences-page"
-import { PaymentsPage } from "@/features/payments/pages/payments-page"
-import { ReportsPage } from "@/features/reports/pages/reports-page"
 import { EditReturnPage } from "@/features/returns/pages/edit-return-page"
 import { NewReturnPage } from "@/features/returns/pages/new-return-page"
 import { ReturnDetailsPage } from "@/features/returns/pages/return-details-page"
-import { ReturnsPage } from "@/features/returns/pages/returns-page"
 import {
   LegacyReturnWorkspaceRedirect,
 } from "@/features/returns/pages/legacy-return-workspace-redirect"
-import { SettingsPage } from "@/features/settings/pages/settings-page"
 import {
   ClientAuthProvider,
 } from "@/features/client-portal/providers/client-auth-provider"
@@ -119,6 +117,39 @@ import {
   DependentsReviewPage,
 } from "@/features/organizer-review/pages/dependents-review-page"
 
+
+
+const DashboardPage = lazy(() =>
+  import("@/features/dashboard/pages/dashboard-page").then(m => ({ default: m.DashboardPage }))
+)
+
+const ClientsPage = lazy(() =>
+  import("@/features/clients/pages/clients-page").then(m => ({ default: m.ClientsPage }))
+)
+
+const ReturnsPage = lazy(() =>
+  import("@/features/returns/pages/returns-page").then(m => ({ default: m.ReturnsPage }))
+)
+
+const DocumentsPage = lazy(() =>
+  import("@/features/documents/pages/documents-page").then(m => ({ default: m.DocumentsPage }))
+)
+
+const PaymentsPage = lazy(() =>
+  import("@/features/payments/pages/payments-page").then(m => ({ default: m.PaymentsPage }))
+)
+
+const ReportsPage = lazy(() =>
+  import("@/features/reports/pages/reports-page").then(m => ({ default: m.ReportsPage }))
+)
+
+const SettingsPage = lazy(() =>
+  import("@/features/settings/pages/settings-page").then(m => ({ default: m.SettingsPage }))
+)
+
+function RouteFallback() {
+  return <div className="flex min-h-[40vh] items-center justify-center">Loading…</div>
+}
 
 export const appRouter =
   createBrowserRouter([
@@ -291,7 +322,7 @@ export const appRouter =
                   children: [
                     {
                       path: appConfig.routes.dashboard,
-                      element: <DashboardPage />,
+                      element: (<Suspense fallback={<RouteFallback />}><DashboardPage /></Suspense>),
                     },
                   ],
                 },
@@ -317,7 +348,7 @@ export const appRouter =
                   children: [
                     {
                       path: appConfig.routes.clients,
-                      element: <ClientsPage />,
+                      element: (<Suspense fallback={<RouteFallback />}><ClientsPage /></Suspense>),
                     },
                   ],
                 },
@@ -429,7 +460,7 @@ export const appRouter =
                   children: [
                     {
                       path: appConfig.routes.returns,
-                      element: <ReturnsPage />,
+                      element: (<Suspense fallback={<RouteFallback />}><ReturnsPage /></Suspense>),
                     },
                   ],
                 },
@@ -442,7 +473,7 @@ export const appRouter =
                   children: [
                     {
                       path: appConfig.routes.documents,
-                      element: <DocumentsPage />,
+                      element: (<Suspense fallback={<RouteFallback />}><DocumentsPage /></Suspense>),
                     },
                   ],
                 },
@@ -515,7 +546,7 @@ export const appRouter =
                   children: [
                     {
                       path: appConfig.routes.payments,
-                      element: <PaymentsPage />,
+                      element: (<Suspense fallback={<RouteFallback />}><PaymentsPage /></Suspense>),
                     },
                   ],
                 },
@@ -528,7 +559,7 @@ export const appRouter =
                   children: [
                     {
                       path: appConfig.routes.reports,
-                      element: <ReportsPage />,
+                      element: (<Suspense fallback={<RouteFallback />}><ReportsPage /></Suspense>),
                     },
                   ],
                 },
@@ -541,7 +572,7 @@ export const appRouter =
                   children: [
                     {
                       path: appConfig.routes.settings,
-                      element: <SettingsPage />,
+                      element: (<Suspense fallback={<RouteFallback />}><SettingsPage /></Suspense>),
                     },
                   ],
                 },

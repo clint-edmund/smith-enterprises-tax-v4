@@ -9,15 +9,19 @@ import {
   ScanSearch,
   Users,
 } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  lazy,
+  Suspense,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react"
 import { supabase } from "@/services/supabase";
 import { useAuth } from "@/features/auth/hooks/use-auth";
 import { DashboardAttentionList } from "@/features/dashboard/components/dashboard-attention-list";
-import { DashboardFinancialChart } from "@/features/dashboard/components/dashboard-financial-chart";
 import { DashboardReturnList } from "@/features/dashboard/components/dashboard-return-list";
 import { DashboardSkeleton } from "@/features/dashboard/components/dashboard-skeleton";
-import { DashboardStaffWorkloadChart } from "@/features/dashboard/components/dashboard-staff-workload-chart";
-import { DashboardStatusChart } from "@/features/dashboard/components/dashboard-status-chart";
 import { ExecutiveKpis } from "@/features/dashboard/components/executive-kpis";
 import { MyWorkload } from "@/features/dashboard/components/my-workload";
 import { QuickActions } from "@/features/dashboard/components/quick-actions";
@@ -27,7 +31,6 @@ import { StaffWorkload } from "@/features/dashboard/components/staff-workload";
 import { SummaryCard } from "@/features/dashboard/components/summary-card";
 import { WorkflowOperations } from "@/features/dashboard/components/workflow-operations";
 import { DashboardFinancialOverview } from "@/features/dashboard/components/dashboard-financial-overview";
-import { ExecutiveFinancialAnalyticsPanel } from "@/features/dashboard/components/executive-financial-analytics-panel";
 import { getExecutiveFinancialAnalytics } from "@/features/dashboard/services/financial-analytics-service";
 import type { ExecutiveFinancialAnalytics } from "@/features/dashboard/types/financial-analytics.types";
 import {
@@ -57,21 +60,101 @@ import {
   useRecentActivityRealtime,
 } from "@/features/dashboard/hooks/use-recent-activity-realtime"
 
-import {
-  ReturnReadinessCenter,
-} from "@/features/dashboard/components/return-readiness-center"
-
-import {
-  SmartRecommendationsPanel,
-} from "@/features/dashboard/components/smart-recommendations-panel"
-
-import {
-  PriorityQueueCard,
-} from "@/features/dashboard/components/priority-queue-card"
 
 import {
   useAuthorization,
 } from "@/features/authorization/hooks/use-authorization"
+
+const DashboardFinancialChart =
+  lazy(async () => {
+    const module =
+      await import(
+        "@/features/dashboard/components/dashboard-financial-chart"
+      )
+
+    return {
+      default:
+        module.DashboardFinancialChart,
+    }
+  })
+
+const DashboardStaffWorkloadChart =
+  lazy(async () => {
+    const module =
+      await import(
+        "@/features/dashboard/components/dashboard-staff-workload-chart"
+      )
+
+    return {
+      default:
+        module.DashboardStaffWorkloadChart,
+    }
+  })
+
+const DashboardStatusChart =
+  lazy(async () => {
+    const module =
+      await import(
+        "@/features/dashboard/components/dashboard-status-chart"
+      )
+
+    return {
+      default:
+        module.DashboardStatusChart,
+    }
+  })
+
+const ExecutiveFinancialAnalyticsPanel =
+  lazy(async () => {
+    const module =
+      await import(
+        "@/features/dashboard/components/executive-financial-analytics-panel"
+      )
+
+    return {
+      default:
+        module.ExecutiveFinancialAnalyticsPanel,
+    }
+  })
+
+const ReturnReadinessCenter =
+  lazy(async () => {
+    const module =
+      await import(
+        "@/features/dashboard/components/return-readiness-center"
+      )
+
+    return {
+      default:
+        module.ReturnReadinessCenter,
+    }
+  })
+
+const SmartRecommendationsPanel =
+  lazy(async () => {
+    const module =
+      await import(
+        "@/features/dashboard/components/smart-recommendations-panel"
+      )
+
+    return {
+      default:
+        module.SmartRecommendationsPanel,
+    }
+  })
+
+const PriorityQueueCard =
+  lazy(async () => {
+    const module =
+      await import(
+        "@/features/dashboard/components/priority-queue-card"
+      )
+
+    return {
+      default:
+        module.PriorityQueueCard,
+    }
+  })
 
 const emptyFinancialOverview: OfficePaymentSummary = {
   paymentsToday: 0,
@@ -115,6 +198,19 @@ const emptyExecutiveAnalytics: ExecutiveFinancialAnalytics = {
   generatedAt: new Date(0).toISOString(),
 };
 
+function DashboardPanelFallback() {
+  return (
+    <div className="min-h-48 animate-pulse rounded-2xl border border-slate-200 bg-white p-6">
+      <div className="h-5 w-40 rounded bg-slate-200" />
+
+      <div className="mt-6 space-y-3">
+        <div className="h-4 rounded bg-slate-100" />
+        <div className="h-4 w-5/6 rounded bg-slate-100" />
+        <div className="h-4 w-3/4 rounded bg-slate-100" />
+      </div>
+    </div>
+  )
+}
 
 export function DashboardPage() {
   const { profile } = useAuth();
@@ -559,7 +655,7 @@ export function DashboardPage() {
           icon={FileCheck2}
           href="/returns?status=completed"
         />
-            </div>
+      </div>
 
       {canViewExecutiveData && (
         <DashboardFinancialOverview
@@ -572,22 +668,34 @@ export function DashboardPage() {
       )}
 
       {canViewExecutiveData && (
-        <ExecutiveFinancialAnalyticsPanel
-          analytics={executiveAnalytics}
-          errorMessage={executiveAnalyticsError}
-          isRefreshing={
-            isRefreshingExecutiveAnalytics
+        <Suspense
+          fallback={
+            <DashboardPanelFallback />
           }
-          onRefresh={() => {
-            void refreshExecutiveAnalytics()
-          }}
-        />
+        >
+          <ExecutiveFinancialAnalyticsPanel
+            analytics={executiveAnalytics}
+            errorMessage={executiveAnalyticsError}
+            isRefreshing={
+              isRefreshingExecutiveAnalytics
+            }
+            onRefresh={() => {
+              void refreshExecutiveAnalytics()
+            }}
+          />
+        </Suspense>
       )}
 
       {canViewReturnReadiness && (
-        <ReturnReadinessCenter
-          metrics={readiness}
-        />
+        <Suspense
+          fallback={
+            <DashboardPanelFallback />
+          }
+        >
+          <ReturnReadinessCenter
+            metrics={readiness}
+          />
+        </Suspense>
       )}
 
       {canViewExecutiveData && (
@@ -596,21 +704,33 @@ export function DashboardPage() {
             metrics={executive}
           />
 
-          <SmartRecommendationsPanel
-            recommendations={
-              dashboardData.recommendations
+          <Suspense
+            fallback={
+              <DashboardPanelFallback />
             }
-          />
+          >
+            <SmartRecommendationsPanel
+              recommendations={
+                dashboardData.recommendations
+              }
+            />
+          </Suspense>
         </>
       )}
 
       {canViewPriorityQueue && (
-        <PriorityQueueCard
-          items={dashboardData.priorityQueue}
-          onPriorityItemUpdated={() => {
-            void loadDashboard(true)
-          }}
-        />
+        <Suspense
+          fallback={
+            <DashboardPanelFallback />
+          }
+        >
+          <PriorityQueueCard
+            items={dashboardData.priorityQueue}
+            onPriorityItemUpdated={() => {
+              void loadDashboard(true)
+            }}
+          />
+        </Suspense>
       )}
 
       {canViewExecutiveData && (
@@ -629,24 +749,48 @@ export function DashboardPage() {
 
       {canViewExecutiveData ? (
         <div className="grid gap-6 xl:grid-cols-2">
-          <DashboardFinancialChart
-            data={analytics.monthlyFinancials}
-          />
+          <Suspense
+            fallback={
+              <DashboardPanelFallback />
+            }
+          >
+            <DashboardFinancialChart
+              data={analytics.monthlyFinancials}
+            />
+          </Suspense>
 
+          <Suspense
+            fallback={
+              <DashboardPanelFallback />
+            }
+          >
+            <DashboardStatusChart
+              data={analytics.statusMetrics}
+            />
+          </Suspense>
+        </div>
+      ) : (
+        <Suspense
+          fallback={
+            <DashboardPanelFallback />
+          }
+        >
           <DashboardStatusChart
             data={analytics.statusMetrics}
           />
-        </div>
-      ) : (
-        <DashboardStatusChart
-          data={analytics.statusMetrics}
-        />
+        </Suspense>
       )}
 
       {canViewExecutiveData && (
-        <DashboardStaffWorkloadChart
-          data={analytics.staffWorkload}
-        />
+        <Suspense
+          fallback={
+            <DashboardPanelFallback />
+          }
+        >
+          <DashboardStaffWorkloadChart
+            data={analytics.staffWorkload}
+          />
+        </Suspense>
       )}
 
       <div className="grid gap-6 xl:grid-cols-2">
