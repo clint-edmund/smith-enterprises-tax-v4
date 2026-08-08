@@ -19,7 +19,6 @@ import {
   returnStatusOptions,
 } from "@/features/returns/utils/return-options"
 import {
-  workflowStatuses,
   type WorkflowStatus,
 } from "@/features/workflow/types/workflow.types"
 
@@ -237,40 +236,102 @@ export function ReturnFiltersPanel({
         </div>
       </div>
 
-      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
         <div>
           <label
-            htmlFor="workflow-filter"
+            htmlFor="deadline-filter"
             className="mb-2 block text-sm font-medium text-slate-700"
           >
-            Workflow stage
+            Deadline
           </label>
 
           <select
-            id="workflow-filter"
-            value={filters.workflow}
+            id="deadline-filter"
+            value={filters.deadline}
             onChange={(event) => {
               onSetFilter(
-                "workflow",
-                event.target.value as ReturnFilters["workflow"],
+                "deadline",
+                event.target.value as ReturnFilters["deadline"],
               )
             }}
             className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-100"
           >
             <option value="all">
-              All workflow stages
+              All deadlines
             </option>
 
-            {workflowStatuses.map((workflowStatus) => (
-              <option
-                key={workflowStatus}
-                value={workflowStatus}
-              >
-                {workflowLabels[workflowStatus]}
-              </option>
-            ))}
+            <option value="overdue">
+              Overdue
+            </option>
+
+            <option value="due_today">
+              Due today
+            </option>
+
+            <option value="due_this_week">
+              Due this week
+            </option>
+
+            <option value="next_7_days">
+              Next 7 days
+            </option>
+
+            <option value="next_30_days">
+              Next 30 days
+            </option>
+
+            <option value="no_due_date">
+              No due date
+            </option>
           </select>
         </div>
+
+        <div>
+          <label
+            htmlFor="completed-period-filter"
+            className="mb-2 block text-sm font-medium text-slate-700"
+          >
+            Completed period
+          </label>
+
+          <select
+            id="completed-period-filter"
+            value={filters.completedPeriod}
+            onChange={(event) => {
+              onSetFilter(
+                "completedPeriod",
+                event.target
+                  .value as ReturnFilters["completedPeriod"],
+              )
+            }}
+            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-100"
+          >
+            <option value="all">
+              All completion dates
+            </option>
+
+            <option value="week">
+              Completed this week
+            </option>
+
+            <option value="month">
+              Completed this month
+            </option>
+          </select>
+        </div>
+
+        {filters.completedPeriod !== "all" && (
+          <FilterChip
+            label={
+              filters.completedPeriod === "week"
+                ? "Completed: This week"
+                : "Completed: This month"
+            }
+            onRemove={() => {
+              onRemoveFilter("completedPeriod")
+            }}
+          />
+        )}
 
         <div>
           <label
@@ -281,16 +342,17 @@ export function ReturnFiltersPanel({
           </label>
 
           <select
-            id="assignment-filter"
-            value={filters.assignment}
-            onChange={(event) => {
-              onSetFilter(
-                "assignment",
-                event.target.value as ReturnFilters["assignment"],
-              )
-            }}
-            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-100"
-          >
+              id="completed-period-filter"
+              value={filters.completedPeriod}
+              onChange={(event) => {
+                onSetFilter(
+                  "completedPeriod",
+                  event.target
+                    .value as ReturnFilters["completedPeriod"],
+                )
+              }}
+              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-100"
+            >
             <option value="all">All assignments</option>
             <option value="mine">Assigned to me</option>
             <option value="unassigned">Unassigned</option>
@@ -350,6 +412,37 @@ export function ReturnFiltersPanel({
             <option value="no_due_date">No due date</option>
             
           </select>
+
+          <label className="grid gap-2 text-sm font-medium text-slate-700">
+  Completed Period
+
+  <select
+    id="completed-period-filter"
+    value={filters.completedPeriod}
+    onChange={(event) => {
+      onSetFilter(
+        "completedPeriod",
+        event.target
+          .value as ReturnFilters["completedPeriod"],
+      )
+    }}
+    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-100"
+  >
+    <option value="all">
+      All completion dates
+    </option>
+
+    <option value="week">
+      Completed this week
+    </option>
+
+    <option value="month">
+      Completed this month
+    </option>
+  </select>
+</label>
+
+
         </div>
       </div>
 

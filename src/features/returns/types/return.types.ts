@@ -19,6 +19,11 @@ export type ReturnWorkflowFilter =
   | WorkflowStatus
   | "all"
 
+export type ReturnCompletedPeriodFilter =
+  | "all"
+  | "week"
+  | "month"
+
 export interface ReturnStaffOption {
   id: string
   displayName: string
@@ -62,6 +67,7 @@ export interface TaxReturnListItem {
   updatedAt: string
   workflowStatus: WorkflowStatus
   workflowHoldReason: string | null
+  workflowCompletedAt: string | null
 }
 
 export interface ClientTaxReturnItem {
@@ -268,6 +274,8 @@ export interface ReturnFilters {
   reviewer: ReturnReviewerFilter
 
   deadline: ReturnDeadlineFilter
+
+  completedPeriod: ReturnCompletedPeriodFilter
 }
 
 export type ReturnFilterKey =

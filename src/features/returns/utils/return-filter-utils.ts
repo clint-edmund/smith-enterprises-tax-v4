@@ -6,6 +6,7 @@ import type {
   ReturnFilterUpdates,
   ReturnReviewerFilter,
   ReturnStatus,
+  ReturnCompletedPeriodFilter,
 } from "@/features/returns/types/return.types"
 
 export const defaultReturnFilters: ReturnFilters = {
@@ -17,7 +18,15 @@ export const defaultReturnFilters: ReturnFilters = {
   assignment: "all",
   reviewer: "all",
   deadline: "all",
+  completedPeriod: "all",
 }
+
+const completedPeriods =
+  new Set<ReturnCompletedPeriodFilter>([
+    "all",
+    "week",
+    "month",
+  ])
 
 const statuses = new Set<string>([
   "not_started", "documents_pending", "in_progress", "ready_for_review",
@@ -65,6 +74,8 @@ export function normalizeReturnFilters(filters: ReturnFilterUpdates): ReturnFilt
   const assignment = filters.assignment
   const reviewer = filters.reviewer
   const deadline = filters.deadline
+  const completedPeriod = filters.completedPeriod
+
   return {
     search: filters.search?.trim() ?? "",
     status: status && statuses.has(status) ? status as ReturnStatus : "all",
@@ -73,6 +84,7 @@ export function normalizeReturnFilters(filters: ReturnFilterUpdates): ReturnFilt
     assignment: assignment && assignments.has(assignment) ? assignment : "all",
     reviewer: reviewer && reviewers.has(reviewer) ? reviewer : "all",
     deadline: deadline && deadlines.has(deadline) ? deadline : "all",
+    completedPeriod: completedPeriod && completedPeriods.has(completedPeriod) ? completedPeriod : "all",
     workflow:
   workflow && workflows.has(workflow)
     ? workflow
@@ -90,6 +102,7 @@ export function parseReturnFilters(searchParams: URLSearchParams): ReturnFilters
     reviewer: searchParams.get("reviewer") ?? undefined,
     deadline: searchParams.get("deadline") ?? undefined,
     workflow: searchParams.get("workflow") ?? undefined,
+    completedPeriod: searchParams.get("completedPeriod") ?? undefined,
   } as ReturnFilterUpdates)
 }
 
@@ -104,6 +117,7 @@ export function buildReturnFilterSearchParams(filters: ReturnFilterUpdates) {
   if (normalized.reviewer !== "all") params.set("reviewer", normalized.reviewer)
   if (normalized.deadline !== "all") params.set("deadline", normalized.deadline)
   if (normalized.workflow !== "all") params.set("workflow", normalized.workflow)
+  if (normalized.completedPeriod !== "all") params.set("completedPeriod", normalized.completedPeriod,)
   return params
 }
 
