@@ -1,2 +1,0 @@
--- Atlas Development Seed
--- Reference/static data will be added here as needed.
