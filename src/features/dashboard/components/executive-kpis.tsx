@@ -47,7 +47,7 @@ export function ExecutiveKpis({
       description:
         "Open returns with deadlines during the next seven days.",
       icon: CalendarDays,
-      href: "/returns?deadline=next7",
+      href: "/returns?deadline=next_7_days",
     },
     {
       label: "Due Next 30 Days",
@@ -57,7 +57,7 @@ export function ExecutiveKpis({
       description:
         "Open returns with deadlines during the next thirty days.",
       icon: CalendarRange,
-      href: "/returns?deadline=next30",
+      href: "/returns?deadline=next_30_days",
     },
     {
       label: "Completed This Week",
