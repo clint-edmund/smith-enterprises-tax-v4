@@ -3,248 +3,248 @@ import {
 } from "../atlas.config"
 
 import {
-  printBanner,
-} from "./utils/banner"
+  createAtlasContext,
+} from "./framework/atlas-context"
+
+import {
+  runAtlasCommand,
+} from "./framework/atlas-command"
+
+import {
+  failAtlasCommand,
+} from "./framework/atlas-errors"
 
 import {
   runCommand,
 } from "./utils/command"
 
-import {
-  getCurrentBranch,
-  getRemoteSyncStatus,
-  isWorkingTreeClean,
-} from "./utils/git"
-
-import {
-  logFailure,
-  logSection,
-  logSuccess,
-  logValue,
-  logWarning,
-} from "./utils/logger"
-
-function fail(
-  message: string,
-): never {
-  logFailure(
-    message,
-  )
-
-  process.exit(1)
-}
-
-function main(): void {
-  printBanner(
+async function main():
+Promise<void> {
+  await runAtlasCommand(
     "Atlas Preview Deployment",
+    (atlas) => {
+      const context =
+        createAtlasContext()
+
+      atlas.section(
+        "Branch Validation",
+      )
+
+      atlas.value(
+        "Current Branch",
+        context.branch,
+      )
+
+      atlas.value(
+        "Required Branch",
+        atlasConfig.branches.staging,
+      )
+
+      if (
+        !context.isStagingBranch
+      ) {
+        failAtlasCommand(
+          [
+            "Preview deployments must originate from develop.",
+            "",
+            `Switch branches with: git checkout ${atlasConfig.branches.staging}`,
+          ].join("\n"),
+        )
+      }
+
+      atlas.pass(
+        "Staging branch verified",
+      )
+
+      atlas.section(
+        "Working Tree",
+      )
+
+      if (
+        !context.workingTreeClean
+      ) {
+        failAtlasCommand(
+          [
+            "Working tree contains uncommitted changes.",
+            "",
+            "Run git status and commit or stash changes before preview deployment.",
+          ].join("\n"),
+        )
+      }
+
+      atlas.pass(
+        "Working tree clean",
+      )
+
+      atlas.section(
+        "Verification",
+      )
+
+      const verification =
+        runCommand(
+          "npm",
+          [
+            "run",
+            "atlas:verify",
+          ],
+        )
+
+      if (
+        !verification.success
+      ) {
+        failAtlasCommand(
+          [
+            "Atlas verification failed.",
+            "",
+            verification.output,
+          ].join("\n"),
+        )
+      }
+
+      atlas.pass(
+        "Atlas verification passed",
+      )
+
+      atlas.section(
+        "Git Synchronization",
+      )
+
+      const syncStatus =
+        context.remoteSyncStatus
+
+      atlas.value(
+        "Remote Status",
+        syncStatus,
+      )
+
+      if (
+        syncStatus.startsWith(
+          "Behind",
+        )
+      ) {
+        failAtlasCommand(
+          `Run git pull origin ${context.branch} before deploying Preview.`,
+        )
+      }
+
+      if (
+        syncStatus.startsWith(
+          "Diverged",
+        )
+      ) {
+        failAtlasCommand(
+          "Local and remote develop histories have diverged.",
+        )
+      }
+
+      if (
+        syncStatus ===
+          "Unable to check" ||
+        syncStatus ===
+          "Unable to compare" ||
+        syncStatus ===
+          "Unknown"
+      ) {
+        failAtlasCommand(
+          "Unable to verify Git synchronization.",
+        )
+      }
+
+      if (
+        syncStatus.startsWith(
+          "Ahead",
+        )
+      ) {
+        atlas.warning(
+          "Local develop contains unpushed commits",
+        )
+      } else {
+        atlas.pass(
+          "Develop synchronized with GitHub",
+        )
+      }
+
+      atlas.section(
+        "Preview Deployment",
+      )
+
+      const push =
+        runCommand(
+          "git",
+          [
+            "push",
+            "origin",
+            context.branch,
+          ],
+        )
+
+      if (
+        !push.success
+      ) {
+        failAtlasCommand(
+          [
+            "Unable to push develop to GitHub.",
+            "",
+            push.output,
+          ].join("\n"),
+        )
+      }
+
+      atlas.pass(
+        "Develop pushed to GitHub",
+      )
+
+      atlas.section(
+        "Deployment Lifecycle",
+      )
+
+      atlas.value(
+        "Git Branch",
+        context.branch,
+      )
+
+      atlas.value(
+        "Vercel",
+        "Preview",
+      )
+
+      atlas.value(
+        "Production Branch",
+        context.productionBranch,
+      )
+
+      console.log("")
+      console.log(
+        "GitHub Actions will verify the commit.",
+      )
+
+      console.log(
+        "Vercel will create/update the Preview deployment automatically.",
+      )
+
+      console.log("")
+
+      console.log(
+        "Next:",
+      )
+
+      console.log(
+        "  1. Confirm GitHub Actions is green.",
+      )
+
+      console.log(
+        "  2. Open the develop Preview deployment.",
+      )
+
+      console.log(
+        "  3. Complete customer/QA review.",
+      )
+
+      console.log(
+        "  4. Promote develop → main only after approval.",
+      )
+    },
   )
-
-  const branch =
-    getCurrentBranch()
-
-  logSection(
-    "Branch Validation",
-  )
-
-  logValue(
-    "Current Branch",
-    branch,
-  )
-
-  logValue(
-    "Required Branch",
-    atlasConfig.branches.staging,
-  )
-
-  if (
-    branch !==
-    atlasConfig.branches.staging
-  ) {
-    fail(
-      [
-        "Preview deployments must originate from the staging branch.",
-        "",
-        `Switch branches with: git checkout ${atlasConfig.branches.staging}`,
-      ].join("\n"),
-    )
-  }
-
-  logSuccess(
-    "Staging branch verified.",
-  )
-
-  logSection(
-    "Working Tree",
-  )
-
-  if (
-    !isWorkingTreeClean()
-  ) {
-    fail(
-      [
-        "Working tree contains uncommitted changes.",
-        "",
-        "Run git status and commit or stash the changes before preview deployment.",
-      ].join("\n"),
-    )
-  }
-
-  logSuccess(
-    "Working tree clean.",
-  )
-
-  logSection(
-    "Verification",
-  )
-
-  const verification =
-    runCommand(
-      "npm",
-      [
-        "run",
-        "atlas:verify",
-      ],
-    )
-
-  if (
-    !verification.success
-  ) {
-    console.log(
-      verification.output,
-    )
-
-    fail(
-      "Atlas verification failed.",
-    )
-  }
-
-  logSuccess(
-    "Atlas verification passed.",
-  )
-
-  logSection(
-    "Git Synchronization",
-  )
-
-  const syncStatus =
-    getRemoteSyncStatus()
-
-  logValue(
-    "Remote Status",
-    syncStatus,
-  )
-
-  if (
-    syncStatus.startsWith(
-      "Behind",
-    ) ||
-    syncStatus.startsWith(
-      "Diverged",
-    )
-  ) {
-    fail(
-      [
-        "Local develop is not safely synchronized with GitHub.",
-        "",
-        `Run git pull origin ${branch} and resolve any differences first.`,
-      ].join("\n"),
-    )
-  }
-
-  if (
-    syncStatus ===
-    "Unable to check" ||
-    syncStatus ===
-    "Unable to compare" ||
-    syncStatus ===
-    "Unknown"
-  ) {
-    fail(
-      "Unable to verify Git synchronization.",
-    )
-  }
-
-  if (
-    syncStatus.startsWith(
-      "Ahead",
-    )
-  ) {
-    logWarning(
-      "Local branch contains commits that have not yet been pushed.",
-    )
-  } else {
-    logSuccess(
-      "Local branch is synchronized.",
-    )
-  }
-
-  logSection(
-    "Preview Deployment",
-  )
-
-  const push =
-    runCommand(
-      "git",
-      [
-        "push",
-        "origin",
-        branch,
-      ],
-    )
-
-  if (
-    !push.success
-  ) {
-    console.log(
-      push.output,
-    )
-
-    fail(
-      "Unable to push develop to GitHub.",
-    )
-  }
-
-  logSuccess(
-    "Develop pushed to GitHub.",
-  )
-
-  console.log("")
-  console.log(
-    "GitHub Actions will now verify the commit.",
-  )
-
-  console.log(
-    "Vercel will create or update the Preview deployment automatically.",
-  )
-
-  console.log("")
-
-  logSuccess(
-    "Atlas Preview deployment initiated.",
-  )
-
-  console.log("")
-  console.log(
-    "Next steps:",
-  )
-
-  console.log(
-    "  1. Confirm GitHub Actions is green.",
-  )
-
-  console.log(
-    "  2. Open the develop Preview deployment in Vercel.",
-  )
-
-  console.log(
-    "  3. Complete the customer demo checklist.",
-  )
-
-  console.log(
-    "  4. Promote develop to main only after approval.",
-  )
-
-  console.log("")
 }
 
-main()
+void main()
