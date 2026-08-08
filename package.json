@@ -34,7 +34,8 @@
     "atlas:status": "tsx scripts/atlas-status.ts",
     "atlas:verify": "tsx scripts/atlas-verify.ts",
     "atlas:preview": "tsx scripts/atlas-preview.ts",
-    "atlas:release": "tsx scripts/atlas-release.ts"
+    "atlas:release": "tsx scripts/atlas-release.ts",
+    "atlas:doctor": "tsx scripts/atlas-doctor.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",
