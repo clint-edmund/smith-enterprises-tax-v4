@@ -1,12 +1,21 @@
-import { atlasConfig } from "../atlas.config"
+import {
+  atlasConfig,
+} from "../atlas.config"
 
-import { printBanner } from "./utils/banner"
-import { runCommand } from "./utils/command"
+import {
+  printBanner,
+} from "./utils/banner"
+
+import {
+  runCommand,
+} from "./utils/command"
+
 import {
   getCurrentBranch,
   getRemoteSyncStatus,
   isWorkingTreeClean,
 } from "./utils/git"
+
 import {
   logFailure,
   logSection,
@@ -14,30 +23,57 @@ import {
   logValue,
   logWarning,
 } from "./utils/logger"
-import { getPackageVersion } from "./utils/version"
 
-function fail(message: string): never {
-  logFailure(message)
+import {
+  getPackageVersion,
+} from "./utils/version"
+
+function fail(
+  message: string,
+): never {
+  logFailure(
+    message,
+  )
+
   process.exit(1)
 }
 
 function main(): void {
-  printBanner("Atlas Release Manager")
+  printBanner(
+    "Atlas Release Manager",
+  )
 
-  const branch = getCurrentBranch()
-  const version = getPackageVersion()
+  const branch =
+    getCurrentBranch()
 
-  logSection("Release")
+  const version =
+    getPackageVersion()
 
-  logValue("Version", version)
+  const releaseTag =
+    `v${version}`
+
+  logSection(
+    "Release",
+  )
+
   logValue(
-    "Production Branch",
-    atlasConfig.branches.production,
+    "Version",
+    version,
+  )
+
+  logValue(
+    "Release Tag",
+    releaseTag,
   )
 
   logValue(
     "Current Branch",
     branch,
+  )
+
+  logValue(
+    "Production Branch",
+    atlasConfig.branches.production,
   )
 
   if (
@@ -53,9 +89,13 @@ function main(): void {
     "Correct release branch.",
   )
 
-  logSection("Git")
+  logSection(
+    "Git",
+  )
 
-  if (!isWorkingTreeClean()) {
+  if (
+    !isWorkingTreeClean()
+  ) {
     fail(
       "Working tree contains uncommitted changes.",
     )
@@ -65,12 +105,34 @@ function main(): void {
     "Working tree clean.",
   )
 
+  const syncStatus =
+    getRemoteSyncStatus()
+
   logValue(
     "Remote Status",
-    getRemoteSyncStatus(),
+    syncStatus,
   )
 
-  logSection("Verification")
+  if (
+    syncStatus !==
+    "Up to date"
+  ) {
+    fail(
+      [
+        "Release branch is not synchronized with GitHub.",
+        "",
+        `Current status: ${syncStatus}`,
+      ].join("\n"),
+    )
+  }
+
+  logSuccess(
+    "Develop is synchronized with GitHub.",
+  )
+
+  logSection(
+    "Verification",
+  )
 
   const verify =
     runCommand(
@@ -81,7 +143,9 @@ function main(): void {
       ],
     )
 
-  if (!verify.success) {
+  if (
+    !verify.success
+  ) {
     console.log(
       verify.output,
     )
@@ -95,40 +159,153 @@ function main(): void {
     "Atlas verification passed.",
   )
 
-  logSection("Release Checklist")
+  logSection(
+    "Release Notes",
+  )
 
-  console.log(
-    "□ Pull Request: develop → main",
+  const releaseNotes =
+    runCommand(
+      "npm",
+      [
+        "run",
+        "atlas:release-notes",
+      ],
+    )
+
+  if (
+    !releaseNotes.success
+  ) {
+    console.log(
+      releaseNotes.output,
+    )
+
+    fail(
+      "Unable to generate release notes.",
+    )
+  }
+
+  logSuccess(
+    "Release notes generated.",
+  )
+
+  /*
+   * Release note generation intentionally
+   * modifies docs/CHANGELOG.md and creates
+   * docs/releases/vX.Y.Z.md.
+   */
+  if (
+    isWorkingTreeClean()
+  ) {
+    logWarning(
+      "Release notes did not create any repository changes.",
+    )
+  } else {
+    logSuccess(
+      "Release artifacts are ready for review.",
+    )
+  }
+
+  logSection(
+    "Tag Safety",
+  )
+
+  const existingTag =
+    runCommand(
+      "git",
+      [
+        "tag",
+        "--list",
+        releaseTag,
+      ],
+    )
+
+  if (
+    !existingTag.success
+  ) {
+    fail(
+      "Unable to inspect Git tags.",
+    )
+  }
+
+  if (
+    existingTag.output ===
+    releaseTag
+  ) {
+    fail(
+      `Release tag ${releaseTag} already exists.`,
+    )
+  }
+
+  logSuccess(
+    `${releaseTag} is available.`,
+  )
+
+  logSection(
+    "Release Preparation Complete",
   )
 
   console.log(
-    "□ GitHub Actions passed",
+    `Review: docs/releases/${releaseTag}.md`,
   )
 
   console.log(
-    "□ Preview approved",
+    "Review: docs/CHANGELOG.md",
+  )
+
+  console.log("")
+
+  console.log(
+    "Then commit the release artifacts:",
+  )
+
+  console.log("")
+
+  console.log(
+    `git add docs/CHANGELOG.md docs/releases/${releaseTag}.md`,
   )
 
   console.log(
-    "□ Merge PR",
+    `git commit -m "Prepare Atlas ${releaseTag} release"`,
   )
 
   console.log(
-    "□ Confirm Production deployment",
+    "git push origin develop",
+  )
+
+  console.log("")
+
+  console.log(
+    "Production promotion:",
   )
 
   console.log(
-    "□ Create Git tag",
+    "1. Confirm the Vercel develop Preview is approved.",
   )
 
   console.log(
-    "□ Update CHANGELOG",
+    "2. Create PR: develop → main.",
+  )
+
+  console.log(
+    "3. Wait for GitHub Actions to pass.",
+  )
+
+  console.log(
+    "4. Merge the PR.",
+  )
+
+  console.log(
+    "5. Confirm Vercel Production is healthy.",
+  )
+
+  console.log(
+    `6. Tag main with ${releaseTag}.`,
   )
 
   console.log("")
 
   logSuccess(
-    "Atlas Release is READY.",
+    "Atlas release artifacts prepared.",
   )
 }
 
