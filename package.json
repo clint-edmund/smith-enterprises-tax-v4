@@ -1,7 +1,7 @@
 {
   "name": "smith-v4-clean",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -35,7 +35,9 @@
     "atlas:verify": "tsx scripts/atlas-verify.ts",
     "atlas:preview": "tsx scripts/atlas-preview.ts",
     "atlas:release": "tsx scripts/atlas-release.ts",
-    "atlas:doctor": "tsx scripts/atlas-doctor.ts"
+    "atlas:doctor": "tsx scripts/atlas-doctor.ts",
+    "atlas:version": "tsx scripts/atlas-version.ts",
+    "atlas:release-notes": "tsx scripts/atlas-release-notes.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",
