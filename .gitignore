@@ -31,3 +31,5 @@ bundle-stats.html
 
 # Allow the environment template
 !.env.examplemigration-history-before-atlas-repair.txt
+
+migration-history-before-atlas-repair.txt
