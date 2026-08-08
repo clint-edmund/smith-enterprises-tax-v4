@@ -30,4 +30,4 @@ bundle-stats.html
 .env.*.local
 
 # Allow the environment template
-!.env.example
+!.env.examplemigration-history-before-atlas-repair.txt
