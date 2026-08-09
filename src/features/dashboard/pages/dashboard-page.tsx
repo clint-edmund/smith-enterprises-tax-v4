@@ -26,6 +26,10 @@ import { getExecutiveFinancialAnalytics } from "@/features/dashboard/services/fi
 import {
   ExecutiveOverview,
 } from "@/features/dashboard/components/executive-overview"
+import {
+  AtlasPageHeader,
+  AtlasSection,
+} from "@/components/atlas-ui"
 import type { ExecutiveFinancialAnalytics } from "@/features/dashboard/types/financial-analytics.types";
 import {
   getOfficePaymentSummary,
@@ -535,44 +539,47 @@ export function DashboardPage() {
 
   return (
     <section className="space-y-6">
-      <header className="flex flex-col gap-4 rounded-2xl bg-slate-950 p-6 text-white shadow-sm sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.16em] text-blue-300">
-            Operational Overview
-          </p>
+      <AtlasPageHeader
+        eyebrow="Atlas Command Center"
+        title={`Welcome, ${staffName}`}
+        description="Monitor clients, return workflow, deadlines, assignments, and financial activity from live application data."
+        metadata={
+          <>
+            Last updated{" "}
+            {new Date(
+              loadedAt,
+            ).toLocaleTimeString(
+              [],
+              {
+                hour: "numeric",
+                minute: "2-digit",
+              },
+            )}
+          </>
+        }
+        actions={
+          <button
+            type="button"
+            disabled={isRefreshing}
+            onClick={() => {
+              void loadDashboard(true)
+            }}
+            className="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-700 bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            <RefreshCw
+              className={`size-4 ${
+                isRefreshing
+                  ? "animate-spin"
+                  : ""
+              }`}
+            />
 
-          <h1 className="mt-2 text-3xl font-bold tracking-tight">
-            Welcome, {staffName}
-          </h1>
-
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-300">
-            Monitor clients, return workflow, deadlines, assignments, and
-            financial activity from live application data.
-          </p>
-
-          <p className="mt-3 text-xs text-slate-400">
-            Last updated {new Date(loadedAt).toLocaleTimeString([], {
-              hour: "numeric",
-              minute: "2-digit",
-            })}
-          </p>
-        </div>
-
-        <button
-          type="button"
-          disabled={isRefreshing}
-          onClick={() => {
-            void loadDashboard(true);
-          }}
-          className="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-700 bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          <RefreshCw
-            className={`size-4 ${isRefreshing ? "animate-spin" : ""}`}
-          />
-
-          {isRefreshing ? "Refreshing" : "Refresh"}
-        </button>
-      </header>
+            {isRefreshing
+              ? "Refreshing"
+              : "Refresh"}
+          </button>
+        }
+      />
 
       
         <ExecutiveOverview
@@ -581,55 +588,26 @@ export function DashboardPage() {
           readiness={readiness}
           loadedAt={loadedAt}
         />
-
-
-      {canViewExecutiveData && (
-        <DashboardFinancialOverview
-          summary={financialOverview}
-          errorMessage={financialOverviewError}
-          onRefresh={() => {
-            void loadDashboard(true);
-          }}
-        />
-      )}
-
-      {canViewExecutiveData && (
-        <Suspense
-          fallback={
-            <DashboardPanelFallback />
-          }
-        >
-          <ExecutiveFinancialAnalyticsPanel
-            analytics={executiveAnalytics}
-            errorMessage={executiveAnalyticsError}
-            isRefreshing={
-              isRefreshingExecutiveAnalytics
-            }
-            onRefresh={() => {
-              void refreshExecutiveAnalytics()
-            }}
-          />
-        </Suspense>
-      )}
-
-      {canViewReturnReadiness && (
-        <Suspense
-          fallback={
-            <DashboardPanelFallback />
-          }
-        >
-          <ReturnReadinessCenter
-            metrics={readiness}
-          />
-        </Suspense>
-      )}
-
-      {canViewExecutiveData && (
-        <>
-          <ExecutiveKpis
-            metrics={executive}
-          />
-
+      
+      <AtlasSection
+        variant="plain"
+        eyebrow="Today's Priorities"
+        title="Focus Areas"
+        description="The highest-impact work for today based on deadlines, assignments, and office activity."
+      >
+        {canViewPriorityQueue && (
+          <Suspense
+            fallback={<DashboardPanelFallback />}
+          >
+            <PriorityQueueCard
+              items={dashboardData.priorityQueue}
+              onPriorityItemUpdated={() => {
+                void loadDashboard(true)
+              }}
+            />
+          </Suspense>
+        )}
+        {canViewPriorityQueue && (
           <Suspense
             fallback={
               <DashboardPanelFallback />
@@ -641,111 +619,181 @@ export function DashboardPage() {
               }
             />
           </Suspense>
-        </>
-      )}
+           )}
 
-      {canViewPriorityQueue && (
-        <Suspense
-          fallback={
-            <DashboardPanelFallback />
-          }
-        >
-          <PriorityQueueCard
-            items={dashboardData.priorityQueue}
-            onPriorityItemUpdated={() => {
-              void loadDashboard(true)
-            }}
-          />
-        </Suspense>
-      )}
+       <MyWorkload workload={workload} />
+      
+      </AtlasSection>
+      <AtlasSection
+        variant="plain"
+        eyebrow="Office Operations"
+        title="Workflow Status"
+        description="Monitor return movement, staffing, and operational readiness."
+      >
+      
+      <div className="space-y-6">
+
+      
+      {canViewExecutiveData && (
+              <>
+                <WorkflowOperations
+                  workflow={summary.workflow}
+                />
+
+                <StaffWorkload
+                  workload={staffWorkload}
+                />
+              </>
+            )}
+
+      {canViewReturnReadiness && (
+              <Suspense
+                fallback={
+                  <DashboardPanelFallback />
+                }
+              >
+                <ReturnReadinessCenter
+                  metrics={readiness}
+                />
+              </Suspense>
+            )}
+      </div>  
+      </AtlasSection>
+      <AtlasSection
+        variant="plain"
+        eyebrow="Business Performance"
+        title="Financial Performance"
+        description="Revenue, production, and executive insights."
+      >
+      
+      <div className="space-y-6">
+
 
       {canViewExecutiveData && (
-        <>
-          <WorkflowOperations
-            workflow={summary.workflow}
-          />
+              <DashboardFinancialOverview
+                summary={financialOverview}
+                errorMessage={financialOverviewError}
+                onRefresh={() => {
+                  void loadDashboard(true);
+                }}
+              />
+            )}
 
-          <StaffWorkload
-            workload={staffWorkload}
-          />
-        </>
-      )}
+            {canViewExecutiveData && (
+              <Suspense
+                fallback={
+                  <DashboardPanelFallback />
+                }
+              >
+                <ExecutiveFinancialAnalyticsPanel
+                  analytics={executiveAnalytics}
+                  errorMessage={executiveAnalyticsError}
+                  isRefreshing={
+                    isRefreshingExecutiveAnalytics
+                  }
+                  onRefresh={() => {
+                    void refreshExecutiveAnalytics()
+                  }}
+                />
+              </Suspense>
+            )}
 
-      <MyWorkload workload={workload} />
+          
 
-      {canViewExecutiveData ? (
-        <div className="grid gap-6 xl:grid-cols-2">
-          <Suspense
-            fallback={
-              <DashboardPanelFallback />
-            }
-          >
-            <DashboardFinancialChart
-              data={analytics.monthlyFinancials}
-            />
-          </Suspense>
+            {canViewExecutiveData && (
+              <>
+                <ExecutiveKpis
+                  metrics={executive}
+                />       
+            </>
+            )}          
 
-          <Suspense
-            fallback={
-              <DashboardPanelFallback />
-            }
-          >
-            <DashboardStatusChart
-              data={analytics.statusMetrics}
-            />
-          </Suspense>
-        </div>
-      ) : (
-        <Suspense
-          fallback={
-            <DashboardPanelFallback />
-          }
-        >
-          <DashboardStatusChart
-            data={analytics.statusMetrics}
-          />
-        </Suspense>
-      )}
+            {canViewExecutiveData ? (
+              <div className="grid gap-6 xl:grid-cols-2">
+                <Suspense
+                  fallback={
+                    <DashboardPanelFallback />
+                  }
+                >
+                  <DashboardFinancialChart
+                    data={analytics.monthlyFinancials}
+                  />
+                </Suspense>
 
-      {canViewExecutiveData && (
-        <Suspense
-          fallback={
-            <DashboardPanelFallback />
-          }
-        >
-          <DashboardStaffWorkloadChart
-            data={analytics.staffWorkload}
-          />
-        </Suspense>
-      )}
+                <Suspense
+                  fallback={
+                    <DashboardPanelFallback />
+                  }
+                >
+                  <DashboardStatusChart
+                    data={analytics.statusMetrics}
+                  />
+                </Suspense>
+              </div>
+            ) : (
+              <Suspense
+                fallback={
+                  <DashboardPanelFallback />
+                }
+              >
+                <DashboardStatusChart
+                  data={analytics.statusMetrics}
+                />
+              </Suspense>
+            )}
 
+            {canViewExecutiveData && (
+              <Suspense
+                fallback={
+                  <DashboardPanelFallback />
+                }
+              >
+                <DashboardStaffWorkloadChart
+                  data={analytics.staffWorkload}
+                />
+              </Suspense>
+            )}
+            </div>
+      </AtlasSection>
+      <AtlasSection
+        variant="plain"
+        eyebrow="Activity Center"
+        title="Recent Office Activity"
+        description="Latest work completed and available actions."
+      >
+      <div className="space-y-6">
+
+      
       <div className="grid gap-6 xl:grid-cols-2">
-        <DashboardReturnList returns={recentReturns} />
+              <DashboardReturnList returns={recentReturns} />
 
-        <DashboardAttentionList items={attentionItems} />
-      </div>
+              <DashboardAttentionList items={attentionItems} />
+            </div>
 
-      <div className="grid gap-6 xl:grid-cols-3">
-        <div className="xl:col-span-2">
-          <RecentActivity
-            activities={activities}
-            errorMessage={activityError}
-            isRefreshing={isRefreshingActivity}
-            onRefresh={() => {
-              void refreshActivity()
-            }}
-            realtimeStatus={realtimeStatus}
-          />
-        </div>
+            <div className="grid gap-6 xl:grid-cols-3">
+              <div className="xl:col-span-2">
+                <RecentActivity
+                  activities={activities}
+                  errorMessage={activityError}
+                  isRefreshing={isRefreshingActivity}
+                  onRefresh={() => {
+                    void refreshActivity()
+                  }}
+                  realtimeStatus={realtimeStatus}
+                />
+              </div>
 
-        <div className="space-y-6">
-          <QuickActions role={profile.role} />
+              <div className="space-y-6">
+                <QuickActions role={profile.role} />
 
-          {canViewExecutiveData && (
-            <QuickReports />
-          )}
-        </div>
-      </div>
+                {canViewExecutiveData && (
+                  <QuickReports />
+                )}
+              </div>
+            </div>
+            </div>
+      </AtlasSection>
+
     </section>
   );
 }

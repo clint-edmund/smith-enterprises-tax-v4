@@ -1,4 +1,6 @@
 import {
+  ArrowDown,
+  ArrowUp,
   ListChecks,
   Search,
 } from "lucide-react"
@@ -54,6 +56,11 @@ export function PriorityQueueCard({
   ] = useState<SortOption>(
     "highest-risk",
   )
+
+  const [
+  isExpanded,
+  setIsExpanded,
+] = useState(false)
 
   const filteredItems = useMemo(() => {
   const normalizedSearch =
@@ -169,8 +176,19 @@ const riskSummary = useMemo(() => {
   searchTerm,
 ])
 
+const COLLAPSED_PRIORITY_COUNT = 5
+
+const hasAdditionalItems =
+  sortedItems.length >
+  COLLAPSED_PRIORITY_COUNT
+
 const visibleItems =
-  sortedItems.slice(0, 10)
+  isExpanded
+    ? sortedItems
+    : sortedItems.slice(
+        0,
+        COLLAPSED_PRIORITY_COUNT,
+      )
 
   return (
     <section className="rounded-2xl border border-stone-200 bg-stone-50/60 p-4 shadow-[0_18px_45px_-30px_rgba(15,23,42,0.55)] dark:border-stone-800 dark:bg-stone-950/50 sm:p-6">
@@ -204,11 +222,13 @@ const visibleItems =
 
           <select
             value={sortOption}
-            onChange={(event) =>
+            onChange={(event) => {
               setSortOption(
                 event.target.value as SortOption,
               )
-            }
+
+              setIsExpanded(false)
+            }}
             className="rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm font-medium text-stone-700 shadow-sm outline-none transition focus:border-stone-500 focus:ring-2 focus:ring-stone-200 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-200 dark:focus:border-stone-500 dark:focus:ring-stone-800"
           >
             <option value="highest-risk">
@@ -232,20 +252,46 @@ const visibleItems =
             </option>
           </select>
 
-          <button
-            type="button"
-            disabled
-            title="Full priority queue view will be added in a later phase."
-            className={[
-              "inline-flex items-center justify-center rounded-md",
-              "border border-stone-200 bg-white px-3 py-2",
-              "text-sm font-semibold text-stone-500",
-              "dark:border-stone-800 dark:bg-stone-900 dark:text-stone-500",
-              "cursor-not-allowed opacity-70",
-            ].join(" ")}
-          >
-            View All
-          </button>
+          {hasAdditionalItems ? (
+  <button
+    type="button"
+    onClick={() =>
+      setIsExpanded(
+        (currentValue) =>
+          !currentValue,
+      )
+    }
+    className={[
+      "inline-flex items-center justify-center gap-2 rounded-md",
+      "border border-stone-200 bg-white px-3 py-2",
+      "text-sm font-semibold text-stone-700 shadow-sm",
+      "transition hover:bg-stone-100",
+      "focus:outline-none focus:ring-2 focus:ring-stone-300",
+      "dark:border-stone-700 dark:bg-stone-900",
+      "dark:text-stone-200 dark:hover:bg-stone-800",
+    ].join(" ")}
+  >
+    {isExpanded ? (
+      <>
+        Show Fewer
+
+        <ArrowUp
+          className="h-4 w-4"
+          aria-hidden="true"
+        />
+      </>
+    ) : (
+      <>
+        View All
+
+        <ArrowDown
+          className="h-4 w-4"
+          aria-hidden="true"
+        />
+      </>
+    )}
+  </button>
+) : null}
         </div>
       </div>
 
@@ -291,11 +337,13 @@ const visibleItems =
             <button
               key={filter}
               type="button"
-              onClick={() =>
+              onClick={() => {
                 setRiskFilter(
                   filter as RiskFilter,
                 )
-              }
+
+                setIsExpanded(false)
+              }}
               className={[
                 "rounded-full border px-3 py-1.5 text-sm font-semibold transition duration-200",
                 active
@@ -313,7 +361,29 @@ const visibleItems =
       </div>
       
       <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-3 shadow-sm dark:border-red-900/60 dark:bg-red-950/30">
+        <button
+          type="button"
+          onClick={() => {
+            setRiskFilter(
+              riskFilter === "critical"
+                ? "all"
+                : "critical",
+            )
+
+            setIsExpanded(false)
+          }}
+          aria-pressed={
+            riskFilter === "critical"
+          }
+          className={[
+            "rounded-xl border px-3 py-3 text-left shadow-sm transition",
+            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-300",
+            riskFilter === "critical"
+              ? "border-red-400 bg-red-100 ring-2 ring-red-200"
+              : "border-red-200 bg-red-50 hover:border-red-300 hover:bg-red-100",
+            "dark:border-red-900/60 dark:bg-red-950/30",
+          ].join(" ")}
+        >
           <p className="text-xs font-semibold uppercase text-red-700 dark:text-red-300">
             Critical
           </p>
@@ -321,9 +391,31 @@ const visibleItems =
           <p className="mt-1 text-xl font-bold text-red-900 dark:text-red-200">
             {riskSummary.critical}
           </p>
-        </div>
+        </button>
 
-        <div className="rounded-xl border border-orange-200 bg-orange-50 px-3 py-3 shadow-sm dark:border-orange-900/60 dark:bg-orange-950/30">
+        <button
+          type="button"
+          onClick={() => {
+            setRiskFilter(
+              riskFilter === "high"
+                ? "all"
+                : "high",
+            )
+
+            setIsExpanded(false)
+          }}
+          aria-pressed={
+            riskFilter === "high"
+          }
+          className={[
+            "rounded-xl border px-3 py-3 text-left shadow-sm transition",
+            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-300",
+            riskFilter === "high"
+              ? "border-orange-400 bg-orange-100 ring-2 ring-orange-200"
+              : "border-orange-200 bg-orange-50 hover:border-orange-300 hover:bg-orange-100",
+            "dark:border-orange-900/60 dark:bg-orange-950/30",
+          ].join(" ")}
+        >
           <p className="text-xs font-semibold uppercase text-orange-700 dark:text-orange-300">
             High
           </p>
@@ -331,9 +423,31 @@ const visibleItems =
           <p className="mt-1 text-xl font-bold text-orange-900 dark:text-orange-200">
             {riskSummary.high}
           </p>
-        </div>
+        </button>
 
-        <div className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-3 shadow-sm dark:border-amber-900/60 dark:bg-amber-950/30">
+        <button
+          type="button"
+          onClick={() => {
+            setRiskFilter(
+              riskFilter === "medium"
+                ? "all"
+                : "medium",
+            )
+
+            setIsExpanded(false)
+          }}
+          aria-pressed={
+            riskFilter === "medium"
+          }
+          className={[
+            "rounded-xl border px-3 py-3 text-left shadow-sm transition",
+            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300",
+            riskFilter === "medium"
+              ? "border-amber-400 bg-amber-100 ring-2 ring-amber-200"
+              : "border-amber-200 bg-amber-50 hover:border-amber-300 hover:bg-amber-100",
+            "dark:border-amber-900/60 dark:bg-amber-950/30",
+          ].join(" ")}
+        >
           <p className="text-xs font-semibold uppercase text-amber-700 dark:text-amber-300">
             Medium
           </p>
@@ -341,9 +455,31 @@ const visibleItems =
           <p className="mt-1 text-xl font-bold text-amber-900 dark:text-amber-200">
             {riskSummary.medium}
           </p>
-        </div>
+        </button>
 
-        <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-3 shadow-sm dark:border-emerald-900/60 dark:bg-emerald-950/30">
+        <button
+          type="button"
+          onClick={() => {
+            setRiskFilter(
+              riskFilter === "low"
+                ? "all"
+                : "low",
+            )
+
+            setIsExpanded(false)
+          }}
+          aria-pressed={
+            riskFilter === "low"
+          }
+          className={[
+            "rounded-xl border px-3 py-3 text-left shadow-sm transition",
+            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300",
+            riskFilter === "low"
+              ? "border-emerald-400 bg-emerald-100 ring-2 ring-emerald-200"
+              : "border-emerald-200 bg-emerald-50 hover:border-emerald-300 hover:bg-emerald-100",
+            "dark:border-emerald-900/60 dark:bg-emerald-950/30",
+          ].join(" ")}
+        >
           <p className="text-xs font-semibold uppercase text-emerald-700 dark:text-emerald-300">
             Low
           </p>
@@ -351,8 +487,8 @@ const visibleItems =
           <p className="mt-1 text-xl font-bold text-emerald-900 dark:text-emerald-200">
             {riskSummary.low}
           </p>
-        </div>
-      </div>  
+        </button>
+      </div>
 
       {visibleItems.length > 0 ? (
         <div className="mt-6 space-y-4">
@@ -385,10 +521,20 @@ const visibleItems =
         </div>
       )}
 
-      {filteredItems.length > visibleItems.length ? (
+      {hasAdditionalItems ? (
         <p className="mt-4 text-center text-sm text-slate-500 dark:text-stone-400">
-          Showing the first {visibleItems.length} of{" "}
-          {filteredItems.length} prioritized returns.
+          {isExpanded ? (
+            <>
+              Showing all{" "}
+              {sortedItems.length} prioritized returns.
+            </>
+          ) : (
+            <>
+              Showing the first{" "}
+              {visibleItems.length} of{" "}
+              {sortedItems.length} prioritized returns.
+            </>
+          )}
         </p>
       ) : null}
     </section>

@@ -287,7 +287,7 @@ export function PriorityQueueItem({
 
   return (
   <>
-    <article className="rounded-2xl border border-stone-200 bg-white p-4 shadow-[0_14px_32px_-24px_rgba(15,23,42,0.5)] transition duration-200 hover:-translate-y-0.5 hover:border-stone-300 hover:shadow-[0_20px_40px_-25px_rgba(15,23,42,0.45)] dark:border-stone-800 dark:bg-stone-950 dark:hover:border-stone-700 sm:p-5">
+    <article className="rounded-xl border border-stone-200 bg-white p-4 shadow-[0_12px_28px_-24px_rgba(15,23,42,0.45)] transition duration-200 hover:border-stone-300 hover:shadow-[0_16px_32px_-24px_rgba(15,23,42,0.4)] dark:border-stone-800 dark:bg-stone-950 dark:hover:border-stone-700">
       {actionMessage ? (
         <div
           role={
@@ -321,7 +321,7 @@ export function PriorityQueueItem({
         </div>
       ) : null}
       
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-start">
         <RiskScoreIndicator
           score={item.riskScore}
           level={item.riskLevel}
@@ -345,7 +345,7 @@ export function PriorityQueueItem({
                 {item.returnType}
               </p>
 
-              <p className="mt-2 text-sm font-semibold text-stone-900 dark:text-stone-100">
+              <p className="mt-1.5 text-sm font-semibold text-stone-900 dark:text-stone-100">
                 {item.recommendedAction}
               </p>
             </div>
@@ -512,76 +512,102 @@ export function PriorityQueueItem({
             </div>
           </div>
 
-          <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-            <div className="rounded-lg bg-slate-50 p-3 dark:bg-stone-900/60">
-              <p className="text-xs font-semibold uppercase tracking-wide text-stone-500 dark:text-stone-400">
+          <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm">
+            <div className="flex items-center gap-1.5">
+              <span className="text-stone-500 dark:text-stone-400">
                 Readiness
-              </p>
+              </span>
 
-              <p className="mt-1 text-sm font-semibold text-stone-900 dark:text-stone-100">
+              <span className="font-semibold text-stone-900 dark:text-stone-100">
                 {Math.round(
                   item.readinessScore,
                 )}
                 %
-              </p>
+              </span>
             </div>
 
-            <div className="rounded-lg bg-slate-50 p-3 dark:bg-stone-900/60">
-              <p className="text-xs font-semibold uppercase tracking-wide text-stone-500 dark:text-stone-400">
-                Due Date
-              </p>
+            <span
+              className="hidden h-4 w-px bg-stone-200 sm:block dark:bg-stone-700"
+              aria-hidden="true"
+            />
 
-              <p className="mt-1 text-sm font-semibold text-stone-900 dark:text-stone-100">
+            <div className="flex items-center gap-1.5">
+              <span className="text-stone-500 dark:text-stone-400">
+                Due
+              </span>
+
+              <span
+                className={[
+                  "font-semibold",
+                  item.daysUntilDue !== null &&
+                  item.daysUntilDue < 0
+                    ? "text-red-700 dark:text-red-300"
+                    : "text-stone-900 dark:text-stone-100",
+                ].join(" ")}
+              >
                 {dueDateLabel}
-              </p>
+              </span>
             </div>
 
-            <div className="rounded-lg bg-slate-50 p-3 dark:bg-stone-900/60">
-              <p className="text-xs font-semibold uppercase tracking-wide text-stone-500 dark:text-stone-400">
-                Outstanding
-              </p>
+            <span
+              className="hidden h-4 w-px bg-stone-200 sm:block dark:bg-stone-700"
+              aria-hidden="true"
+            />
 
-              <p className="mt-1 text-sm font-semibold text-stone-900 dark:text-stone-100">
+            <div className="flex items-center gap-1.5">
+              <span className="text-stone-500 dark:text-stone-400">
+                Outstanding
+              </span>
+
+              <span
+                className={[
+                  "font-semibold",
+                  item.outstandingBalance > 0
+                    ? "text-red-700 dark:text-red-300"
+                    : "text-stone-900 dark:text-stone-100",
+                ].join(" ")}
+              >
                 {formatCurrency(
                   item.outstandingBalance,
                 )}
-              </p>
+              </span>
             </div>
 
-            <div className="rounded-lg bg-slate-50 p-3 dark:bg-stone-900/60">
-              <p className="text-xs font-semibold uppercase tracking-wide text-stone-500 dark:text-stone-400">
-                Activity
-              </p>
+            <span
+              className="hidden h-4 w-px bg-stone-200 sm:block dark:bg-stone-700"
+              aria-hidden="true"
+            />
 
-              <p className="mt-1 text-sm font-semibold text-stone-900 dark:text-stone-100">
+            <div className="flex items-center gap-1.5">
+              <span className="text-stone-500 dark:text-stone-400">
+                Activity
+              </span>
+
+              <span className="font-semibold text-stone-900 dark:text-stone-100">
                 {activityLabel}
-              </p>
+              </span>
             </div>
           </div>
 
-          <div className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
-            <div>
-              <span className="font-medium text-stone-700 dark:text-slate-300">
-                Preparer:
-              </span>{" "}
-              <span className="text-stone-600 dark:text-stone-400">
+          <div className="mt-2 flex flex-wrap items-center gap-x-5 gap-y-1 text-xs text-stone-500 dark:text-stone-400">
+            <span>
+              Preparer:{" "}
+              <strong className="font-medium text-stone-700 dark:text-stone-300">
                 {item.assignedPreparerName ??
                   "Unassigned"}
-              </span>
-            </div>
+              </strong>
+            </span>
 
-            <div>
-              <span className="font-medium text-stone-700 dark:text-slate-300">
-                Reviewer:
-              </span>{" "}
-              <span className="text-stone-600 dark:text-stone-400">
+            <span>
+              Reviewer:{" "}
+              <strong className="font-medium text-stone-700 dark:text-stone-300">
                 {item.assignedReviewerName ??
                   "Unassigned"}
-              </span>
-            </div>
+              </strong>
+            </span>
           </div>
 
-          <div className="mt-4 border-t border-stone-200 pt-4 dark:border-slate-800">
+          <div className="mt-3 border-t border-stone-200 pt-3 dark:border-slate-800">
             <button
               type="button"
               onClick={() =>
@@ -618,7 +644,7 @@ export function PriorityQueueItem({
             </button>
 
             {isExpanded ? (
-              <div className="mt-4">
+              <div className="mt-3">
                 <RiskFactorList
                   factors={
                     item.riskFactors

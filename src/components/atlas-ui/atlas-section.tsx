@@ -6,6 +6,10 @@ import {
   AtlasCard,
 } from "./atlas-card"
 
+type AtlasSectionVariant =
+  | "card"
+  | "plain"
+
 interface AtlasSectionProps {
   title: string
   description?: string
@@ -13,6 +17,7 @@ interface AtlasSectionProps {
   actions?: ReactNode
   children: ReactNode
   className?: string
+  variant?: AtlasSectionVariant
 }
 
 export function AtlasSection({
@@ -22,11 +27,10 @@ export function AtlasSection({
   actions,
   children,
   className = "",
+  variant = "card",
 }: AtlasSectionProps) {
-  return (
-    <AtlasCard
-      className={className}
-    >
+  const content = (
+    <>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           {eyebrow ? (
@@ -59,9 +63,30 @@ export function AtlasSection({
         ) : null}
       </div>
 
-      <div className="mt-6">
+      <div className="mt-5 space-y-5">
         {children}
       </div>
+    </>
+  )
+
+  if (variant === "plain") {
+    return (
+      <section
+        className={[
+          "py-2",
+          className,
+        ].join(" ")}
+      >
+        {content}
+      </section>
+    )
+  }
+
+  return (
+    <AtlasCard
+      className={className}
+    >
+      {content}
     </AtlasCard>
   )
 }

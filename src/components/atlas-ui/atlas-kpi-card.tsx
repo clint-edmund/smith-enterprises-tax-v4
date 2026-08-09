@@ -97,12 +97,12 @@ export function AtlasKpiCard({
         {Icon ? (
           <div
             className={[
-              "flex size-11 shrink-0 items-center justify-center rounded-xl border",
+              "flex size-10 shrink-0 items-center justify-center rounded-xl border",
               toneStyle.icon,
             ].join(" ")}
           >
             <Icon
-              className="size-5"
+              className="size-4.5"
               aria-hidden="true"
             />
           </div>

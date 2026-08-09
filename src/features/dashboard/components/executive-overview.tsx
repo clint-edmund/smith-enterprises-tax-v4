@@ -89,7 +89,6 @@ export function ExecutiveOverview({
 
   return (
     <AtlasSection
-      eyebrow="Atlas Command Center"
       title="Office Overview"
       description="A real-time snapshot of office health, production, risk, and financial performance."
       actions={
@@ -115,9 +114,19 @@ export function ExecutiveOverview({
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <AtlasKpiCard
           label="Office Health"
-          value={`${formatNumber(
-            readiness.officeHealthScore,
-          )} / 100`}
+          value={
+            <div className="flex items-baseline gap-1">
+                <span className="text-4xl">
+                {formatNumber(
+                    readiness.officeHealthScore,
+                )}
+                </span>
+
+                <span className="text-lg font-semibold text-slate-400">
+                / 100
+                </span>
+            </div>
+            }
           icon={HeartPulse}
           tone={healthTone}
           description={
@@ -148,10 +157,20 @@ export function ExecutiveOverview({
         />
 
         <AtlasKpiCard
-          label="Critical Attention"
-          value={formatNumber(
-            criticalAttention,
-          )}
+        label="Critical Attention"
+        value={
+            <div>
+            <span>
+                {formatNumber(
+                criticalAttention,
+                )}
+            </span>
+
+            <span className="ml-2 text-base font-semibold text-slate-500">
+                signals
+            </span>
+            </div>
+        }
           icon={AlertTriangle}
           tone={
             criticalAttention > 0
@@ -160,6 +179,9 @@ export function ExecutiveOverview({
           }
           description={
             <div className="space-y-3">
+            <p className="text-xs leading-5 text-slate-500">
+            Operational flags may overlap across the same return.
+            </p>
               <AtlasMetric
                 label="Overdue"
                 value={formatNumber(
@@ -193,9 +215,19 @@ export function ExecutiveOverview({
 
         <AtlasKpiCard
           label="Production"
-          value={formatNumber(
-            executive.completedThisWeek,
-          )}
+          value={
+            <div>
+                <span>
+                {formatNumber(
+                    executive.completedThisWeek,
+                )}
+                </span>
+
+                <span className="ml-2 text-base font-semibold text-slate-500">
+                this week
+                </span>
+            </div>
+            }
           icon={BarChart3}
           tone="info"
           description={
@@ -256,10 +288,20 @@ export function ExecutiveOverview({
 
               <AtlasMetric
                 label="Outstanding"
-                value={formatCurrency(
-                  summary.outstandingBalance,
-                )}
-              />
+                value={
+                    <span
+                    className={
+                        summary.outstandingBalance > 0
+                        ? "text-red-700"
+                        : "text-emerald-700"
+                    }
+                    >
+                    {formatCurrency(
+                        summary.outstandingBalance,
+                    )}
+                    </span>
+                }
+                />
 
               <AtlasMetric
                 label="Projected revenue"

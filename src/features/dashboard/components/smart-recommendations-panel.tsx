@@ -1,6 +1,8 @@
 import {
   AlertTriangle,
+  ArrowDown,
   ArrowRight,
+  ArrowUp,
   CalendarClock,
   CheckCircle2,
   ClipboardCheck,
@@ -8,6 +10,9 @@ import {
   UserRoundCheck,
   UserRoundPlus,
 } from "lucide-react"
+import {
+  useState,
+} from "react"
 import {
   Link,
 } from "react-router-dom"
@@ -19,6 +24,8 @@ import type {
 type SmartRecommendationsPanelProps = {
   recommendations: DashboardRecommendation[]
 }
+
+const COLLAPSED_RECOMMENDATION_COUNT = 3
 
 function getPriorityStyles(
   priority: DashboardRecommendation["priority"],
@@ -123,6 +130,21 @@ function formatDueDate(
 export function SmartRecommendationsPanel({
   recommendations,
 }: SmartRecommendationsPanelProps) {
+  const [isExpanded, setIsExpanded] =
+    useState(false)
+
+  const hasAdditionalRecommendations =
+    recommendations.length >
+    COLLAPSED_RECOMMENDATION_COUNT
+
+  const visibleRecommendations =
+    isExpanded
+      ? recommendations
+      : recommendations.slice(
+          0,
+          COLLAPSED_RECOMMENDATION_COUNT,
+        )
+
   return (
     <section className="rounded-2xl border border-border bg-card text-card-foreground shadow-sm">
       <div className="flex flex-col gap-3 border-b border-border px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
@@ -141,12 +163,22 @@ export function SmartRecommendationsPanel({
           </p>
         </div>
 
-        <div className="w-fit rounded-full border border-border bg-muted/60 px-3 py-1 text-sm font-semibold text-foreground">
-          {recommendations.length}
-          {" "}
-          {recommendations.length === 1
-            ? "recommendation"
-            : "recommendations"}
+        <div className="flex flex-col items-start gap-1 sm:items-end">
+          <div className="w-fit rounded-full border border-border bg-muted/60 px-3 py-1 text-sm font-semibold text-foreground">
+            {recommendations.length}
+            {" "}
+            {recommendations.length === 1
+              ? "recommendation"
+              : "recommendations"}
+          </div>
+
+          {hasAdditionalRecommendations ? (
+            <p className="text-xs text-muted-foreground">
+              {isExpanded
+                ? `Showing all ${recommendations.length}`
+                : `Showing ${visibleRecommendations.length} of ${recommendations.length}`}
+            </p>
+          ) : null}
         </div>
       </div>
 
@@ -169,107 +201,144 @@ export function SmartRecommendationsPanel({
           </p>
         </div>
       ) : (
-        <div className="divide-y divide-slate-200">
-          {recommendations.map(
-            (recommendation) => {
-              const styles =
-                getPriorityStyles(
-                  recommendation.priority,
-                )
+        <>
+          <div className="divide-y divide-slate-200">
+            {visibleRecommendations.map(
+              (recommendation) => {
+                const styles =
+                  getPriorityStyles(
+                    recommendation.priority,
+                  )
 
-              const RecommendationIcon =
-                getRecommendationIcon(
-                  recommendation.recommendationType,
-                )
+                const RecommendationIcon =
+                  getRecommendationIcon(
+                    recommendation.recommendationType,
+                  )
 
-              const formattedDueDate =
-                formatDueDate(
-                  recommendation.dueDate,
-                )
+                const formattedDueDate =
+                  formatDueDate(
+                    recommendation.dueDate,
+                  )
 
-              return (
-                <article
-                  className="px-6 py-5 transition hover:bg-muted/60"
-                  key={recommendation.id}
-                >
-                  <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                    <div className="flex min-w-0 gap-4">
-                      <div
-                        className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${styles.icon}`}
-                      >
-                        <RecommendationIcon
-                          aria-hidden="true"
-                          className="h-5 w-5"
-                        />
-                      </div>
-
-                      <div className="min-w-0">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <h3 className="font-semibold text-foreground">
-                            {recommendation.title}
-                          </h3>
-
-                          <span
-                            className={`rounded-full border px-2.5 py-0.5 text-xs font-semibold ${styles.badge}`}
-                          >
-                            {formatPriority(
-                              recommendation.priority,
-                            )}
-                          </span>
+                return (
+                  <article
+                    className="px-6 py-5 transition hover:bg-muted/60"
+                    key={recommendation.id}
+                  >
+                    <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                      <div className="flex min-w-0 gap-4">
+                        <div
+                          className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${styles.icon}`}
+                        >
+                          <RecommendationIcon
+                            aria-hidden="true"
+                            className="h-5 w-5"
+                          />
                         </div>
 
-                        <p className="mt-1 text-sm font-medium text-foreground">
-                          {recommendation.clientName}
-                          {" · "}
-                          {recommendation.taxYear}
-                          {" "}
-                          {recommendation.returnType}
-                        </p>
+                        <div className="min-w-0">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <h3 className="font-semibold text-foreground">
+                              {recommendation.title}
+                            </h3>
 
-                        <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                          {recommendation.explanation}
-                        </p>
+                            <span
+                              className={`rounded-full border px-2.5 py-0.5 text-xs font-semibold ${styles.badge}`}
+                            >
+                              {formatPriority(
+                                recommendation.priority,
+                              )}
+                            </span>
+                          </div>
 
-                        <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-xs text-muted-foreground">
-                          <span>
-                            Readiness:
+                          <p className="mt-1 text-sm font-medium text-foreground">
+                            {recommendation.clientName}
+                            {" · "}
+                            {recommendation.taxYear}
                             {" "}
-                            <strong className="font-semibold text-foreground">
-                              {recommendation.readinessScore}
-                              %
-                            </strong>
-                          </span>
+                            {recommendation.returnType}
+                          </p>
 
-                          {formattedDueDate ? (
+                          <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                            {recommendation.explanation}
+                          </p>
+
+                          <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-xs text-muted-foreground">
                             <span>
-                              Due:
+                              Readiness:
                               {" "}
                               <strong className="font-semibold text-foreground">
-                                {formattedDueDate}
+                                {recommendation.readinessScore}
+                                %
                               </strong>
                             </span>
-                          ) : null}
+
+                            {formattedDueDate ? (
+                              <span>
+                                Due:
+                                {" "}
+                                <strong className="font-semibold text-foreground">
+                                  {formattedDueDate}
+                                </strong>
+                              </span>
+                            ) : null}
+                          </div>
                         </div>
                       </div>
+
+                      <Link
+                        className="inline-flex shrink-0 items-center justify-center gap-2 rounded-lg bg-slate-950 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2"
+                        to={recommendation.actionRoute}
+                      >
+                        Open Return
+
+                        <ArrowRight
+                          aria-hidden="true"
+                          className="h-4 w-4"
+                        />
+                      </Link>
                     </div>
+                  </article>
+                )
+              },
+            )}
+          </div>
 
-                    <Link
-                      className="inline-flex shrink-0 items-center justify-center gap-2 rounded-lg bg-slate-950 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2"
-                      to={recommendation.actionRoute}
-                    >
-                      Open Return
+          {hasAdditionalRecommendations ? (
+            <div className="flex justify-center border-t border-border bg-muted/20 px-6 py-4">
+              <button
+                className="inline-flex items-center justify-center gap-2 rounded-lg border border-border bg-background px-4 py-2 text-sm font-semibold text-foreground shadow-sm transition hover:bg-muted focus:outline-none focus:ring-2 focus:ring-primary/40 focus:ring-offset-2"
+                onClick={() => {
+                  setIsExpanded(
+                    (currentValue) =>
+                      !currentValue,
+                  )
+                }}
+                type="button"
+              >
+                {isExpanded ? (
+                  <>
+                    Show Fewer
 
-                      <ArrowRight
-                        aria-hidden="true"
-                        className="h-4 w-4"
-                      />
-                    </Link>
-                  </div>
-                </article>
-              )
-            },
-          )}
-        </div>
+                    <ArrowUp
+                      aria-hidden="true"
+                      className="h-4 w-4"
+                    />
+                  </>
+                ) : (
+                  <>
+                    View All Recommendations
+
+                    <ArrowDown
+                      aria-hidden="true"
+                      className="h-4 w-4"
+                    />
+                  </>
+                )}
+              </button>
+            </div>
+          ) : null}
+        </>
       )}
     </section>
   )
