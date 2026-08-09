@@ -1,13 +1,5 @@
 import {
-  AlertTriangle,
-  CalendarClock,
-  CircleDollarSign,
-  FileCheck2,
-  FileClock,
-  Files,
   RefreshCw,
-  ScanSearch,
-  Users,
 } from "lucide-react";
 import {
   lazy,
@@ -28,10 +20,12 @@ import { QuickActions } from "@/features/dashboard/components/quick-actions";
 import { QuickReports } from "@/features/dashboard/components/quick-reports";
 import { RecentActivity } from "@/features/dashboard/components/recent-activity";
 import { StaffWorkload } from "@/features/dashboard/components/staff-workload";
-import { SummaryCard } from "@/features/dashboard/components/summary-card";
 import { WorkflowOperations } from "@/features/dashboard/components/workflow-operations";
 import { DashboardFinancialOverview } from "@/features/dashboard/components/dashboard-financial-overview";
 import { getExecutiveFinancialAnalytics } from "@/features/dashboard/services/financial-analytics-service";
+import {
+  ExecutiveOverview,
+} from "@/features/dashboard/components/executive-overview"
 import type { ExecutiveFinancialAnalytics } from "@/features/dashboard/types/financial-analytics.types";
 import {
   getOfficePaymentSummary,
@@ -52,11 +46,6 @@ import type {
   DashboardStaffWorkload,
 } from "@/features/dashboard/types/dashboard.types";
 import {
-  formatCurrency,
-  formatNumber,
-} from "@/features/dashboard/utils/dashboard-formatters";
-
-import {
   useRecentActivityRealtime,
 } from "@/features/dashboard/hooks/use-recent-activity-realtime"
 
@@ -65,9 +54,6 @@ import {
   useAuthorization,
 } from "@/features/authorization/hooks/use-authorization"
 
-import {
-  getReturnsRoute,
-} from "@/features/returns/utils/return-navigation"
 const DashboardFinancialChart =
   lazy(async () => {
     const module =
@@ -588,87 +574,14 @@ export function DashboardPage() {
         </button>
       </header>
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <SummaryCard
-          label="Active Clients"
-          value={formatNumber(summary.activeClients)}
-          description="Client records currently marked active"
-          icon={Users}
-        />
       
-        <SummaryCard
-          label="Total Returns"
-          value={formatNumber(summary.totalReturns)}
-          description={`${formatNumber(summary.openReturns)} currently open`}
-          icon={Files}
-          href="/returns"
+        <ExecutiveOverview
+          summary={summary}
+          executive={executive}
+          readiness={readiness}
+          loadedAt={loadedAt}
         />
 
-        <SummaryCard
-          label="In Progress"
-          value={formatNumber(summary.inProgressReturns)}
-          description="Returns actively being prepared"
-          icon={FileClock}
-          href={getReturnsRoute({
-  status: "in_progress",
-})}
-        />
-
-        <SummaryCard
-          label="Awaiting Review"
-          value={formatNumber(summary.awaitingReviewReturns)}
-          description="Ready-for-review and under-review returns"
-          icon={ScanSearch}
-          href={getReturnsRoute({
-  status: "ready_for_review",
-})}
-        />
-
-        <SummaryCard
-          label="Upcoming Deadlines"
-          value={formatNumber(summary.upcomingDeadlines)}
-          description={`${formatNumber(
-            summary.overdueReturns,
-          )} overdue returns`}
-          icon={CalendarClock}
-          href={getReturnsRoute({
-  deadline: "next_7_days",
-})}
-        />
-
-        <SummaryCard
-          label="Documents Pending"
-          value={formatNumber(summary.documentsPending)}
-          description="Returns awaiting client documents"
-          icon={AlertTriangle}
-          href={getReturnsRoute({
-  status: "documents_pending",
-})}
-        />
-
-        {canViewExecutiveData && (
-          <SummaryCard
-            label="Net Preparation Fees"
-            value={formatCurrency(summary.totalFees)}
-            description={`${formatCurrency(
-              summary.totalPayments,
-            )} in recorded payments`}
-            icon={CircleDollarSign}
-          />
-        )}
-
-        <SummaryCard
-          label="Completed Returns"
-          value={formatNumber(summary.completedReturns)}
-          description={`${formatNumber(
-            summary.unassignedReturns,
-          )} open returns are unassigned`}
-          icon={FileCheck2}
-          href={getReturnsRoute({
-  status: "completed",
-})}
-        />
-      </div>
 
       {canViewExecutiveData && (
         <DashboardFinancialOverview
