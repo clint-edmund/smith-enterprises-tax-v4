@@ -57,6 +57,9 @@ import {
 import {
   useAuthorization,
 } from "@/features/authorization/hooks/use-authorization"
+import {
+  getDashboardExperience,
+} from "@/features/dashboard/config/dashboard-experience"
 
 const DashboardFinancialChart =
   lazy(async () => {
@@ -525,6 +528,109 @@ export function DashboardPage() {
     profile.displayName ||
     "Staff Member";
 
+  const dashboardExperience =
+    getDashboardExperience(
+      profile.role,
+    )
+
+  const dashboardHeaderContent = {
+    executive: {
+      eyebrow: "Atlas Command Center",
+      title: `Welcome, ${staffName}`,
+      description:
+        "Monitor clients, return workflow, deadlines, assignments, and financial activity from live application data.",
+    },
+
+    preparation: {
+      eyebrow: "My Work Center",
+      title: `Welcome, ${staffName}`,
+      description:
+        "Focus on assigned returns, preparation deadlines, missing documents, and the work that needs your attention today.",
+    },
+
+    review: {
+      eyebrow: "Review Center",
+      title: `Welcome, ${staffName}`,
+      description:
+        "Review returns awaiting approval, prioritize due work, and monitor items requiring additional attention.",
+    },
+
+    "front-desk": {
+      eyebrow: "Front Desk",
+      title: `Welcome, ${staffName}`,
+      description:
+        "Manage client activity, incoming documents, payments, and the daily workflow moving through the office.",
+    },
+
+    observation: {
+      eyebrow: "Office Snapshot",
+      title: `Welcome, ${staffName}`,
+      description:
+        "Review current client, return, and office activity from your authorized workspace.",
+    },
+  } satisfies Record<
+    typeof dashboardExperience,
+    {
+      eyebrow: string
+      title: string
+      description: string
+    }
+  >
+
+  const dashboardPrioritySection = {
+  executive: {
+    eyebrow: "Today's Priorities",
+    title: "Focus Areas",
+    description:
+      "The highest-impact work for today based on deadlines, assignments, and office activity.",
+  },
+
+  preparation: {
+    eyebrow: "My Work Today",
+    title: "Preparation Priorities",
+    description:
+      "Assigned returns, preparation deadlines, missing documents, and the work requiring attention today.",
+  },
+
+  review: {
+    eyebrow: "Review Priorities",
+    title: "Returns Requiring Review",
+    description:
+      "Returns awaiting review, approval, or additional attention based on risk and due dates.",
+  },
+
+  "front-desk": {
+    eyebrow: "Front Desk Priorities",
+    title: "Today's Client Activity",
+    description:
+      "Client intake, documents, payments, and office tasks requiring front-desk attention.",
+  },
+
+  observation: {
+    eyebrow: "Current Activity",
+    title: "Office Snapshot",
+    description:
+      "Current return activity and workload information available to your account.",
+  },
+} satisfies Record<
+  typeof dashboardExperience,
+  {
+    eyebrow: string
+    title: string
+    description: string
+  }
+>
+
+const prioritySection =
+  dashboardPrioritySection[
+    dashboardExperience
+  ]
+
+  const dashboardHeader =
+    dashboardHeaderContent[
+      dashboardExperience
+    ]
+
   const canViewReturnReadiness =
     hasPermission(
       permissions.dashboard
@@ -540,9 +646,15 @@ export function DashboardPage() {
   return (
     <section className="space-y-6">
       <AtlasPageHeader
-        eyebrow="Atlas Command Center"
-        title={`Welcome, ${staffName}`}
-        description="Monitor clients, return workflow, deadlines, assignments, and financial activity from live application data."
+        eyebrow={
+          dashboardHeader.eyebrow
+        }
+        title={
+          dashboardHeader.title
+        }
+        description={
+          dashboardHeader.description
+        }
         metadata={
           <>
             Last updated{" "}
@@ -591,38 +703,91 @@ export function DashboardPage() {
       
       <AtlasSection
         variant="plain"
-        eyebrow="Today's Priorities"
-        title="Focus Areas"
-        description="The highest-impact work for today based on deadlines, assignments, and office activity."
+        eyebrow={
+          prioritySection.eyebrow
+        }
+        title={
+          prioritySection.title
+        }
+        description={
+          prioritySection.description
+        }
       >
-        {canViewPriorityQueue && (
-          <Suspense
-            fallback={<DashboardPanelFallback />}
-          >
-            <PriorityQueueCard
-              items={dashboardData.priorityQueue}
-              onPriorityItemUpdated={() => {
-                void loadDashboard(true)
-              }}
-            />
-          </Suspense>
-        )}
-        {canViewPriorityQueue && (
-          <Suspense
-            fallback={
-              <DashboardPanelFallback />
-            }
-          >
-            <SmartRecommendationsPanel
-              recommendations={
-                dashboardData.recommendations
-              }
-            />
-          </Suspense>
-           )}
+        {dashboardExperience === "executive" ? (
+          <>
+            {canViewPriorityQueue && (
+              <Suspense
+                fallback={
+                  <DashboardPanelFallback />
+                }
+              >
+                <PriorityQueueCard
+                  items={
+                    dashboardData.priorityQueue
+                  }
+                  onPriorityItemUpdated={() => {
+                    void loadDashboard(true)
+                  }}
+                />
+              </Suspense>
+            )}
 
-       <MyWorkload workload={workload} />
-      
+            {canViewPriorityQueue && (
+              <Suspense
+                fallback={
+                  <DashboardPanelFallback />
+                }
+              >
+                <SmartRecommendationsPanel
+                  recommendations={
+                    dashboardData.recommendations
+                  }
+                />
+              </Suspense>
+            )}
+
+            <MyWorkload
+              workload={workload}
+            />
+          </>
+        ) : (
+          <>
+            <MyWorkload
+              workload={workload}
+            />
+
+            {canViewPriorityQueue && (
+              <Suspense
+                fallback={
+                  <DashboardPanelFallback />
+                }
+              >
+                <PriorityQueueCard
+                  items={
+                    dashboardData.priorityQueue
+                  }
+                  onPriorityItemUpdated={() => {
+                    void loadDashboard(true)
+                  }}
+                />
+              </Suspense>
+            )}
+
+            {canViewPriorityQueue && (
+              <Suspense
+                fallback={
+                  <DashboardPanelFallback />
+                }
+              >
+                <SmartRecommendationsPanel
+                  recommendations={
+                    dashboardData.recommendations
+                  }
+                />
+              </Suspense>
+            )}
+          </>
+        )}
       </AtlasSection>
       <AtlasSection
         variant="plain"
