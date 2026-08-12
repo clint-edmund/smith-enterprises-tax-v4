@@ -5,6 +5,9 @@ import type {
 import type {
   LucideIcon,
 } from "lucide-react"
+import {
+  Link,
+} from "react-router-dom"
 
 import {
   AtlasCard,
@@ -25,6 +28,7 @@ interface AtlasKpiCardProps {
   tone?: AtlasKpiTone
   footer?: ReactNode
   className?: string
+  to?: string
 }
 
 const toneClasses: Record<
@@ -40,24 +44,28 @@ const toneClasses: Record<
     accent:
       "text-slate-500",
   },
+
   info: {
     icon:
       "border-blue-200 bg-blue-50 text-blue-700",
     accent:
       "text-blue-700",
   },
+
   success: {
     icon:
       "border-emerald-200 bg-emerald-50 text-emerald-700",
     accent:
       "text-emerald-700",
   },
+
   warning: {
     icon:
       "border-amber-200 bg-amber-50 text-amber-700",
     accent:
       "text-amber-700",
   },
+
   danger: {
     icon:
       "border-red-200 bg-red-50 text-red-700",
@@ -74,18 +82,23 @@ export function AtlasKpiCard({
   tone = "neutral",
   footer,
   className = "",
+  to,
 }: AtlasKpiCardProps) {
   const toneStyle =
     toneClasses[tone]
 
-  return (
+  const card = (
     <AtlasCard
-      padding="md"
-      className={className}
+      className={[
+        to
+          ? "h-full transition hover:border-slate-300 hover:shadow-md"
+          : "",
+        className,
+      ].join(" ")}
     >
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <p className="text-sm font-medium text-slate-600">
+          <p className="text-sm font-semibold text-slate-600">
             {label}
           </p>
 
@@ -102,7 +115,7 @@ export function AtlasKpiCard({
             ].join(" ")}
           >
             <Icon
-              className="size-4.5"
+              className="size-4"
               aria-hidden="true"
             />
           </div>
@@ -126,5 +139,18 @@ export function AtlasKpiCard({
         </div>
       ) : null}
     </AtlasCard>
+  )
+
+  if (!to) {
+    return card
+  }
+
+  return (
+    <Link
+      className="block h-full rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+      to={to}
+    >
+      {card}
+    </Link>
   )
 }

@@ -24,6 +24,9 @@ import { WorkflowOperations } from "@/features/dashboard/components/workflow-ope
 import { DashboardFinancialOverview } from "@/features/dashboard/components/dashboard-financial-overview";
 import { getExecutiveFinancialAnalytics } from "@/features/dashboard/services/financial-analytics-service";
 import {
+  RoleOverview,
+} from "@/features/dashboard/components/role-overview"
+import {
   ExecutiveOverview,
 } from "@/features/dashboard/components/executive-overview"
 import {
@@ -793,102 +796,107 @@ const prioritySection =
 
       
        {dashboardExperience === "executive" &&
-        canViewExecutiveData && (
-          <ExecutiveOverview
-            summary={summary}
-            executive={executive}
-            readiness={readiness}
-            loadedAt={loadedAt}
-          />
-        )}
-      
-      <AtlasSection
-        variant="plain"
-        eyebrow={
-          prioritySection.eyebrow
-        }
-        title={
-          prioritySection.title
-        }
-        description={
-          prioritySection.description
-        }
-      >
-        {dashboardExperience === "executive" ? (
-          <>
-            {canViewPriorityQueue && (
-              <Suspense
-                fallback={
-                  <DashboardPanelFallback />
-                }
-              >
-                <PriorityQueueCard
-                  items={
-                    dashboardData.priorityQueue
-                  }
-                  onPriorityItemUpdated={() => {
-                    void loadDashboard(true)
-                  }}
-                />
-              </Suspense>
-            )}
-
-            {canViewPriorityQueue && (
-              <Suspense
-                fallback={
-                  <DashboardPanelFallback />
-                }
-              >
-                <SmartRecommendationsPanel
-                  recommendations={
-                    dashboardData.recommendations
-                  }
-                />
-              </Suspense>
-            )}
-
-            <MyWorkload
-              workload={workload}
+          canViewExecutiveData ? (
+            <ExecutiveOverview
+              summary={summary}
+              executive={executive}
+              readiness={readiness}
+              loadedAt={loadedAt}
             />
-          </>
-        ) : (
-          <>
-            <MyWorkload
-              workload={workload}
+          ) : dashboardExperience !== "executive" ? (
+            <RoleOverview
+              experience={dashboardExperience}
+              dashboardData={dashboardData}
             />
-
-            {canViewPriorityQueue && (
-              <Suspense
-                fallback={
-                  <DashboardPanelFallback />
-                }
-              >
-                <PriorityQueueCard
-                  items={
-                    dashboardData.priorityQueue
+          ) : null}
+                
+                <AtlasSection
+                  variant="plain"
+                  eyebrow={
+                    prioritySection.eyebrow
                   }
-                  onPriorityItemUpdated={() => {
-                    void loadDashboard(true)
-                  }}
-                />
-              </Suspense>
-            )}
-
-            {canViewPriorityQueue && (
-              <Suspense
-                fallback={
-                  <DashboardPanelFallback />
-                }
-              >
-                <SmartRecommendationsPanel
-                  recommendations={
-                    dashboardData.recommendations
+                  title={
+                    prioritySection.title
                   }
-                />
-              </Suspense>
-            )}
-          </>
-        )}
+                  description={
+                    prioritySection.description
+                  }
+                >
+                  {dashboardExperience === "executive" ? (
+                    <>
+                      {canViewPriorityQueue && (
+                        <Suspense
+                          fallback={
+                            <DashboardPanelFallback />
+                          }
+                        >
+                          <PriorityQueueCard
+                            items={
+                              dashboardData.priorityQueue
+                            }
+                            onPriorityItemUpdated={() => {
+                              void loadDashboard(true)
+                            }}
+                          />
+                        </Suspense>
+                      )}
+
+                      {canViewPriorityQueue && (
+                        <Suspense
+                          fallback={
+                            <DashboardPanelFallback />
+                          }
+                        >
+                          <SmartRecommendationsPanel
+                            recommendations={
+                              dashboardData.recommendations
+                            }
+                          />
+                        </Suspense>
+                      )}
+
+                      <MyWorkload
+                        workload={workload}
+                      />
+                    </>
+                  ) : (
+                    <>
+                      <MyWorkload
+                        workload={workload}
+                      />
+
+                      {canViewPriorityQueue && (
+                        <Suspense
+                          fallback={
+                            <DashboardPanelFallback />
+                          }
+                        >
+                          <PriorityQueueCard
+                            items={
+                              dashboardData.priorityQueue
+                            }
+                            onPriorityItemUpdated={() => {
+                              void loadDashboard(true)
+                            }}
+                          />
+                        </Suspense>
+                      )}
+
+                      {canViewPriorityQueue && (
+                        <Suspense
+                          fallback={
+                            <DashboardPanelFallback />
+                          }
+                        >
+                          <SmartRecommendationsPanel
+                            recommendations={
+                              dashboardData.recommendations
+                            }
+                          />
+                        </Suspense>
+                      )}
+                    </>
+                  )}
       </AtlasSection>
       {operationsSection.visible && (
         <AtlasSection
