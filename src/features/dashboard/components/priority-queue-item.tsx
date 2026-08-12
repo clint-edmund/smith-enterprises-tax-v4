@@ -593,7 +593,7 @@ export function PriorityQueueItem({
             <span>
               Preparer:{" "}
               <strong className="font-medium text-stone-700 dark:text-stone-300">
-                {item.assignedPreparerName ??
+                {item.assignedPreparerName?.trim() ||
                   "Unassigned"}
               </strong>
             </span>
@@ -601,7 +601,7 @@ export function PriorityQueueItem({
             <span>
               Reviewer:{" "}
               <strong className="font-medium text-stone-700 dark:text-stone-300">
-                {item.assignedReviewerName ??
+                {item.assignedReviewerName?.trim() ||
                   "Unassigned"}
               </strong>
             </span>
