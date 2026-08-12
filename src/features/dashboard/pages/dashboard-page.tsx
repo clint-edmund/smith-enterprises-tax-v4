@@ -1075,7 +1075,7 @@ const prioritySection =
 
             {dashboardExperience !== "observation" && (
               <div className="space-y-6">
-                <QuickActions role={profile.role} />
+                <QuickActions />
 
                 {dashboardExperience === "executive" &&
                   canViewExecutiveData && (

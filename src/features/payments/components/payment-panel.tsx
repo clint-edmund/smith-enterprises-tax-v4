@@ -37,8 +37,8 @@ import {
 } from "../services/payment-service"
 
 import {
-  useAuth,
-} from "@/features/auth/hooks/use-auth"
+  useAuthorization,
+} from "@/features/authorization/hooks/use-authorization"
 
 interface PaymentPanelProps {
   taxReturnId: string
@@ -82,12 +82,19 @@ export function PaymentPanel({
   } = usePayments(taxReturnId)
 
   const {
-    profile,
-  } = useAuth()
+    hasPermission,
+    permissions,
+  } = useAuthorization()
+
+  const canRecordPayments =
+    hasPermission(
+      permissions.payments.record,
+    )
 
   const canVoidPayments =
-    profile?.role === "administrator" ||
-    profile?.role === "manager"
+    hasPermission(
+      permissions.payments.void,
+    )
 
   async function handleVoidPayment(
     reason: string,
@@ -191,20 +198,22 @@ export function PaymentPanel({
               Refresh
             </button>
 
-            <button
-              type="button"
-              onClick={() => {
-                setIsDialogOpen(true)
-              }}
-              className="inline-flex items-center gap-2 rounded-lg bg-blue-700 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-800"
-            >
-              <Plus
-                className="size-4"
-                aria-hidden="true"
-              />
+            {canRecordPayments && (
+              <button
+                type="button"
+                onClick={() => {
+                  setIsDialogOpen(true)
+                }}
+                className="inline-flex items-center gap-2 rounded-lg bg-blue-700 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-800"
+              >
+                <Plus
+                  className="size-4"
+                  aria-hidden="true"
+                />
 
-              Record Payment
-            </button>
+                Record Payment
+              </button>
+            )}
           </div>
         </div>
 
@@ -272,33 +281,37 @@ export function PaymentPanel({
         )}
       </section>
 
-      <PaymentDialog
-        open={isDialogOpen}
-        taxReturnId={taxReturnId}
-        onClose={() => {
-          setIsDialogOpen(false)
-        }}
-        onPaymentRecorded={() => {
-          void refreshPayments()
-        }}
-      />
-      <VoidPaymentDialog
-        open={isVoidDialogOpen}
-        paymentAmount={
-          selectedPayment?.amount ??
-          0
-        }
-        isSubmitting={
-          isVoidingPayment
-        }
-        onCancel={() => {
-          setIsVoidDialogOpen(false)
-          setSelectedPayment(null)
-        }}
-        onConfirm={
-          handleVoidPayment
-        }
-      />
+      {canRecordPayments && (
+        <PaymentDialog
+          open={isDialogOpen}
+          taxReturnId={taxReturnId}
+          onClose={() => {
+            setIsDialogOpen(false)
+          }}
+          onPaymentRecorded={() => {
+            void refreshPayments()
+          }}
+        />
+      )}
+      {canVoidPayments && (
+        <VoidPaymentDialog
+          open={isVoidDialogOpen}
+          paymentAmount={
+            selectedPayment?.amount ??
+            0
+          }
+          isSubmitting={
+            isVoidingPayment
+          }
+          onCancel={() => {
+            setIsVoidDialogOpen(false)
+            setSelectedPayment(null)
+          }}
+          onConfirm={
+            handleVoidPayment
+          }
+        />
+      )}
     </>
   )
 }

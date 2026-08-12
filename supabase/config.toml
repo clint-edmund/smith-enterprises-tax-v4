@@ -156,11 +156,16 @@ max_indexes = 5
 enabled = true
 # The base URL of your website. Used as an allow-list for redirects and for constructing URLs used
 # in emails.
-site_url = "http://127.0.0.1:3000"
+site_url = "http://localhost:5173"
+
 # The public URL that Auth serves on. Defaults to the API external URL with `/auth/v1` appended.
 # external_url = ""
 # A list of *exact* URLs that auth providers are permitted to redirect to post authentication.
-additional_redirect_urls = ["https://127.0.0.1:3000"]
+
+additional_redirect_urls = [
+  "http://localhost:5173/reset-password",
+  "http://localhost:5173/update-password"
+]
 # How long tokens are valid for, in seconds. Defaults to 3600 (1 hour), maximum 604,800 (1 week).
 jwt_expiry = 3600
 # JWT issuer URL. If not set, defaults to auth.external_url.
@@ -434,3 +439,15 @@ entrypoint = "./functions/vault-get-metadata/index.ts"
 # Specifies static files to be bundled with the function. Supports glob patterns.
 # For example, if you want to serve static HTML pages in your function:
 # static_files = [ "./functions/vault-get-metadata/*.html" ]
+
+[functions.invite-staff-user]
+enabled = true
+verify_jwt = false
+import_map = "./functions/invite-staff-user/deno.json"
+entrypoint = "./functions/invite-staff-user/index.ts"
+
+[functions.reset-staff-password]
+enabled = true
+verify_jwt = false
+import_map = "./functions/reset-staff-password/deno.json"
+entrypoint = "./functions/reset-staff-password/index.ts"

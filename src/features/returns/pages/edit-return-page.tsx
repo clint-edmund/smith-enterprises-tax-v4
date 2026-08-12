@@ -32,13 +32,9 @@ import type {
   TaxReturnRecord,
 } from "@/features/returns/types/return.types"
 
-const editRoles = [
-  "administrator",
-  "manager",
-  "preparer",
-  "reviewer",
-  "receptionist",
-]
+import {
+  useAuthorization,
+} from "@/features/authorization/hooks/use-authorization"
 
 function mapReturnToForm(
   taxReturn: TaxReturnRecord,
@@ -88,6 +84,16 @@ export function EditReturnPage() {
   const navigate = useNavigate()
   const { returnId } = useParams()
   const { profile } = useAuth()
+
+  const {
+  hasPermission,
+  permissions,
+} = useAuthorization()
+
+const canEditReturn =
+  hasPermission(
+    permissions.returns.edit,
+  )
 
   const [taxReturn, setTaxReturn] =
     useState<TaxReturnRecord | null>(null)
@@ -169,9 +175,9 @@ export function EditReturnPage() {
   }, [returnId])
 
   if (
-    !profile ||
-    !editRoles.includes(profile.role)
-  ) {
+  !profile ||
+  !canEditReturn
+) {
     return (
       <Navigate
         to={appConfig.routes.returns}

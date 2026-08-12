@@ -13,6 +13,7 @@ import { useAuth } from "@/features/auth/hooks/use-auth"
 
 interface LoginLocationState {
   from?: string
+  passwordReset?: boolean
 }
 
 function getLoginErrorMessage(
@@ -37,6 +38,10 @@ function getLoginErrorMessage(
 export function LoginPage() {
   const navigate = useNavigate()
   const location = useLocation()
+  const state =
+  location.state as
+    | LoginLocationState
+    | null
 
   const { signIn } = useAuth()
 
@@ -119,6 +124,12 @@ export function LoginPage() {
         <p className="mt-2 text-slate-600">
           Enter your Smith Enterprises staff credentials.
         </p>
+        {state?.passwordReset && (
+          <div className="mt-6 rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">
+            Your password was updated successfully.
+            You can now sign in with your new password.
+          </div>
+        )}
 
         {errorMessage && (
           <div
@@ -158,12 +169,24 @@ export function LoginPage() {
           </div>
 
           <div>
-            <label
-              htmlFor="password"
-              className="mb-2 block text-sm font-medium text-slate-800"
-            >
-              Password
-            </label>
+            <div className="mb-2 flex items-center justify-between gap-3">
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-slate-800"
+              >
+                Password
+              </label>
+
+              <Link
+                to={
+                  appConfig.routes
+                    .forgotPassword
+                }
+                className="text-sm font-semibold text-blue-700 hover:underline"
+              >
+                Forgot password?
+              </Link>
+            </div>
 
             <input
               id="password"

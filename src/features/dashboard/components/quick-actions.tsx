@@ -8,42 +8,40 @@ import {
 } from "react-router-dom"
 
 import { appConfig } from "@/config/app-config"
-import type {
-  AppRole,
-} from "@/features/auth/types/auth.types"
+import {
+  useAuthorization,
+} from "@/features/authorization/hooks/use-authorization"
 
-interface QuickActionsProps {
-  role: AppRole
-}
+export function QuickActions() {
+  const {
+    hasPermission,
+    permissions,
+  } = useAuthorization()
 
-const recordManagementRoles: AppRole[] = [
-  "administrator",
-  "manager",
-  "preparer",
-  "reviewer",
-  "receptionist",
-]
+  const canCreateClient =
+    hasPermission(
+      permissions.clients.create,
+    )
 
-const paymentRoles: AppRole[] = [
-  "administrator",
-  "manager",
-  "preparer",
-  "receptionist",
-]
+  const canCreateReturn =
+    hasPermission(
+      permissions.returns.create,
+    )
 
-export function QuickActions({
-  role,
-}: QuickActionsProps) {
-  const canManageRecords =
-    recordManagementRoles.includes(role)
+  const canRecordPayment =
+    hasPermission(
+      permissions.payments.record,
+    )
 
-  const canManagePayments =
-    paymentRoles.includes(role)
+  const hasQuickActions =
+    canCreateClient ||
+    canCreateReturn ||
+    canRecordPayment
 
   return (
-    <section className="rounded-2xl border border-brand-200 bg-white p-5 shadow-[0_10px_30px_rgba(33,31,28,0.06)]">
+    <section className="rounded-2xl border border-brand-200 bg-white p-5 shadow-sm">
       <header>
-        <h2 className="font-bold text-brand-950">
+        <h2 className="text-base font-semibold text-brand-950">
           Quick actions
         </h2>
 
@@ -53,13 +51,13 @@ export function QuickActions({
       </header>
 
       <div className="mt-5 space-y-3">
-        {canManageRecords && (
+        {canCreateClient && (
           <Link
             to={appConfig.routes.clientNew}
             className="flex items-center gap-3 rounded-xl border border-brand-200 p-4 transition hover:border-brand-400 hover:bg-brand-100"
           >
             <UserPlus
-              className="size-5 text-brand-700 transition group-hover:text-brand-950"
+              className="size-5 text-brand-700"
               aria-hidden="true"
             />
 
@@ -75,13 +73,13 @@ export function QuickActions({
           </Link>
         )}
 
-        {canManageRecords && (
+        {canCreateReturn && (
           <Link
             to={appConfig.routes.returnNew}
             className="flex items-center gap-3 rounded-xl border border-brand-200 p-4 transition hover:border-brand-400 hover:bg-brand-100"
           >
             <FilePlus2
-              className="size-5 text-brand-700 transition group-hover:text-brand-950"
+              className="size-5 text-brand-700"
               aria-hidden="true"
             />
 
@@ -97,13 +95,13 @@ export function QuickActions({
           </Link>
         )}
 
-        {canManagePayments && (
+        {canRecordPayment && (
           <Link
             to={appConfig.routes.payments}
             className="flex items-center gap-3 rounded-xl border border-brand-200 p-4 transition hover:border-brand-400 hover:bg-brand-100"
           >
             <CircleDollarSign
-              className="size-5 text-brand-700 transition group-hover:text-brand-950"
+              className="size-5 text-brand-700"
               aria-hidden="true"
             />
 
@@ -119,13 +117,12 @@ export function QuickActions({
           </Link>
         )}
 
-        {!canManageRecords &&
-          !canManagePayments && (
-            <div className="rounded-xl bg-brand-100 p-4 text-sm text-brand-600">
-              Your role currently provides
-              read-only access.
-            </div>
-          )}
+        {!hasQuickActions && (
+          <div className="rounded-xl bg-brand-100 p-4 text-sm text-brand-600">
+            Your account does not currently have
+            access to staff quick actions.
+          </div>
+        )}
       </div>
     </section>
   )

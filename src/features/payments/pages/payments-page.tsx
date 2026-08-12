@@ -17,8 +17,8 @@ import {
 } from "react-router-dom"
 
 import {
-  useAuth,
-} from "@/features/auth/hooks/use-auth"
+  useAuthorization,
+} from "@/features/authorization/hooks/use-authorization"
 import {
   getClientDetailsRoute,
 } from "@/config/app-config"
@@ -110,11 +110,20 @@ function SummaryCard({
 }
 
 export function PaymentsPage() {
-  const { profile } = useAuth()
+  const {
+    hasPermission,
+    permissions,
+  } = useAuthorization()
+
+  const canRecordPayments =
+    hasPermission(
+      permissions.payments.record,
+    )
 
   const canVoidPayments =
-    profile?.role === "administrator" ||
-    profile?.role === "manager"
+    hasPermission(
+      permissions.payments.void,
+    )
 
   const [
     summary,
@@ -836,6 +845,7 @@ export function PaymentsPage() {
                       <td className="whitespace-nowrap px-5 py-4 text-right">
                         <PaymentActionsMenu
                           payment={payment}
+                          canRecordPayment={canRecordPayments}
                           canVoidPayment={canVoidPayments}
                           onViewReceipt={(selectedPayment) => {
                             void handleViewReceipt(
@@ -848,11 +858,19 @@ export function PaymentsPage() {
                             )
                           }}
                           onRecordPayment={(selectedPayment) => {
+                            if (!canRecordPayments) {
+                              return
+                            }
+
                             setPaymentForRecording(
                               selectedPayment,
                             )
                           }}
                           onEditPayment={(selectedPayment) => {
+                            if (!canRecordPayments) {
+                              return
+                            }
+
                             void handleEditPayment(
                               selectedPayment,
                             )
@@ -883,7 +901,8 @@ export function PaymentsPage() {
             </section>
     </section>
 
-    {paymentForRecording && (
+    {canRecordPayments &&
+      paymentForRecording && (
       <RecordPaymentDialog
         payment={paymentForRecording}
         onClose={() => {
@@ -893,7 +912,8 @@ export function PaymentsPage() {
       />
     )}
 
-    {paymentForEditing && (
+    {canRecordPayments &&
+      paymentForEditing && (
       <PaymentEditDialog
         payment={paymentForEditing}
         isSaving={isSavingPayment}
@@ -928,6 +948,10 @@ export function PaymentsPage() {
           window.print()
         }}
         onRecordPayment={() => {
+          if (!canRecordPayments) {
+            return
+          }
+
           const selectedPayment =
             payments.find(
               (payment) =>
@@ -950,6 +974,10 @@ export function PaymentsPage() {
           )
         }}
         onVoidPayment={() => {
+          if (!canVoidPayments) {
+            return
+          }
+
           const selectedPayment =
             payments.find(
               (payment) =>

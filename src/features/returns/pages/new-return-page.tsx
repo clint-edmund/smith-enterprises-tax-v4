@@ -31,16 +31,23 @@ import type {
   TaxReturnFormValues,
 } from "@/features/returns/types/return.types"
 
-const createRoles = [
-  "administrator",
-  "manager",
-  "preparer",
-  "reviewer",
-  "receptionist",
-]
+import {
+  useAuthorization,
+} from "@/features/authorization/hooks/use-authorization"
+
 
 export function NewReturnPage() {
   const navigate = useNavigate()
+
+  const {
+  hasPermission,
+  permissions,
+} = useAuthorization()
+
+const canCreateReturn =
+  hasPermission(
+    permissions.returns.create,
+  )
 
   const [searchParams] =
     useSearchParams()
@@ -149,9 +156,9 @@ export function NewReturnPage() {
   }, [])
 
   if (
-    !profile ||
-    !createRoles.includes(profile.role)
-  ) {
+  !profile ||
+  !canCreateReturn
+) {
     return (
       <Navigate
         to={appConfig.routes.returns}

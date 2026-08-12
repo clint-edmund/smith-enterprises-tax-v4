@@ -24,6 +24,8 @@ export const appConfig = {
   routes: {
     home: "/",
     login: "/login",
+    forgotPassword: "/forgot-password",
+    resetPassword: "/reset-password",
     pendingApproval: "/pending-approval",
     accountError: "/account-error",
     securityAcknowledgment:
@@ -44,6 +46,7 @@ export const appConfig = {
     returnEdit: "/returns/:returnId/edit",
     payments: "/payments",
     reports: "/reports",
+    staff: "/staff",
     settings: "/settings",
     notificationPreferences:
       "/settings/notifications",

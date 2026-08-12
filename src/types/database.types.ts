@@ -7,10 +7,30 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
-  __InternalSupabase: {
-    PostgrestVersion: "14.5"
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
   }
   public: {
     Tables: {
@@ -3037,6 +3057,51 @@ export type Database = {
           },
         ]
       }
+      staff_admin_audit_events: {
+        Row: {
+          action: string
+          actor_user_id: string
+          created_at: string
+          id: string
+          metadata: Json
+          new_is_active: boolean | null
+          new_role: Database["public"]["Enums"]["app_role"] | null
+          outcome: string
+          previous_is_active: boolean | null
+          previous_role: Database["public"]["Enums"]["app_role"] | null
+          target_email: string | null
+          target_staff_id: string | null
+        }
+        Insert: {
+          action: string
+          actor_user_id: string
+          created_at?: string
+          id?: string
+          metadata?: Json
+          new_is_active?: boolean | null
+          new_role?: Database["public"]["Enums"]["app_role"] | null
+          outcome?: string
+          previous_is_active?: boolean | null
+          previous_role?: Database["public"]["Enums"]["app_role"] | null
+          target_email?: string | null
+          target_staff_id?: string | null
+        }
+        Update: {
+          action?: string
+          actor_user_id?: string
+          created_at?: string
+          id?: string
+          metadata?: Json
+          new_is_active?: boolean | null
+          new_role?: Database["public"]["Enums"]["app_role"] | null
+          outcome?: string
+          previous_is_active?: boolean | null
+          previous_role?: Database["public"]["Enums"]["app_role"] | null
+          target_email?: string | null
+          target_staff_id?: string | null
+        }
+        Relationships: []
+      }
       tax_package_template_items: {
         Row: {
           created_at: string
@@ -5029,6 +5094,25 @@ export type Database = {
           workflow_percent: number
         }[]
       }
+      get_staff_admin_audit_history: {
+        Args: { requested_limit?: number }
+        Returns: {
+          action: string
+          actor_display_name: string
+          actor_email: string
+          actor_user_id: string
+          created_at: string
+          id: string
+          metadata: Json
+          new_is_active: boolean
+          new_role: Database["public"]["Enums"]["app_role"]
+          outcome: string
+          previous_is_active: boolean
+          previous_role: Database["public"]["Enums"]["app_role"]
+          target_email: string
+          target_staff_id: string
+        }[]
+      }
       get_staff_client_organizer_workspace: {
         Args: { requested_client_id: string }
         Returns: Json
@@ -5045,6 +5129,21 @@ export type Database = {
           reviewed_at: string
           reviewed_by: string
           reviewed_by_name: string
+          updated_at: string
+        }[]
+      }
+      get_staff_directory: {
+        Args: never
+        Returns: {
+          created_at: string
+          display_name: string
+          email: string
+          first_name: string
+          id: string
+          is_active: boolean
+          last_name: string
+          phone: string
+          role: Database["public"]["Enums"]["app_role"]
           updated_at: string
         }[]
       }
@@ -6599,6 +6698,39 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      update_staff_role: {
+        Args: {
+          new_role: Database["public"]["Enums"]["app_role"]
+          target_staff_id: string
+        }
+        Returns: {
+          created_at: string
+          display_name: string
+          email: string
+          first_name: string
+          id: string
+          is_active: boolean
+          last_name: string
+          phone: string
+          role: Database["public"]["Enums"]["app_role"]
+          updated_at: string
+        }[]
+      }
+      update_staff_status: {
+        Args: { new_is_active: boolean; target_staff_id: string }
+        Returns: {
+          created_at: string
+          display_name: string
+          email: string
+          first_name: string
+          id: string
+          is_active: boolean
+          last_name: string
+          phone: string
+          role: Database["public"]["Enums"]["app_role"]
+          updated_at: string
+        }[]
+      }
       update_tax_return_record: {
         Args: {
           requested_accepted_date?: string
@@ -6962,6 +7094,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {
       app_role: [
@@ -7063,3 +7198,4 @@ export const Constants = {
     },
   },
 } as const
+

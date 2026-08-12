@@ -28,6 +28,7 @@ import type {
 
 interface PaymentActionsMenuProps {
   payment: OfficePaymentRecord
+  canRecordPayment: boolean
   canVoidPayment: boolean
   onViewReceipt: (
     payment: OfficePaymentRecord,
@@ -48,6 +49,7 @@ interface PaymentActionsMenuProps {
 
 export function PaymentActionsMenu({
   payment,
+  canRecordPayment,
   canVoidPayment,
   onViewReceipt,
   onPrintReceipt,
@@ -230,27 +232,31 @@ export function PaymentActionsMenu({
             Print Receipt
           </button>
 
-          <div
-            className="my-2 border-t border-slate-200"
-            aria-hidden="true"
-          />
+          {canRecordPayment && (
+            <>
+              <div
+                className="my-2 border-t border-slate-200"
+                aria-hidden="true"
+              />
 
-          <button
-            type="button"
-            role="menuitem"
-            onClick={() => {
-              closeMenu()
-              onRecordPayment(payment)
-            }}
-            className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm font-medium text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-600"
-          >
-            <WalletCards
-              className="size-4 text-slate-400"
-              aria-hidden="true"
-            />
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => {
+                  closeMenu()
+                  onRecordPayment(payment)
+                }}
+                className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm font-medium text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-600"
+              >
+                <WalletCards
+                  className="size-4 text-slate-400"
+                  aria-hidden="true"
+                />
 
-            Record Payment
-          </button>
+                Record Payment
+              </button>
+            </>
+          )}
 
           {!payment.isVoided && (
             <button

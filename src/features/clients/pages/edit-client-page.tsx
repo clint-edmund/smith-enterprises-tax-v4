@@ -36,13 +36,10 @@ import {
   formatDate,
 } from "@/features/clients/utils/client-formatters"
 
-const editRoles = [
-  "administrator",
-  "manager",
-  "preparer",
-  "reviewer",
-  "receptionist",
-]
+import {
+  useAuthorization,
+} from "@/features/authorization/hooks/use-authorization"
+
 
 function mapClientToForm(
   client: ClientRecord,
@@ -77,6 +74,15 @@ export function EditClientPage() {
   const navigate = useNavigate()
   const { clientId } = useParams()
   const { profile } = useAuth()
+  const {
+  hasPermission,
+  permissions,
+} = useAuthorization()
+
+const canEditClient =
+  hasPermission(
+    permissions.clients.edit,
+  )
 
   const [client, setClient] =
     useState<ClientRecord | null>(null)
@@ -127,9 +133,9 @@ export function EditClientPage() {
   }, [clientId])
 
   if (
-    !profile ||
-    !editRoles.includes(profile.role)
-  ) {
+  !profile ||
+  !canEditClient
+) {
     return (
       <Navigate
         to={appConfig.routes.clients}

@@ -20,21 +20,28 @@ import {
 import { useAuth } from "@/features/auth/hooks/use-auth"
 import { ClientForm } from "@/features/clients/components/client-form"
 import { createClient } from "@/features/clients/services/client-service"
+
+import {
+  useAuthorization,
+} from "@/features/authorization/hooks/use-authorization"
+
 import type {
   ClientFormValues,
 } from "@/features/clients/types/client.types"
 
-const createRoles = [
-  "administrator",
-  "manager",
-  "preparer",
-  "reviewer",
-  "receptionist",
-]
-
 export function NewClientPage() {
+
   const navigate = useNavigate()
   const { profile } = useAuth()
+  const {
+  hasPermission,
+  permissions,
+} = useAuthorization()
+
+const canCreateClient =
+  hasPermission(
+    permissions.clients.create,
+  )
 
   const [isSubmitting, setIsSubmitting] =
     useState(false)
@@ -43,9 +50,9 @@ export function NewClientPage() {
     useState<string | null>(null)
 
   if (
-    !profile ||
-    !createRoles.includes(profile.role)
-  ) {
+  !profile ||
+  !canCreateClient
+) {
     return (
       <Navigate
         to={appConfig.routes.clients}

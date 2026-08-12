@@ -6,6 +6,7 @@ import {
   FolderLock,
   LayoutDashboard,
   Settings,
+  UserCog,
   Users,
 } from "lucide-react"
 
@@ -64,6 +65,13 @@ export const navigationItems: NavigationItem[] = [
     icon: ChartNoAxesCombined,
     requiredPermission:
       permissions.reports.view,
+  },
+  {
+    label: "Staff",
+    path: appConfig.routes.staff,
+    icon: UserCog,
+    requiredPermission:
+      permissions.users.view,
   },
   {
     label: "Settings",

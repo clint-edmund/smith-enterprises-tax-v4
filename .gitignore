@@ -33,3 +33,4 @@ bundle-stats.html
 !.env.examplemigration-history-before-atlas-repair.txt
 
 migration-history-before-atlas-repair.txt
+supabase/functions/.env

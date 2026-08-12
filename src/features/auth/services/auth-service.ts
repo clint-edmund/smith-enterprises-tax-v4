@@ -101,6 +101,38 @@ export async function signInWithPassword(
   return session
 }
 
+export async function requestPasswordReset(
+  email: string,
+): Promise<void> {
+  const redirectTo =
+    `${window.location.origin}/reset-password`
+
+  const { error } =
+    await supabase.auth.resetPasswordForEmail(
+      email.trim(),
+      {
+        redirectTo,
+      },
+    )
+
+  if (error) {
+    throw error
+  }
+}
+
+export async function updateCurrentUserPassword(
+  password: string,
+): Promise<void> {
+  const { error } =
+    await supabase.auth.updateUser({
+      password,
+    })
+
+  if (error) {
+    throw error
+  }
+}
+
 export async function signOutCurrentUser(): Promise<void> {
   const { error } = await supabase.auth.signOut()
 

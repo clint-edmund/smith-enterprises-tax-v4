@@ -1,6 +1,6 @@
 import type {
   VaultSecretType,
-} from "./types"
+} from "./types.ts"
 
 export function maskSecret(
   value: string,

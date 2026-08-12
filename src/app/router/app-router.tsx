@@ -117,6 +117,14 @@ import {
   DependentsReviewPage,
 } from "@/features/organizer-review/pages/dependents-review-page"
 
+import {
+  ForgotPasswordPage,
+} from "@/features/auth/pages/forgot-password-page"
+
+import {
+  ResetPasswordPage,
+} from "@/features/auth/pages/reset-password-page"
+
 
 
 const DashboardPage = lazy(() =>
@@ -151,6 +159,12 @@ function RouteFallback() {
   return <div className="flex min-h-[40vh] items-center justify-center">Loading…</div>
 }
 
+const StaffPage = lazy(() =>
+  import("@/features/staff/pages/staff-page").then(m => ({
+    default: m.StaffPage,
+  }))
+)
+
 export const appRouter =
   createBrowserRouter([
     {
@@ -167,7 +181,21 @@ export const appRouter =
               path: appConfig.routes.login,
               element: <LoginPage />,
             },
+            {
+              path:
+                appConfig.routes
+                  .forgotPassword,
+              element:
+                <ForgotPasswordPage />,
+            },
           ],
+        },
+        {
+          path:
+            appConfig.routes
+              .resetPassword,
+          element:
+            <ResetPasswordPage />,
         },
       ],
     },
@@ -560,6 +588,23 @@ export const appRouter =
                     {
                       path: appConfig.routes.reports,
                       element: (<Suspense fallback={<RouteFallback />}><ReportsPage /></Suspense>),
+                    },
+                  ],
+                },
+                {
+                  element: (
+                    <PermissionRoute
+                      permission={permissions.users.view}
+                    />
+                  ),
+                  children: [
+                    {
+                      path: appConfig.routes.staff,
+                      element: (
+                        <Suspense fallback={<RouteFallback />}>
+                          <StaffPage />
+                        </Suspense>
+                      ),
                     },
                   ],
                 },

@@ -35,13 +35,9 @@ import {
   getTaxYearOptions,
 } from "@/features/returns/utils/return-options"
 
-const createRoles = [
-  "administrator",
-  "manager",
-  "preparer",
-  "reviewer",
-  "receptionist",
-]
+import {
+  useAuthorization,
+} from "@/features/authorization/hooks/use-authorization"
 
 const workflowQueueLabels: Record<
   TaxReturnListItem["workflowStatus"],
@@ -122,6 +118,15 @@ function startOfCurrentMonth(
 export function ReturnsPage() {
   const { profile } = useAuth()
   const {
+  hasPermission,
+  permissions,
+} = useAuthorization()
+
+const canCreate =
+  hasPermission(
+    permissions.returns.create,
+  )
+  const {
     filters,
     activeFilterCount,
     hasActiveFilters,
@@ -149,10 +154,6 @@ export function ReturnsPage() {
     () => getTaxYearOptions(),
     [],
   )
-
-  const canCreate =
-    profile !== null &&
-    createRoles.includes(profile.role)
 
   const loadTaxReturns = useCallback(
     async (showRefreshing = false) => {
