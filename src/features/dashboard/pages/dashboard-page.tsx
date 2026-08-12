@@ -626,6 +626,104 @@ const prioritySection =
     dashboardExperience
   ]
 
+  const dashboardOperationsSection = {
+    executive: {
+      eyebrow: "Office Operations",
+      title: "Workflow Status",
+      description:
+        "Monitor return movement, staffing, and operational readiness.",
+      visible: true,
+    },
+
+    preparation: {
+      eyebrow: "Preparation Operations",
+      title: "Return Readiness",
+      description:
+        "Monitor readiness, missing requirements, and preparation blockers for active returns.",
+      visible: true,
+    },
+
+    review: {
+      eyebrow: "Review Operations",
+      title: "Review Readiness",
+      description:
+        "Monitor returns approaching review, outstanding blockers, and readiness for approval.",
+      visible: true,
+    },
+
+    "front-desk": {
+      eyebrow: "",
+      title: "",
+      description: "",
+      visible: false,
+    },
+
+    observation: {
+      eyebrow: "",
+      title: "",
+      description: "",
+      visible: false,
+    },
+  } satisfies Record<
+    typeof dashboardExperience,
+    {
+      eyebrow: string
+      title: string
+      description: string
+      visible: boolean
+    }
+  >
+
+  const operationsSection =
+    dashboardOperationsSection[
+      dashboardExperience
+    ]
+
+  const dashboardActivitySection = {
+    executive: {
+      eyebrow: "Activity Center",
+      title: "Recent Office Activity",
+      description:
+        "Latest work completed and available actions.",
+    },
+    preparation: {
+      eyebrow: "Work Activity",
+      title: "Recent Preparation Activity",
+      description:
+        "Recent return activity and actions relevant to your preparation workload.",
+    },
+    review: {
+      eyebrow: "Review Activity",
+      title: "Recent Review Activity",
+      description:
+        "Recent return activity and actions relevant to your review workload.",
+    },
+    "front-desk": {
+      eyebrow: "Front Desk Activity",
+      title: "Recent Client Activity",
+      description:
+        "Recent client and return activity relevant to front-desk operations.",
+    },
+    observation: {
+      eyebrow: "Recent Activity",
+      title: "Office Activity",
+      description:
+        "Recent return and office activity available to your account.",
+    },
+  } satisfies Record<
+    typeof dashboardExperience,
+    {
+      eyebrow: string
+      title: string
+      description: string
+    }
+  >
+
+  const activitySection =
+    dashboardActivitySection[
+      dashboardExperience
+    ]
+
   const dashboardHeader =
     dashboardHeaderContent[
       dashboardExperience
@@ -694,12 +792,15 @@ const prioritySection =
       />
 
       
-        <ExecutiveOverview
-          summary={summary}
-          executive={executive}
-          readiness={readiness}
-          loadedAt={loadedAt}
-        />
+       {dashboardExperience === "executive" &&
+        canViewExecutiveData && (
+          <ExecutiveOverview
+            summary={summary}
+            executive={executive}
+            readiness={readiness}
+            loadedAt={loadedAt}
+          />
+        )}
       
       <AtlasSection
         variant="plain"
@@ -789,29 +890,34 @@ const prioritySection =
           </>
         )}
       </AtlasSection>
-      <AtlasSection
-        variant="plain"
-        eyebrow="Office Operations"
-        title="Workflow Status"
-        description="Monitor return movement, staffing, and operational readiness."
-      >
-      
-      <div className="space-y-6">
+      {operationsSection.visible && (
+        <AtlasSection
+          variant="plain"
+          eyebrow={
+            operationsSection.eyebrow
+          }
+          title={
+            operationsSection.title
+          }
+          description={
+            operationsSection.description
+          }
+        >
+          <div className="space-y-6">
+            {dashboardExperience === "executive" &&
+              canViewExecutiveData && (
+                <>
+                  <WorkflowOperations
+                    workflow={summary.workflow}
+                  />
 
-      
-      {canViewExecutiveData && (
-              <>
-                <WorkflowOperations
-                  workflow={summary.workflow}
-                />
+                  <StaffWorkload
+                    workload={staffWorkload}
+                  />
+                </>
+              )}
 
-                <StaffWorkload
-                  workload={staffWorkload}
-                />
-              </>
-            )}
-
-      {canViewReturnReadiness && (
+            {canViewReturnReadiness && (
               <Suspense
                 fallback={
                   <DashboardPanelFallback />
@@ -822,141 +928,155 @@ const prioritySection =
                 />
               </Suspense>
             )}
-      </div>  
-      </AtlasSection>
+          </div>
+        </AtlasSection>
+      )}
+      {dashboardExperience === "executive" &&
+  canViewExecutiveData && (
+    <AtlasSection
+      variant="plain"
+      eyebrow="Business Performance"
+      title="Financial Performance"
+      description="Revenue, production, and executive insights."
+    >
+      <div className="space-y-6">
+        <DashboardFinancialOverview
+          summary={financialOverview}
+          errorMessage={
+            financialOverviewError
+          }
+          onRefresh={() => {
+            void loadDashboard(true)
+          }}
+        />
+
+        <Suspense
+          fallback={
+            <DashboardPanelFallback />
+          }
+        >
+          <ExecutiveFinancialAnalyticsPanel
+            analytics={
+              executiveAnalytics
+            }
+            errorMessage={
+              executiveAnalyticsError
+            }
+            isRefreshing={
+              isRefreshingExecutiveAnalytics
+            }
+            onRefresh={() => {
+              void refreshExecutiveAnalytics()
+            }}
+          />
+        </Suspense>
+
+        <ExecutiveKpis
+          metrics={executive}
+        />
+
+        <div className="grid gap-6 xl:grid-cols-2">
+          <Suspense
+            fallback={
+              <DashboardPanelFallback />
+            }
+          >
+            <DashboardFinancialChart
+              data={
+                analytics.monthlyFinancials
+              }
+            />
+          </Suspense>
+
+          <Suspense
+            fallback={
+              <DashboardPanelFallback />
+            }
+          >
+            <DashboardStatusChart
+              data={
+                analytics.statusMetrics
+              }
+            />
+          </Suspense>
+        </div>
+
+        <Suspense
+          fallback={
+            <DashboardPanelFallback />
+          }
+        >
+          <DashboardStaffWorkloadChart
+            data={
+              analytics.staffWorkload
+            }
+          />
+        </Suspense>
+      </div>
+    </AtlasSection>
+  )}
       <AtlasSection
         variant="plain"
-        eyebrow="Business Performance"
-        title="Financial Performance"
-        description="Revenue, production, and executive insights."
+        eyebrow={activitySection.eyebrow}
+        title={activitySection.title}
+        description={activitySection.description}
       >
-      
-      <div className="space-y-6">
+        <div className="space-y-6">
+          <div
+            className={
+              dashboardExperience === "executive" ||
+              dashboardExperience === "preparation" ||
+              dashboardExperience === "review"
+                ? "grid gap-6 xl:grid-cols-2"
+                : "grid gap-6"
+            }
+          >
+            <DashboardReturnList returns={recentReturns} />
 
-
-      {canViewExecutiveData && (
-              <DashboardFinancialOverview
-                summary={financialOverview}
-                errorMessage={financialOverviewError}
-                onRefresh={() => {
-                  void loadDashboard(true);
-                }}
-              />
-            )}
-
-            {canViewExecutiveData && (
-              <Suspense
-                fallback={
-                  <DashboardPanelFallback />
-                }
-              >
-                <ExecutiveFinancialAnalyticsPanel
-                  analytics={executiveAnalytics}
-                  errorMessage={executiveAnalyticsError}
-                  isRefreshing={
-                    isRefreshingExecutiveAnalytics
-                  }
-                  onRefresh={() => {
-                    void refreshExecutiveAnalytics()
-                  }}
-                />
-              </Suspense>
-            )}
-
-          
-
-            {canViewExecutiveData && (
-              <>
-                <ExecutiveKpis
-                  metrics={executive}
-                />       
-            </>
-            )}          
-
-            {canViewExecutiveData ? (
-              <div className="grid gap-6 xl:grid-cols-2">
-                <Suspense
-                  fallback={
-                    <DashboardPanelFallback />
-                  }
-                >
-                  <DashboardFinancialChart
-                    data={analytics.monthlyFinancials}
-                  />
-                </Suspense>
-
-                <Suspense
-                  fallback={
-                    <DashboardPanelFallback />
-                  }
-                >
-                  <DashboardStatusChart
-                    data={analytics.statusMetrics}
-                  />
-                </Suspense>
-              </div>
-            ) : (
-              <Suspense
-                fallback={
-                  <DashboardPanelFallback />
-                }
-              >
-                <DashboardStatusChart
-                  data={analytics.statusMetrics}
-                />
-              </Suspense>
-            )}
-
-            {canViewExecutiveData && (
-              <Suspense
-                fallback={
-                  <DashboardPanelFallback />
-                }
-              >
-                <DashboardStaffWorkloadChart
-                  data={analytics.staffWorkload}
-                />
-              </Suspense>
-            )}
-            </div>
-      </AtlasSection>
-      <AtlasSection
-        variant="plain"
-        eyebrow="Activity Center"
-        title="Recent Office Activity"
-        description="Latest work completed and available actions."
-      >
-      <div className="space-y-6">
-
-      
-      <div className="grid gap-6 xl:grid-cols-2">
-              <DashboardReturnList returns={recentReturns} />
-
+            {(dashboardExperience === "executive" ||
+              dashboardExperience === "preparation" ||
+              dashboardExperience === "review") && (
               <DashboardAttentionList items={attentionItems} />
+            )}
+          </div>
+
+          <div
+            className={
+              dashboardExperience === "observation"
+                ? "grid gap-6"
+                : "grid gap-6 xl:grid-cols-3"
+            }
+          >
+            <div
+              className={
+                dashboardExperience === "observation"
+                  ? ""
+                  : "xl:col-span-2"
+              }
+            >
+              <RecentActivity
+                activities={activities}
+                errorMessage={activityError}
+                isRefreshing={isRefreshingActivity}
+                onRefresh={() => {
+                  void refreshActivity()
+                }}
+                realtimeStatus={realtimeStatus}
+              />
             </div>
 
-            <div className="grid gap-6 xl:grid-cols-3">
-              <div className="xl:col-span-2">
-                <RecentActivity
-                  activities={activities}
-                  errorMessage={activityError}
-                  isRefreshing={isRefreshingActivity}
-                  onRefresh={() => {
-                    void refreshActivity()
-                  }}
-                  realtimeStatus={realtimeStatus}
-                />
-              </div>
-
+            {dashboardExperience !== "observation" && (
               <div className="space-y-6">
                 <QuickActions role={profile.role} />
 
-                {canViewExecutiveData && (
-                  <QuickReports />
-                )}
+                {dashboardExperience === "executive" &&
+                  canViewExecutiveData && (
+                    <QuickReports />
+                  )}
               </div>
-            </div>
-            </div>
+            )}
+          </div>
+        </div>
       </AtlasSection>
 
     </section>
